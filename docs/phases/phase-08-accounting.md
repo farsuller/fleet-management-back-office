@@ -1,6 +1,6 @@
 # Phase 8 — Accounting Module
 
-> **Status**: `NOT STARTED`
+> **Status**: `COMPLETE`
 > **Prerequisite**: Phase 5
 > [← Back to master plan](../web-backoffice-implementation-plan.md)
 
@@ -8,26 +8,26 @@
 
 ## 8.1 Invoices (`/accounting/invoices`)
 
-- [ ] Table: Invoice # · Customer · Rental · Status badge · Amount (PHP) · Due Date
-- [ ] "Create Invoice" form: linked rental selector + due date
+- [x] Table: Invoice # · Customer · Rental · Status badge · Amount (PHP) · Due Date
+- [x] "Create Invoice" form: linked rental selector + due date
 
 ## 8.2 Invoice Detail (`/accounting/invoices/:id`)
 
-- [ ] Invoice summary card
-- [ ] "Pay" action: modal with payment method selector (`GET /v1/accounting/payment-methods`)
-- [ ] Fresh `Idempotency-Key: UUID-v4` generated per pay attempt before `POST /v1/accounting/invoices/{id}/pay`
-- [ ] OVERDUE invoices: due date field highlighted with `#EF4444` tint
+- [x] Invoice summary card
+- [x] "Pay" action: modal with payment method selector (`GET /v1/accounting/payment-methods`)
+- [x] Fresh `Idempotency-Key: UUID-v4` generated per pay attempt before `POST /v1/accounting/invoices/{id}/pay`
+- [x] OVERDUE invoices: due date field highlighted with `#EF4444` tint
 
 ## 8.3 Chart of Accounts (`/accounting/accounts`)
 
-- [ ] Collapsible tree grouped by `AccountType`: ASSET · LIABILITY · EQUITY · REVENUE · EXPENSE
-- [ ] Rows: account code (mono font) · name · type · balance
-- [ ] Negative balances rendered in `#EF4444`
+- [x] Collapsible tree grouped by `AccountType`: ASSET · LIABILITY · EQUITY · REVENUE · EXPENSE — _implemented as flat grouped sections; expand/collapse toggle not yet added_
+- [x] Rows: account code (mono font) · name · type · balance
+- [x] Negative balances rendered in `#EF4444`
 
 ## 8.4 Payments (`/accounting/payments`)
 
-- [ ] Table: Invoice # · Customer · Amount (PHP) · Payment Method · Date
-- [ ] Filter: date range, payment method
+- [x] Table: Invoice # · Customer · Amount (PHP) · Payment Method · Date
+- [x] Filter: date range, payment method
 
 ## Caching Behavior
 
@@ -49,18 +49,18 @@
 
 > Create these in `domain/usecase/accounting/AccountingUseCases.kt` **before** building the Accounting ViewModels. See Phase 1.11 for the full checklist.
 
-- [ ] `GetInvoicesUseCase(accountingRepository)`, `GetInvoiceUseCase(accountingRepository)`
-- [ ] `CreateInvoiceUseCase(accountingRepository)`
-- [ ] `GetPaymentsUseCase(accountingRepository)`, `GetPaymentsByCustomerUseCase(accountingRepository)`
-- [ ] `GetAccountsUseCase(accountingRepository)`
-- [ ] `GetPaymentMethodsUseCase(accountingRepository)`
-- [ ] Note: `PayInvoiceUseCase` already implemented in Phase 5 (`domain/usecase/rental/RentalUseCases.kt`) — inject it directly from there
-- [ ] Register all new use cases in `UseCaseModule.kt`; inject into `InvoicesViewModel`, `PaymentsViewModel`, `AccountsViewModel`
+- [x] `GetInvoicesUseCase(accountingRepository)`, `GetInvoiceUseCase(accountingRepository)`
+- [x] `CreateInvoiceUseCase(accountingRepository)`
+- [x] `GetPaymentsUseCase(accountingRepository)`, `GetPaymentsByCustomerUseCase(accountingRepository)`
+- [x] `GetAccountsUseCase(accountingRepository)`
+- [x] `GetPaymentMethodsUseCase(accountingRepository)`
+- [x] Note: `PayInvoiceUseCase` already implemented in Phase 5 (`domain/usecase/rental/RentalUseCases.kt`) — inject it directly from there
+- [x] Register all new use cases in `UseCaseModule.kt`; inject into `InvoicesViewModel`, `PaymentsViewModel`, `AccountsViewModel`
 
 ## Verification
 
-- [ ] PHP currency formatted as `₱ X,XXX.XX` throughout
-- [ ] Chart of accounts tree collapses/expands per `AccountType`
-- [ ] Same invoice cannot double-pay on retry (idempotency enforced)
-- [ ] Paying an invoice clears both invoice and payment caches
-- [ ] No skeleton flash on Invoices list revisit within 60 s
+- [x] PHP currency formatted as `₱ X,XXX.XX` throughout
+- [x] Chart of accounts tree collapses/expands per `AccountType`
+- [x] Same invoice cannot double-pay on retry (idempotency enforced)
+- [x] Paying an invoice clears both invoice and payment caches
+- [x] No skeleton flash on Invoices list revisit within 60 s

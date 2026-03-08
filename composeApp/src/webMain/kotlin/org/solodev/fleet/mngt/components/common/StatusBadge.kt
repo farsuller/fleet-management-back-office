@@ -2,21 +2,14 @@ package org.solodev.fleet.mngt.components.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,7 +26,6 @@ enum class Priority { LOW, NORMAL, HIGH, URGENT }
 
 private data class BadgeStyle(
     val label: String,
-    val icon:  ImageVector?,
     val background: @Composable () -> Color,
     val foreground: @Composable () -> Color = { Color.White },
 )
@@ -42,11 +34,11 @@ private data class BadgeStyle(
 private fun vehicleStyle(status: VehicleStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        VehicleStatus.AVAILABLE   -> BadgeStyle("Available",    null, { c.available })
-        VehicleStatus.RENTED      -> BadgeStyle("Rented",       null, { c.rented })
-        VehicleStatus.MAINTENANCE -> BadgeStyle("Maintenance",  null, { c.maintenance })
-        VehicleStatus.RETIRED     -> BadgeStyle("Retired",      null, { c.retired })
-        VehicleStatus.RESERVED    -> BadgeStyle("Reserved",     null, { c.reserved })
+        VehicleStatus.AVAILABLE   -> BadgeStyle("Available",    { c.available })
+        VehicleStatus.RENTED      -> BadgeStyle("Rented",       { c.rented })
+        VehicleStatus.MAINTENANCE -> BadgeStyle("Maintenance",  { c.maintenance })
+        VehicleStatus.RETIRED     -> BadgeStyle("Retired",      { c.retired })
+        VehicleStatus.RESERVED    -> BadgeStyle("Reserved",     { c.reserved })
     }
 }
 
@@ -54,10 +46,10 @@ private fun vehicleStyle(status: VehicleStatus): BadgeStyle {
 private fun rentalStyle(status: RentalStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        RentalStatus.RESERVED  -> BadgeStyle("Reserved",  null, { c.reserved })
-        RentalStatus.ACTIVE    -> BadgeStyle("Active",    null, { c.active })
-        RentalStatus.COMPLETED -> BadgeStyle("Completed", null, { c.completed })
-        RentalStatus.CANCELLED -> BadgeStyle("Cancelled", null, { c.cancelled })
+        RentalStatus.RESERVED  -> BadgeStyle("Reserved",  { c.reserved })
+        RentalStatus.ACTIVE    -> BadgeStyle("Active",    { c.active })
+        RentalStatus.COMPLETED -> BadgeStyle("Completed", { c.completed })
+        RentalStatus.CANCELLED -> BadgeStyle("Cancelled", { c.cancelled })
     }
 }
 
@@ -65,10 +57,10 @@ private fun rentalStyle(status: RentalStatus): BadgeStyle {
 private fun maintenanceStyle(status: MaintenanceStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        MaintenanceStatus.SCHEDULED   -> BadgeStyle("Scheduled",   null, { c.reserved })
-        MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", null, { c.maintenance })
-        MaintenanceStatus.COMPLETED   -> BadgeStyle("Completed",   null, { c.completed })
-        MaintenanceStatus.CANCELLED   -> BadgeStyle("Cancelled",   null, { c.cancelled })
+        MaintenanceStatus.SCHEDULED   -> BadgeStyle("Scheduled",   { c.reserved })
+        MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", { c.maintenance })
+        MaintenanceStatus.COMPLETED   -> BadgeStyle("Completed",   { c.completed })
+        MaintenanceStatus.CANCELLED   -> BadgeStyle("Cancelled",   { c.cancelled })
     }
 }
 
@@ -76,10 +68,10 @@ private fun maintenanceStyle(status: MaintenanceStatus): BadgeStyle {
 private fun priorityStyle(priority: Priority): BadgeStyle {
     val c = fleetColors
     return when (priority) {
-        Priority.LOW    -> BadgeStyle("Low",    null, { c.priorityLow })
-        Priority.NORMAL -> BadgeStyle("Normal", null, { c.priorityNormal })
-        Priority.HIGH   -> BadgeStyle("High",   null, { c.priorityHigh })
-        Priority.URGENT -> BadgeStyle("Urgent", null, { c.priorityUrgent })
+        Priority.LOW    -> BadgeStyle("Low",    { c.priorityLow })
+        Priority.NORMAL -> BadgeStyle("Normal", { c.priorityNormal })
+        Priority.HIGH   -> BadgeStyle("High",   { c.priorityHigh })
+        Priority.URGENT -> BadgeStyle("Urgent", { c.priorityUrgent })
     }
 }
 
@@ -88,30 +80,21 @@ private fun priorityStyle(priority: Priority): BadgeStyle {
 @Composable
 private fun BadgePill(style: BadgeStyle, modifier: Modifier = Modifier) {
     val bg = style.background()
-    // Outer box handles layout modifier (e.g. weight); inner pill wraps content only
     Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(9999.dp))
-                .background(bg.copy(alpha = 0.13f))
+                .background(bg.copy(alpha = 0.20f))
                 .padding(horizontal = 14.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(7.dp)
-                        .background(bg, CircleShape),
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text       = style.label,
-                    color      = bg,
-                    fontSize   = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 12.sp,
-                )
-            }
+            Text(
+                text       = style.label,
+                color      = bg,
+                fontSize   = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 12.sp,
+            )
         }
     }
 }

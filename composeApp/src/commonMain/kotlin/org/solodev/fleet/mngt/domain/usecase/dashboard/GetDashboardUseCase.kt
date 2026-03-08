@@ -71,7 +71,9 @@ class GetDashboardUseCase(
                         reservedVehicles    = vehicles.items.count { it.state == VehicleState.RESERVED },
                         activeRentals       = rentals.items.size,
                         pendingMaintenance  = maintenance.items.size,
-                        revenueThisMonthPhp = invoices.items.sumOf { it.amountPhp ?: 0L },
+                        revenueThisMonthPhp = invoices.items
+                            .filter { it.status == InvoiceStatus.PAID }
+                            .sumOf { it.amountPhp ?: 0L },
                         overdueInvoices     = invoices.items.count { it.status == InvoiceStatus.OVERDUE },
                         paidInvoices        = invoices.items.count { it.status == InvoiceStatus.PAID },
                         pendingInvoices     = invoices.items.count {

@@ -24,3 +24,8 @@ data class UserDto(
     val isVerified: Boolean? = null,
     val isActive: Boolean? = null,
 )
+
+@Serializable
+data class AssignRolesRequest(
+    val roles: List<String>,
+)

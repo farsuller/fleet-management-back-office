@@ -15,12 +15,17 @@ import org.koin.compose.koinInject
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.features.auth.LoginScreen
+import org.solodev.fleet.mngt.features.accounting.AccountingScreen
+import org.solodev.fleet.mngt.features.maintenance.MaintenanceDetailScreen
+import org.solodev.fleet.mngt.features.maintenance.MaintenanceListScreen
 import org.solodev.fleet.mngt.features.customers.CustomerDetailScreen
 import org.solodev.fleet.mngt.features.customers.CustomersListScreen
 import org.solodev.fleet.mngt.features.dashboard.DashboardScreen
 import org.solodev.fleet.mngt.features.rentals.RentalDetailScreen
 import org.solodev.fleet.mngt.features.rentals.RentalsListScreen
 import org.solodev.fleet.mngt.features.settings.SettingsScreen
+import org.solodev.fleet.mngt.features.users.UserDetailScreen
+import org.solodev.fleet.mngt.features.users.UsersListScreen
 import org.solodev.fleet.mngt.features.vehicles.VehicleDetailScreen
 import org.solodev.fleet.mngt.features.vehicles.VehiclesListScreen
 import org.solodev.fleet.mngt.theme.fleetColors
@@ -75,6 +80,15 @@ fun AppNavHost(router: AppRouter) {
         is Screen.Customers      -> AppShell(router = router) { CustomersListScreen(router = router) }
         is Screen.CustomerDetail -> AppShell(router = router) { CustomerDetailScreen(screen.customerId, router = router) }
         is Screen.CustomerCreate -> AppShell(router = router) { CustomersListScreen(router = router) }
+
+        is Screen.Users       -> AppShell(router = router) { UsersListScreen(router = router) }
+        is Screen.UserDetail -> AppShell(router = router) { UserDetailScreen(screen.userId, router = router) }
+
+        is Screen.Accounting -> AppShell(router = router) { AccountingScreen(router = router) }
+
+        is Screen.Maintenance       -> AppShell(router = router) { MaintenanceListScreen(router = router) }
+        is Screen.MaintenanceDetail -> AppShell(router = router) { MaintenanceDetailScreen(screen.jobId, router = router) }
+        is Screen.MaintenanceCreate -> AppShell(router = router) { MaintenanceListScreen(router = router) }
 
         is Screen.Settings    -> AppShell(router = router) { SettingsScreen() }
 

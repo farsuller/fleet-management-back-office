@@ -13,7 +13,9 @@ interface MaintenanceRepository {
     suspend fun getJob(id: String): Result<MaintenanceJobDto>
     suspend fun getJobsByVehicle(vehicleId: String): Result<List<MaintenanceJobDto>>
     suspend fun createJob(request: CreateMaintenanceRequest): Result<MaintenanceJobDto>
+    suspend fun startJob(id: String): Result<MaintenanceJobDto>
     suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long): Result<MaintenanceJobDto>
+    suspend fun cancelJob(id: String): Result<MaintenanceJobDto>
 }
 
 class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRepository {
@@ -40,7 +42,13 @@ class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRe
     override suspend fun createJob(request: CreateMaintenanceRequest) =
         api.createMaintenanceJob(request).onSuccess { listCache.clear() }
 
+    override suspend fun startJob(id: String) =
+        api.startMaintenanceJob(id).onSuccess { listCache.clear() }
+
     override suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long) =
         api.completeMaintenanceJob(id, CompleteMaintenanceRequest(laborCostPhp, partsCostPhp))
             .onSuccess { listCache.clear() }
+
+    override suspend fun cancelJob(id: String) =
+        api.cancelMaintenanceJob(id).onSuccess { listCache.clear() }
 }

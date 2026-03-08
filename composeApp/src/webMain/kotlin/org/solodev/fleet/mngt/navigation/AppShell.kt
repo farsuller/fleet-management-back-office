@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -149,6 +150,11 @@ fun AppShell(
                     onClick = { router.navigate(item.screen) },
                 )
             }
+            SidebarActionItem(
+                label = "Logout",
+                icon = Icons.AutoMirrored.Filled.Logout,
+                onClick = { dispatcher.signOut() },
+            )
         }
         // Sidebar right border
         Box(Modifier.width(1.dp).fillMaxHeight().background(colors.border))
@@ -226,6 +232,44 @@ private fun SidebarItem(
 }
 
 @Composable
+private fun SidebarActionItem(
+    label: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+) {
+    val colors = fleetColors
+    val tint = androidx.compose.ui.graphics.Color(0xFFEF4444)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 1.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(onClick = onClick)
+                .padding(start = 20.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(17.dp),
+                tint = tint,
+            )
+            Text(
+                text = label,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal,
+                color = tint,
+            )
+        }
+    }
+}
+
+@Composable
 private fun TopBar(router: AppRouter) {
     val colors = fleetColors
     Column {
@@ -266,6 +310,8 @@ private fun screenTitle(screen: Screen): String = when (screen) {
     is Screen.Accounting     -> "Accounting"
     is Screen.LiveTracking   -> "Live Tracking"
     is Screen.Reports        -> "Reports"
+    is Screen.Users,
+    is Screen.UserDetail     -> "Users"
     is Screen.Settings       -> "Settings"
     else                     -> "Fleet Manager"
 }

@@ -25,9 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.solodev.fleet.mngt.theme.FleetSpacing
+import org.solodev.fleet.mngt.theme.LocalThemeState
 
 @Composable
 private fun shimmerBrush(): Brush {
+    val isDark = LocalThemeState.current.isDark
+    val baseColor    = if (isDark) Color(0xFF1A2035) else Color(0xFFE5E7EB)
+    val highlightColor = if (isDark) Color(0xFF252D42) else Color(0xFFF3F4F6)
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
         initialValue   = 0f,
@@ -39,11 +43,7 @@ private fun shimmerBrush(): Brush {
         label = "shimmerX",
     )
     return Brush.linearGradient(
-        colors = listOf(
-            Color(0xFF1A2035),
-            Color(0xFF252D42),
-            Color(0xFF1A2035),
-        ),
+        colors = listOf(baseColor, highlightColor, baseColor),
         start = Offset(translateAnim - 300f, 0f),
         end   = Offset(translateAnim, 0f),
     )

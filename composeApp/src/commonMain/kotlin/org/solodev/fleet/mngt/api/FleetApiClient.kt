@@ -28,8 +28,10 @@ import org.solodev.fleet.mngt.api.dto.accounting.InvoiceDto
 import org.solodev.fleet.mngt.api.dto.accounting.PayInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentDto
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentMethodDto
+import org.solodev.fleet.mngt.api.dto.auth.AssignRolesRequest
 import org.solodev.fleet.mngt.api.dto.auth.LoginRequest
 import org.solodev.fleet.mngt.api.dto.auth.LoginResponse
+import org.solodev.fleet.mngt.api.dto.auth.UserDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.maintenance.CompleteMaintenanceRequest
@@ -47,6 +49,7 @@ import org.solodev.fleet.mngt.api.dto.vehicle.OdometerRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.UpdateVehicleRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleStateRequest
+import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.TokenProvider
 
 @Serializable
@@ -71,6 +74,7 @@ private val FleetJson = Json {
 class FleetApiClient(
     private val baseUrl: String,
     private val tokenProvider: TokenProvider,
+    private val authState: AuthState,
 ) {
     private val client = HttpClient {
         install(ContentNegotiation) { json(FleetJson) }
@@ -88,6 +92,23 @@ class FleetApiClient(
             contentType(ContentType.Application.Json)
         }
     }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+
+    suspend fun getUsers(cursor: String? = null, limit: Int = 20): Result<PagedResponse<UserDto>> =
+        getAsPaged("/v1/users") {
+            cursor?.let { append("cursor", it) }
+            append("limit", limit.toString())
+        }
+
+    suspend fun getUser(id: String): Result<UserDto> =
+        get("/v1/users/$id")
+
+    suspend fun assignRoles(id: String, request: AssignRolesRequest): Result<UserDto> =
+        post("/v1/users/$id/roles", request)
+
+    suspend fun deleteUser(id: String): Result<Unit> =
+        delete("/v1/users/$id")
 
     // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -186,7 +207,7 @@ class FleetApiClient(
         limit: Int = 20,
         status: String? = null,
     ): Result<PagedResponse<MaintenanceJobDto>> =
-        get("/v1/maintenance") {
+        getAsPaged("/v1/maintenance") {
             cursor?.let { append("cursor", it) }
             append("limit", limit.toString())
             status?.let { append("status", it) }
@@ -201,13 +222,19 @@ class FleetApiClient(
     suspend fun completeMaintenanceJob(id: String, request: CompleteMaintenanceRequest): Result<MaintenanceJobDto> =
         post("/v1/maintenance/$id/complete", request)
 
+    suspend fun startMaintenanceJob(id: String): Result<MaintenanceJobDto> =
+        postEmpty("/v1/maintenance/$id/start")
+
+    suspend fun cancelMaintenanceJob(id: String): Result<MaintenanceJobDto> =
+        postEmpty("/v1/maintenance/$id/cancel")
+
     suspend fun getMaintenanceJobsByVehicle(vehicleId: String): Result<List<MaintenanceJobDto>> =
         getList("/v1/maintenance/vehicle/$vehicleId")
 
     // ── Accounting ────────────────────────────────────────────────────────────
 
     suspend fun getInvoices(cursor: String? = null, limit: Int = 20): Result<PagedResponse<InvoiceDto>> =
-        get("/v1/accounting/invoices") {
+        getAsPaged("/v1/accounting/invoices") {
             cursor?.let { append("cursor", it) }
             append("limit", limit.toString())
         }
@@ -229,7 +256,7 @@ class FleetApiClient(
     }
 
     suspend fun getPayments(cursor: String? = null, limit: Int = 20): Result<PagedResponse<PaymentDto>> =
-        get("/v1/accounting/payments") {
+        getAsPaged("/v1/accounting/payments") {
             cursor?.let { append("cursor", it) }
             append("limit", limit.toString())
         }
@@ -271,7 +298,7 @@ class FleetApiClient(
             headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
             url { parameters.apply(params) }
         }
-        if (response.status == HttpStatusCode.Unauthorized) throw UnauthorizedException()
+        if (response.status == HttpStatusCode.Unauthorized) { authState.signOut(); throw UnauthorizedException() }
         if (response.status == HttpStatusCode.TooManyRequests) throw RateLimitException()
         if (!response.status.isSuccess()) {
             val text = runCatching { response.bodyAsText() }.getOrDefault(response.status.description)
@@ -336,7 +363,7 @@ class FleetApiClient(
     }
 
     private suspend inline fun <reified R> HttpResponse.guardStatus(): R {
-        if (status == HttpStatusCode.Unauthorized) throw UnauthorizedException()
+        if (status == HttpStatusCode.Unauthorized) { authState.signOut(); throw UnauthorizedException() }
         if (status == HttpStatusCode.TooManyRequests) throw RateLimitException()
         if (!status.isSuccess()) {
             val text = runCatching { bodyAsText() }.getOrDefault(status.description)

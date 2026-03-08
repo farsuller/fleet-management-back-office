@@ -15,6 +15,8 @@ import org.solodev.fleet.mngt.repository.RentalRepository
 import org.solodev.fleet.mngt.repository.RentalRepositoryImpl
 import org.solodev.fleet.mngt.repository.TrackingRepository
 import org.solodev.fleet.mngt.repository.TrackingRepositoryImpl
+import org.solodev.fleet.mngt.repository.UserRepository
+import org.solodev.fleet.mngt.repository.UserRepositoryImpl
 import org.solodev.fleet.mngt.repository.VehicleRepository
 import org.solodev.fleet.mngt.repository.VehicleRepositoryImpl
 
@@ -30,4 +32,5 @@ val repositoryModule = module {
     single<MaintenanceRepository> { MaintenanceRepositoryImpl(api = get()) }
     single<AccountingRepository> { AccountingRepositoryImpl(api = get()) }
     single<TrackingRepository> { TrackingRepositoryImpl(api = get()) }
+    single<UserRepository> { UserRepositoryImpl(api = get()) }
 }

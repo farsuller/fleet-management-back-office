@@ -61,6 +61,9 @@ data class VehicleStatusSummary(
     val speed: Double = 0.0,
     val progress: Double = 0.0,
     val distanceFromRoute: Double = 0.0,
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val heading: Double = 0.0,
     val timestamp: String = "",
 )
 

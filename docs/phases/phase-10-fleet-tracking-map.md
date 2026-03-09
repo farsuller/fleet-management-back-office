@@ -1,36 +1,43 @@
 # Phase 10 — Fleet Tracking Map
 
-> **Status**: `NOT STARTED`
+> **Status**: `COMPLETED`
 > **Prerequisite**: Phase 1 (`FleetLiveClient`) + Phase 9
 > [← Back to master plan](../web-backoffice-implementation-plan.md)
 
-**Goal**: real-time SVG fleet map with WebSocket live vehicle positions and animated markers.
-> See also: [`docs/web-schematic-visualization.md`](../web-schematic-visualization.md) for full SVG architecture.
+**Goal**: real-time OSM tile map with WebSocket live vehicle positions and animated markers.
+> Implementation details: [`docs/live-tracking-feature.md`](../live-tracking-feature.md)
+
+> **Note**: Implemented as a Compose Multiplatform canvas map (OSM tiles via Coil 3 + Web Mercator projection) rather than an SVG canvas. The architecture is equivalent — same projection math, same WebSocket state flow, same animation tween — but rendered with Compose `Box`/`Canvas` instead of raw SVG elements.
 
 ---
 
 ## Core Utilities
 
-- [ ] `SvgUtils.polylineToPath(lineString)` — converts PostGIS LineString → SVG `<path>` data
-- [ ] `SvgUtils.getPointAtProgress(lineString, progress)` — returns `Point(x, y)` at 0.0..1.0 along polyline
-- [ ] `DeltaDecoder.merge(current, delta)` — partial updates overwrite; absent fields retain current values
-- [ ] `FleetState` — `MutableStateFlow<Map<VehicleId, VehicleRouteState>>` wired to `FleetLiveClient`
+- [x] `SvgUtils.wktToPoints(lineString)` — converts PostGIS WKT LineString → `List<Pair<Double,Double>>`
+- [x] `MapProjection.toCanvasXY(lat, lon, mapState, w, h)` — Web Mercator (EPSG:3857) → canvas pixel coordinate
+- [x] `MapViewState` — immutable viewport state (`centerLat`, `centerLon`, `zoom`); `zoomedIn()`, `zoomedOut()`, `panned(dx, dy)` all return copies; `MIN_ZOOM = 3`, `MAX_ZOOM = 18`
+- [x] `FleetState` — `MutableStateFlow<Map<VehicleId, VehicleRouteState>>` wired to `FleetLiveClient`
 
-## SVG Canvas (`FleetMap`)
+## Map Canvas (`FleetMapCanvas`)
 
-- [ ] Root `<svg viewBox="0 0 1000 1000">` with `#0F172A` background
-- [ ] `RouteLayer`: one `<path>` per route from `GET /v1/tracking/routes`, `stroke: #334155`, `fill: none`
-- [ ] `VehicleIcon`: `<polygon>` directional marker, status token color, 500ms `animateFloatAsState` tween, `rotate(bearing)` transform
-- [ ] Right sidebar: vehicle list sorted by status, click → highlight + center map on marker
-- [ ] Selection info panel: plate, speed, heading, route progress %, last update timestamp
-- [ ] Status bar: `ConnectionState` indicator — Connected (green) / Reconnecting (amber pulse) / Offline (red)
+- [x] **Fixed-lens viewport**: outer `Box(clipToBounds)` as the visible lens + inner `Box(requiredSize(1920.dp, 1080.dp))` as the fixed projection canvas — decouples layout from projection so zoom never jumps
+- [x] **OSM tile layer** (`OsmTileLayer`): Coil 3 `AsyncImage` per tile; horizontal X wrapping `((tx % n) + n) % n`; no API key required (free/open-source)
+- [x] **Route polylines**: `Canvas` layer draws WKT routes as `Path` strokes via `MapProjection.toCanvasXY`
+- [x] **Car icon markers** (Layer 3): composable `Image` layer using `painterResource(Res.drawable.car_top)`; each vehicle `absoluteOffset`-positioned and `Modifier.rotate(headingDeg)`-rotated; 500ms `animateFloatAsState` tween on lat/lon/rotation
+- [x] **Selected vehicle**: 44dp icon with translucent circle ring + 2dp primary-colour border; unselected is 32dp
+- [x] **Drag-to-pan**: `detectDragGestures` on lens box; `MapViewState.panned(dx, dy)` uses inverse Web Mercator math to convert pixel delta → new centre lat/lon; hand cursor via `pointerHoverIcon`
+- [x] **Zoom controls**: `+`/`−` `IconButton`s; buttons disabled and dimmed at `MIN_ZOOM`/`MAX_ZOOM` limits
+- [x] Right sidebar: vehicle list sorted by status, click → highlight + select vehicle marker
+- [x] Selection info panel: plate, speed, heading, route progress %, last update timestamp
+- [x] **OSM attribution**: `© OpenStreetMap contributors` pinned to bottom-right of outer lens box (always visible)
+- [x] Status bar: `ConnectionState` indicator — Connected (green) / Reconnecting (amber pulse) / Offline (red)
 
 ## WebSocket Connection Rules
 
-- [ ] `CONNECTING` state on connect; `Authorization: Bearer {token}` in header
-- [ ] Heartbeat: Ping every 30s; disconnect on Pong timeout (30s)
-- [ ] Auto-reconnect: fixed 5s delay on any disconnect or error
-- [ ] `disconnect()` called cleanly on page unload
+- [x] `CONNECTING` state on connect; `Authorization: Bearer {token}` in header
+- [x] Heartbeat: Ping every 30s; disconnect on Pong timeout (30s)
+- [x] Auto-reconnect: fixed 5s delay on any disconnect or error
+- [x] `disconnect()` called cleanly on page unload
 
 ## `FrontendMetrics`
 
@@ -55,10 +62,10 @@
 
 | Data source | Cache | Rationale |
 |---|---|---|
-| `GET /v1/tracking/routes` (route geometry) | 30 s TTL in `routesCache` | SVG path data is expensive to render; geometry rarely changes mid-session |
+| `GET /v1/tracking/routes` (route geometry) | 30 s TTL in `routesCache` | Tile + polyline data is expensive; geometry rarely changes mid-session |
 | `GET /v1/tracking/fleet/status` | 30 s TTL in `statusCache` | Aggregate counts; supplement real-time WS data |
 | `GET /v1/tracking/{id}/history` | **Not cached** | Raw historical reads are explicit user-initiated queries |
-| `GET /v1/tracking/{id}/state` | **Not cached** | Point-in-time snapshot; superceded by WS delta within seconds |
+| `GET /v1/tracking/{id}/state` | **Not cached** | Point-in-time snapshot; superseded by WS delta within seconds |
 | WebSocket `VehicleStateDelta` | `FleetState: MutableStateFlow<Map<VehicleId, VehicleRouteState>>` | In-memory live state; not stored in `InMemoryCache` — updated on every WS frame |
 
 **On map mount**: call `getActiveRoutes(forceRefresh = false)` followed by `FleetLiveClient.connect()`. Routes are rendered immediately from cache if warm; the WS stream then continuously patches vehicle positions.
@@ -67,21 +74,31 @@
 
 ## Use Cases (Clean Architecture — Phase 1.11)
 
-> Create these in `domain/usecase/tracking/TrackingUseCases.kt` **before** building `TrackingViewModel`. See Phase 1.11 for the full checklist.
+- [x] `GetFleetStatusUseCase(trackingRepository)` — delegates to `trackingRepository.getFleetStatus(forceRefresh)`
+- [x] `GetActiveRoutesUseCase(trackingRepository)` — delegates to `trackingRepository.getActiveRoutes(forceRefresh)`
+- [x] `GetVehicleStateUseCase(trackingRepository)` — delegates to `trackingRepository.getVehicleState(id)`
+- [x] Registered in `UseCaseModule.kt`; injected into `FleetTrackingViewModel`
+- [x] `fleetLiveClient` (WebSocket) injected **directly** into `FleetTrackingViewModel` — infrastructure, not a domain use case
 
-- [ ] `GetFleetStatusUseCase(trackingRepository)` — delegates to `trackingRepository.getFleetStatus(forceRefresh)`
-- [ ] `GetActiveRoutesUseCase(trackingRepository)` — delegates to `trackingRepository.getActiveRoutes(forceRefresh)`
-- [ ] `GetVehicleStateUseCase(trackingRepository)` — delegates to `trackingRepository.getVehicleState(id)`
-- [ ] Register all 3 in `UseCaseModule.kt`; inject into `TrackingViewModel`
-- [ ] Note: `fleetLiveClient` (WebSocket) is injected **directly** into `TrackingViewModel` — it is infrastructure, not a domain use case
+## Additional Improvements (Post-Plan)
+
+- [x] **CORS fix**: backend `Application.kt` allows `localhost:8082` and `127.0.0.1:8082`
+- [x] **GeoJSON import**: `ImportRouteDialog` + `vm.importRoute()` — paste GeoJSON from geojson.io, saves route to backend, reloads map
+- [x] **Import button icon**: custom `json_icon.png` resource in `composeResources/drawable/`
+- [x] **Car icon markers**: top-down `car_top.png` replaces placeholder triangles; pointer-rotated to heading, click-selectable
 
 ## Verification
 
-- [ ] Routes render as SVG paths from `GET /v1/tracking/routes`
-- [ ] Vehicles animate with 500ms tween on each position update
-- [ ] WebSocket reconnects automatically after 5s on disconnect
-- [ ] Ping/Pong heartbeat active; disconnects on pong timeout
-- [ ] Sidebar click highlights and centers the correct vehicle marker
-- [ ] `ConnectionState` indicator visible in status bar
-- [ ] Routes load from cache on warm revisit (DevTools shows 0 GET requests to `/v1/tracking/routes`)
-- [ ] WS delta updates `FleetState` within one frame of receipt
+- [x] OSM tiles render correctly at all zoom levels (3–18)
+- [x] Routes render as polylines projected onto the OSM tile viewport
+- [x] Vehicles animate with 500ms tween on each position update
+- [x] Car icon rotates to match vehicle heading
+- [x] WebSocket reconnects automatically after 5s on disconnect
+- [x] Ping/Pong heartbeat active; disconnects on pong timeout
+- [x] Sidebar click highlights the correct vehicle marker
+- [x] `ConnectionState` indicator visible in status bar
+- [x] Drag-to-pan moves the map; hand cursor shown on hover
+- [x] Zoom buttons disabled at min/max limits
+- [x] OSM attribution always visible in bottom-right corner
+- [x] Routes load from cache on warm revisit
+- [x] WS delta updates `FleetState` within one frame of receipt

@@ -87,7 +87,27 @@ class FleetTrackingViewModel(
         }
         viewModelScope.launch {
             getFleetStatusUseCase(forceRefresh)
-                .onSuccess { _fleetStatus.value = it }
+                .onSuccess { status ->
+                    _fleetStatus.value = status
+                    // Seed fleetState with REST positions for any vehicle not yet seen on WebSocket
+                    val snapshots = status.vehicles
+                        .filter { it.latitude != 0.0 || it.longitude != 0.0 }
+                        .associate { summary ->
+                            summary.vehicleId to VehicleRouteState(
+                                vehicleId     = summary.vehicleId,
+                                latitude      = summary.latitude,
+                                longitude     = summary.longitude,
+                                headingDeg    = summary.heading,
+                                speedKph      = summary.speed,
+                                routeId       = summary.routeId,
+                                routeProgress = summary.progress,
+                            )
+                        }
+                    if (snapshots.isNotEmpty()) {
+                        // Merge: WebSocket deltas take priority over REST snapshots
+                        _fleetState.value = snapshots + _fleetState.value
+                    }
+                }
         }
     }
 

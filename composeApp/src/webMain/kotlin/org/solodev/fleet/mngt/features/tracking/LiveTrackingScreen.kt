@@ -1,5 +1,6 @@
 package org.solodev.fleet.mngt.features.tracking
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -27,22 +29,31 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.json_icon
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.tracking.VehicleRouteState
 import org.solodev.fleet.mngt.features.tracking.components.ConnectionStatusBar
 import org.solodev.fleet.mngt.features.tracking.components.FleetMapCanvas
+import org.solodev.fleet.mngt.features.tracking.components.ImportRouteDialog
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.util.MapViewState
 
 @Composable
 fun LiveTrackingScreen(router: AppRouter) {
@@ -55,6 +66,47 @@ fun LiveTrackingScreen(router: AppRouter) {
     val selectedId      by vm.selectedVehicleId.collectAsState()
     val connectionState by vm.connectionState.collectAsState()
     val isRefreshing    by vm.isRefreshing.collectAsState()
+    val mapState        by vm.mapState.collectAsState()
+    val importResult    by vm.importResult.collectAsState()
+
+    var showImportDialog by remember { mutableStateOf(false) }
+    var importLoading    by remember { mutableStateOf(false) }
+    var importError      by remember { mutableStateOf<String?>(null) }
+
+    // React to import result
+    LaunchedEffect(importResult) {
+        when (val r = importResult) {
+            is FleetTrackingViewModel.ImportResult.Success -> {
+                importLoading = false
+                importError   = null
+                showImportDialog = false
+                vm.clearImportResult()
+            }
+            is FleetTrackingViewModel.ImportResult.Error -> {
+                importLoading = false
+                importError   = r.message
+                vm.clearImportResult()
+            }
+            null -> Unit
+        }
+    }
+
+    if (showImportDialog) {
+        ImportRouteDialog(
+            isLoading    = importLoading,
+            errorMessage = importError,
+            onImport     = { name, desc, geojson ->
+                importLoading = true
+                importError   = null
+                vm.importRoute(name, desc, geojson)
+            },
+            onDismiss    = {
+                showImportDialog = false
+                importLoading    = false
+                importError      = null
+            },
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // ── Main area: map + sidebar ──────────────────────────────────────────
@@ -84,30 +136,75 @@ fun LiveTrackingScreen(router: AppRouter) {
                     }
                     is UiState.Success -> {
                         FleetMapCanvas(
-                            routes          = state.data,
-                            fleetState      = fleetState,
+                            routes            = state.data,
+                            fleetState        = fleetState,
                             selectedVehicleId = selectedId,
-                            onVehicleClick  = { vm.selectVehicle(it) },
-                            modifier        = Modifier.fillMaxSize(),
+                            mapState          = mapState,
+                            onVehicleClick    = { vm.selectVehicle(it) },
+                            onPan             = { dx, dy -> vm.pan(dx, dy) },
+                            modifier          = Modifier.fillMaxSize(),
                         )
                     }
                 }
 
-                // Refresh button — top-right corner on map
-                IconButton(
-                    onClick  = { vm.refresh() },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(colors.surface2),
+                // ── Map control buttons — top-right corner ────────────────────
+                Column(
+                    modifier              = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                    verticalArrangement   = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment   = Alignment.CenterHorizontally,
                 ) {
-                    Icon(
-                        imageVector        = Icons.Filled.Refresh,
-                        contentDescription = "Refresh",
-                        tint               = if (isRefreshing) colors.primary else colors.text2,
-                        modifier           = Modifier.size(18.dp),
-                    )
+                    // Refresh
+                    IconButton(
+                        onClick  = { vm.refresh() },
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colors.surface2),
+                    ) {
+                        Icon(
+                            imageVector        = Icons.Filled.Refresh,
+                            contentDescription = "Refresh",
+                            tint               = if (isRefreshing) colors.primary else colors.text2,
+                            modifier           = Modifier.size(18.dp),
+                        )
+                    }
+                    // Zoom in
+                    IconButton(
+                        onClick  = { vm.zoomIn() },
+                        enabled  = mapState.zoom < MapViewState.MAX_ZOOM,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colors.surface2),
+                    ) {
+                        Icon(
+                            imageVector        = Icons.Filled.Add,
+                            contentDescription = "Zoom in",
+                            tint               = if (mapState.zoom < MapViewState.MAX_ZOOM) colors.text2 else colors.text2.copy(alpha = 0.3f),
+                            modifier           = Modifier.size(18.dp),
+                        )
+                    }
+                    // Zoom out (minus via Text)
+                    IconButton(
+                        onClick  = { vm.zoomOut() },
+                        enabled  = mapState.zoom > MapViewState.MIN_ZOOM,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colors.surface2),
+                    ) {
+                        Text("−", fontSize = 18.sp, color = if (mapState.zoom > MapViewState.MIN_ZOOM) colors.text2 else colors.text2.copy(alpha = 0.3f))
+                    }
+                    // Import route
+                    IconButton(
+                        onClick  = { showImportDialog = true },
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colors.surface2),
+                    ) {
+                        Image(
+                            painter            = painterResource(Res.drawable.json_icon),
+                            contentDescription = "Import route",
+                            modifier           = Modifier.size(20.dp),
+                        )
+                    }
                 }
             }
 

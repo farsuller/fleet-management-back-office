@@ -7,6 +7,7 @@ import org.solodev.fleet.mngt.api.serializers.FlexibleEpochMsSerializer
 @Serializable
 data class RouteDto(
     val id: String? = null,
+    val name: String? = null,
     val vehicleId: String? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val startedAt: Long? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val endedAt: Long? = null,

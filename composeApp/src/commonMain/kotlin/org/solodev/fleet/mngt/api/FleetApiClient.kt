@@ -44,6 +44,7 @@ import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.rental.CompleteRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
+import org.solodev.fleet.mngt.api.dto.tracking.CreateRouteRequest
 import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
 import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
@@ -287,6 +288,9 @@ class FleetApiClient(
 
     suspend fun getActiveRoutes(): Result<List<RouteDto>> =
         getList("/v1/tracking/routes/active")
+
+    suspend fun createRoute(request: CreateRouteRequest): Result<RouteDto> =
+        post("/v1/tracking/routes", request)
 
     // ── Drivers ───────────────────────────────────────────────────────────────
 

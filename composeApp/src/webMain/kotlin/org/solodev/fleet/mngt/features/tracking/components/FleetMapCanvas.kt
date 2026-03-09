@@ -3,136 +3,181 @@ package org.solodev.fleet.mngt.features.tracking.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.car_top
+import org.jetbrains.compose.resources.painterResource
 import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
 import org.solodev.fleet.mngt.api.dto.tracking.VehicleRouteState
 import org.solodev.fleet.mngt.theme.FleetColors
+import org.solodev.fleet.mngt.util.MapProjection
+import org.solodev.fleet.mngt.util.MapViewState
 import org.solodev.fleet.mngt.util.SvgUtils
-import kotlin.math.cos
-import kotlin.math.sin
+
 
 private const val ANIMATION_DURATION_MS = 500
 
 /**
- * Compose Multiplatform Canvas that renders:
- *  - Route polylines from [routes] (WKT linestrings)
- *  - Animated vehicle markers from [fleetState]
+ * Fleet map canvas showing:
+ *  1. **OSM tile layer** (bottom) — real OpenStreetMap tiles via [OsmTileLayer]
+ *  2. **Route polylines** — projected onto the same Mercator viewport
+ *  3. **Animated vehicle markers** — triangles at heading angle, 500 ms tween
  *
- * All positions are projected into canvas space using [SvgUtils.BoundingBox].
- * Vehicle marker positions animate over 500ms on each WebSocket update.
+ * Projection is Web Mercator (EPSG:3857) so routes and tiles are pixel-perfect aligned.
+ * Attribution required by OSM terms is shown in the bottom-right corner.
  */
 @Composable
 fun FleetMapCanvas(
     routes: List<RouteDto>,
     fleetState: Map<String, VehicleRouteState>,
     selectedVehicleId: String?,
+    mapState: MapViewState,
     onVehicleClick: (String) -> Unit,
+    onPan: (dx: Float, dy: Float) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
-    val mapBg    = FleetColors.MapBg
-    val routeClr = FleetColors.MapRoute
-    val activeClr  = FleetColors.MapConnect
+    val routeClr    = FleetColors.MapRoute
+    val activeClr   = FleetColors.MapConnect
     val selectedClr = FleetColors.Primary
     val offlineClr  = FleetColors.Text2
 
-    // Compute bounding box from all route linestrings once
-    val bbox = remember(routes) {
-        SvgUtils.boundingBox(routes.mapNotNull { it.lineString })
+    // ── Animated positions — computed outside the Canvas so state reads drive recomposition ──
+    val animatedVehicles = fleetState.keys.map { id ->
+        val state = fleetState[id]
+        val lat = state?.latitude ?: 0.0
+        val lon = state?.longitude ?: 0.0
+        val rot = state?.headingDeg?.toFloat() ?: 0f
+        // We pass the raw lat/lon through animation so projection happens at draw time with live size
+        val animLat by animateFloatAsState(lat.toFloat(), tween(ANIMATION_DURATION_MS))
+        val animLon by animateFloatAsState(lon.toFloat(), tween(ANIMATION_DURATION_MS))
+        val animRot by animateFloatAsState(rot, tween(ANIMATION_DURATION_MS))
+        AnimatedVehicle(id, animLat.toDouble(), animLon.toDouble(), animRot)
     }
 
-    // Animated positions per vehicle — keyed map of (vehicleId → animated x/y/rotation)
-    // Each vehicle's animation is tracked via individual animateFloatAsState calls below.
-    // We collect all states here so the Canvas lambda can read them.
-    val animatedStates = fleetState.keys.associateWith { vehicleId ->
-        val state = fleetState[vehicleId]
-        val targetX = if (bbox != null && state?.longitude != null && state.latitude != null) {
-            bbox.project(state.longitude, state.latitude, 1f, 1f).first
-        } else -1f
-        val targetY = if (bbox != null && state?.longitude != null && state.latitude != null) {
-            bbox.project(state.longitude, state.latitude, 1f, 1f).second
-        } else -1f
-        val targetRot = state?.headingDeg?.toFloat() ?: 0f
+    // Fixed internal projection size — never changes across recompositions, so
+    // tile + vector layers stay pixel-perfect aligned on every zoom step.
+    val canvasW = 1920f
+    val canvasH = 1080f
 
-        Triple(targetX, targetY, targetRot)
-    }
-
-    // Per-vehicle animated floats — assembled outside the Canvas to drive recomposition
-    val animatedVehicles = fleetState.keys.map { vehicleId ->
-        val (targetX, targetY, targetRot) = animatedStates[vehicleId]!!
-        val animX by animateFloatAsState(targetX, tween(ANIMATION_DURATION_MS))
-        val animY by animateFloatAsState(targetY, tween(ANIMATION_DURATION_MS))
-        val animRot by animateFloatAsState(targetRot, tween(ANIMATION_DURATION_MS))
-        AnimatedVehicle(vehicleId, animX, animY, animRot)
-    }
-
-    Canvas(
+    // ── "Lens" viewport ─────────────────────────────────────────────────────
+    // Outer Box fills the real available space and clips anything outside.
+    // Inner Box is forced to 1920×1080 dp and centered, so the map center
+    // always aligns with the viewport center regardless of actual container.
+    Box(
         modifier = modifier
-            .fillMaxSize()
-            .background(mapBg),
+            .clipToBounds()
+            .pointerHoverIcon(PointerIcon.Hand)
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    onPan(dragAmount.x, dragAmount.y)
+                }
+            },
     ) {
-        if (bbox == null) return@Canvas
+      Box(
+          modifier = Modifier
+              .requiredSize(canvasW.dp, canvasH.dp)
+              .align(Alignment.Center)
+      ) {
+        // Layer 1 — OSM tiles
+        OsmTileLayer(mapState = mapState, canvasW = canvasW, canvasH = canvasH, modifier = Modifier.matchParentSize())
 
-        // Draw route polylines
-        routes.forEach { route ->
-            val pts = route.lineString?.let { SvgUtils.wktToPoints(it) } ?: return@forEach
-            if (pts.size < 2) return@forEach
-            val path = Path().apply {
-                val first = bbox.project(pts[0].first, pts[0].second, size.width, size.height)
-                moveTo(first.first, first.second)
-                pts.drop(1).forEach { pt ->
-                    val (px, py) = bbox.project(pt.first, pt.second, size.width, size.height)
-                    lineTo(px, py)
+        // Layer 2 — Route polylines (transparent, drawn over tiles)
+        Canvas(modifier = Modifier.matchParentSize()) {
+            routes.forEach { route ->
+                val pts = route.lineString?.let { SvgUtils.wktToPoints(it) } ?: return@forEach
+                if (pts.size < 2) return@forEach
+
+                val path = Path().apply {
+                    val (fx, fy) = MapProjection.toCanvasXY(pts[0].second, pts[0].first, mapState, canvasW, canvasH)
+                    moveTo(fx, fy)
+                    pts.drop(1).forEach { (lng, lat) ->
+                        val (px, py) = MapProjection.toCanvasXY(lat, lng, mapState, canvasW, canvasH)
+                        lineTo(px, py)
+                    }
+                }
+                drawPath(path = path, color = routeClr, style = Stroke(width = 4f))
+            }
+        }
+
+        // Layer 3 — Car icon markers (composable layer so painterResource works)
+        Box(modifier = Modifier.matchParentSize()) {
+            val carPainter = painterResource(Res.drawable.car_top)
+            animatedVehicles.forEach { v ->
+                if (v.lat == 0.0 && v.lon == 0.0) return@forEach
+                val (cx, cy) = MapProjection.toCanvasXY(v.lat, v.lon, mapState, canvasW, canvasH)
+                val isSelected = v.vehicleId == selectedVehicleId
+                val iconSize = if (isSelected) 44f else 32f
+                val half = iconSize / 2f
+
+                Box(
+                    modifier = Modifier
+                        .absoluteOffset((cx - half).dp, (cy - half).dp)
+                        .size(iconSize.dp)
+                        .rotate(v.rotation)
+                        .clickable { onVehicleClick(v.vehicleId) },
+                ) {
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(selectedClr.copy(alpha = 0.20f), CircleShape)
+                                .border(2.dp, selectedClr, CircleShape),
+                        )
+                    }
+                    Image(
+                        painter = carPainter,
+                        contentDescription = v.vehicleId,
+                        modifier = Modifier.matchParentSize(),
+                    )
                 }
             }
-            drawPath(path = path, color = routeClr, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f))
         }
 
-        // Draw vehicle markers
-        animatedVehicles.forEach { vehicle ->
-            if (vehicle.normX < 0f || vehicle.normY < 0f) return@forEach
-            val cx = vehicle.normX * size.width
-            val cy = vehicle.normY * size.height
-            val color = when {
-                vehicle.vehicleId == selectedVehicleId -> selectedClr
-                fleetState[vehicle.vehicleId]?.routeProgress != null -> activeClr
-                else -> offlineClr
-            }
-            drawVehicleMarker(cx, cy, vehicle.rotation, color, selected = vehicle.vehicleId == selectedVehicleId)
-        }
-    }
-}
+      }  // inner (requiredSize) Box
 
-private fun DrawScope.drawVehicleMarker(cx: Float, cy: Float, headingDeg: Float, color: Color, selected: Boolean) {
-    val markerSize = if (selected) 14f else 10f
-    // Equilateral triangle pointing "up" (north), rotated by heading
-    rotate(degrees = headingDeg, pivot = Offset(cx, cy)) {
-        val path = Path().apply {
-            moveTo(cx, cy - markerSize)                         // top point
-            lineTo(cx - markerSize * 0.6f, cy + markerSize * 0.6f)  // bottom-left
-            lineTo(cx + markerSize * 0.6f, cy + markerSize * 0.6f)  // bottom-right
-            close()
-        }
-        drawPath(path = path, color = color)
-        if (selected) {
-            // Highlight ring
-            drawCircle(color = color.copy(alpha = 0.25f), radius = markerSize * 1.8f, center = Offset(cx, cy))
-        }
-    }
+        // OSM attribution — lives in the outer (lens) box so it is always
+        // visible inside the real container, never clipped by the fixed canvas.
+        Text(
+            text     = "© OpenStreetMap contributors",
+            fontSize = 9.sp,
+            color    = Color(0xFF333333),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(horizontal = 6.dp, vertical = 4.dp),
+        )
+    }    // outer (lens / clipToBounds) Box
 }
 
 private data class AnimatedVehicle(
     val vehicleId: String,
-    val normX: Float,   // normalised 0..1
-    val normY: Float,   // normalised 0..1
+    val lat: Double,
+    val lon: Double,
     val rotation: Float,
 )

@@ -1,6 +1,7 @@
 package org.solodev.fleet.mngt.repository
 
 import org.solodev.fleet.mngt.api.FleetApiClient
+import org.solodev.fleet.mngt.api.dto.tracking.CreateRouteRequest
 import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
 import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
@@ -12,6 +13,7 @@ interface TrackingRepository {
     suspend fun getVehicleState(vehicleId: String): Result<VehicleStateDto>
     suspend fun getLocationHistory(vehicleId: String, limit: Int = 50): Result<List<LocationHistoryEntry>>
     suspend fun getActiveRoutes(forceRefresh: Boolean = false): Result<List<RouteDto>>
+    suspend fun createRoute(name: String, description: String?, geojson: String): Result<RouteDto>
 }
 
 class TrackingRepositoryImpl(private val api: FleetApiClient) : TrackingRepository {
@@ -36,4 +38,8 @@ class TrackingRepositoryImpl(private val api: FleetApiClient) : TrackingReposito
         if (!forceRefresh) routesCache.get("routes")?.let { return Result.success(it) }
         return api.getActiveRoutes().onSuccess { routesCache.put("routes", it) }
     }
+
+    override suspend fun createRoute(name: String, description: String?, geojson: String): Result<RouteDto> =
+        api.createRoute(CreateRouteRequest(name, description, geojson))
+            .onSuccess { routesCache.invalidate("routes") }  // stale on next load
 }

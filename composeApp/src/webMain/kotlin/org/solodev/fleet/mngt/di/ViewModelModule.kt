@@ -134,6 +134,7 @@ val viewModelModule = module {
             getActiveRoutesUseCase = get(),
             getFleetStatusUseCase = get(),
             fleetLiveClient = get(),
+            trackingRepository = get(),
         )
     }
     factory {

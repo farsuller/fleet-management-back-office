@@ -11,15 +11,20 @@ import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
 import org.solodev.fleet.mngt.api.dto.tracking.VehicleRouteState
 import org.solodev.fleet.mngt.domain.usecase.tracking.GetActiveRoutesUseCase
 import org.solodev.fleet.mngt.domain.usecase.tracking.GetFleetStatusUseCase
+import org.solodev.fleet.mngt.repository.TrackingRepository
 import org.solodev.fleet.mngt.tracking.ConnectionState
 import org.solodev.fleet.mngt.tracking.FleetLiveClient
 import org.solodev.fleet.mngt.ui.UiState
 import org.solodev.fleet.mngt.util.DeltaDecoder
+import org.solodev.fleet.mngt.util.MapProjection
+import org.solodev.fleet.mngt.util.MapViewState
+import org.solodev.fleet.mngt.util.SvgUtils
 
 class FleetTrackingViewModel(
     private val getActiveRoutesUseCase: GetActiveRoutesUseCase,
     private val getFleetStatusUseCase: GetFleetStatusUseCase,
     private val fleetLiveClient: FleetLiveClient,
+    private val trackingRepository: TrackingRepository,
 ) : ViewModel() {
 
     // ── Routes ────────────────────────────────────────────────────────────────
@@ -37,6 +42,14 @@ class FleetTrackingViewModel(
     // ── Selected vehicle ──────────────────────────────────────────────────────
     private val _selectedVehicleId = MutableStateFlow<String?>(null)
     val selectedVehicleId: StateFlow<String?> = _selectedVehicleId.asStateFlow()
+
+    // ── Map viewport ──────────────────────────────────────────────────────────
+    private val _mapState = MutableStateFlow(MapViewState())
+    val mapState: StateFlow<MapViewState> = _mapState.asStateFlow()
+
+    // ── Route import state ────────────────────────────────────────────────────
+    private val _importResult = MutableStateFlow<ImportResult?>(null)
+    val importResult: StateFlow<ImportResult?> = _importResult.asStateFlow()
 
     // ── Connection state (forwarded from FleetLiveClient) ─────────────────────
     val connectionState: StateFlow<ConnectionState>
@@ -62,9 +75,10 @@ class FleetTrackingViewModel(
         }
         viewModelScope.launch {
             getActiveRoutesUseCase(forceRefresh)
-                .onSuccess {
-                    _routesState.value = UiState.Success(it)
+                .onSuccess { routes ->
+                    _routesState.value = UiState.Success(routes)
                     _isRefreshing.value = false
+                    autoCenterOnRoutes(routes)
                 }
                 .onFailure {
                     _routesState.value = UiState.Error(it.message ?: "Failed to load routes")
@@ -81,6 +95,51 @@ class FleetTrackingViewModel(
 
     fun selectVehicle(vehicleId: String?) {
         _selectedVehicleId.value = vehicleId
+    }
+
+    // ── Map controls ──────────────────────────────────────────────────────────
+
+    fun zoomIn()  { _mapState.value = _mapState.value.zoomedIn() }
+    fun zoomOut() { _mapState.value = _mapState.value.zoomedOut() }
+    fun pan(dx: Float, dy: Float) { _mapState.value = _mapState.value.panned(dx, dy) }
+
+    // ── Route import ──────────────────────────────────────────────────────────
+
+    fun importRoute(name: String, description: String?, geojson: String) {
+        viewModelScope.launch {
+            trackingRepository.createRoute(name, description, geojson)
+                .onSuccess { newRoute ->
+                    _importResult.value = ImportResult.Success
+                    // Append the new route to the current list immediately
+                    val current = (_routesState.value as? UiState.Success)?.data ?: emptyList()
+                    _routesState.value = UiState.Success(current + newRoute)
+                }
+                .onFailure {
+                    _importResult.value = ImportResult.Error(it.message ?: "Import failed")
+                }
+        }
+    }
+
+    fun clearImportResult() { _importResult.value = null }
+
+    // ── Internal helpers ──────────────────────────────────────────────────────
+
+    private fun autoCenterOnRoutes(routes: List<RouteDto>) {
+        val bbox = SvgUtils.boundingBox(routes.mapNotNull { it.lineString }) ?: return
+        val centerLat = (bbox.minLat + bbox.maxLat) / 2.0
+        val centerLon = (bbox.minLng + bbox.maxLng) / 2.0
+        // Fit zoom using a reference viewport of 1024×640 dp so routes are fully visible
+        // on first load without the user having to manually zoom in or out.
+        val fitZ = MapProjection.fitZoom(
+            minLat = bbox.minLat, minLon = bbox.minLng,
+            maxLat = bbox.maxLat, maxLon = bbox.maxLng,
+            canvasW = 1024f, canvasH = 640f,
+        )
+        _mapState.value = _mapState.value.copy(
+            centerLat = centerLat,
+            centerLon = centerLon,
+            zoom      = fitZ,
+        )
     }
 
     private fun collectConnectionState() {
@@ -108,4 +167,10 @@ class FleetTrackingViewModel(
         super.onCleared()
         fleetLiveClient.disconnect()
     }
+
+    sealed interface ImportResult {
+        data object Success : ImportResult
+        data class Error(val message: String) : ImportResult
+    }
 }
+

@@ -3,6 +3,7 @@ package org.solodev.fleet.mngt.domain.usecase.dashboard
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import org.solodev.fleet.mngt.api.PagedResponse
+import org.solodev.fleet.mngt.api.dto.accounting.AccountType
 import org.solodev.fleet.mngt.api.dto.accounting.InvoiceStatus
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
@@ -30,10 +31,18 @@ data class DashboardStats(
     val cancelledInvoices: Int,
 )
 
+data class FinancialSummary(
+    val totalAssetsPhp: Long,
+    val totalRevenuePhp: Long,
+    val cashBalancePhp: Long,
+    val accountsReceivablePhp: Long,
+)
+
 data class DashboardSnapshot(
     val stats: DashboardStats,
     val recentRentals: List<RentalDto>,
     val urgentMaintenance: List<MaintenanceJobDto>,
+    val financialSummary: FinancialSummary?,
 )
 
 class GetDashboardUseCase(
@@ -49,17 +58,32 @@ class GetDashboardUseCase(
             val rentalsDeferred     = async { rentalRepository.getRentals(limit = 20, status = RentalStatus.ACTIVE, forceRefresh = forceRefresh) }
             val maintenanceDeferred = async { maintenanceRepository.getJobs(limit = 20, status = MaintenanceStatus.SCHEDULED, forceRefresh = forceRefresh) }
             val invoicesDeferred    = async { accountingRepository.getInvoices(limit = 200, forceRefresh = forceRefresh) }
+            val accountsDeferred    = async { accountingRepository.getAccounts() }
 
             val vehiclesResult    = vehiclesDeferred.await()
             val rentalsResult     = rentalsDeferred.await()
             val maintenanceResult = maintenanceDeferred.await()
             val invoicesResult    = invoicesDeferred.await()
+            val accountsResult    = accountsDeferred.await()
 
             // If the primary data call (vehicles) failed, propagate the failure
             vehiclesResult.mapCatching { vehicles ->
                 val rentals     = rentalsResult.getOrDefault(PagedResponse(emptyList()))
                 val maintenance = maintenanceResult.getOrDefault(PagedResponse(emptyList()))
                 val invoices    = invoicesResult.getOrDefault(PagedResponse(emptyList()))
+                val accounts    = accountsResult.getOrNull() ?: emptyList()
+
+                val financialSummary = if (accounts.isNotEmpty()) {
+                    val revenueRaw = accounts
+                        .filter { it.type == AccountType.REVENUE }
+                        .sumOf { it.balancePhp ?: 0L }
+                    FinancialSummary(
+                        totalAssetsPhp        = accounts.filter { it.type == AccountType.ASSET }.sumOf { it.balancePhp ?: 0L },
+                        totalRevenuePhp       = if (revenueRaw < 0) -revenueRaw else revenueRaw,
+                        cashBalancePhp        = accounts.firstOrNull { it.code == "1000" }?.balancePhp ?: 0L,
+                        accountsReceivablePhp = accounts.firstOrNull { it.code == "1100" }?.balancePhp ?: 0L,
+                    )
+                } else null
 
                 DashboardSnapshot(
                     stats = DashboardStats(
@@ -85,6 +109,7 @@ class GetDashboardUseCase(
                     urgentMaintenance = maintenance.items
                         .sortedByDescending { it.priority?.ordinal ?: -1 }
                         .take(5),
+                    financialSummary = financialSummary,
                 )
             }
         }

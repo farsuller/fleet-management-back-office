@@ -18,10 +18,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -42,9 +47,27 @@ fun LoginScreen(router: AppRouter) {
     val form by vm.form.collectAsState()
     val loginState by vm.loginState.collectAsState()
     val colors = fleetColors
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(loginState) {
-        if (loginState is UiState.Success) router.replace(Screen.Dashboard)
+        when (loginState) {
+            is UiState.Success -> router.replace(Screen.Dashboard)
+            is UiState.Error  -> errorMessage = (loginState as UiState.Error).message
+            else              -> {}
+        }
+    }
+
+    if (errorMessage != null) {
+        AlertDialog(
+            onDismissRequest = { errorMessage = null },
+            title = { Text("Login Failed", color = colors.onSurface) },
+            text  = { Text(errorMessage!!, color = colors.onSurface.copy(alpha = 0.8f)) },
+            confirmButton = {
+                TextButton(onClick = { errorMessage = null }) {
+                    Text("OK", color = colors.primary)
+                }
+            },
+        )
     }
 
     Box(
@@ -101,13 +124,6 @@ fun LoginScreen(router: AppRouter) {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            if (loginState is UiState.Error) {
-                Text(
-                    text = (loginState as UiState.Error).message,
-                    color = colors.overdue,
-                    fontSize = 13.sp,
-                )
-            }
 
             Button(
                 onClick = vm::submit,

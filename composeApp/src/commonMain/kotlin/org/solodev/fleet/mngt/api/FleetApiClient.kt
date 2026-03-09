@@ -34,6 +34,10 @@ import org.solodev.fleet.mngt.api.dto.auth.LoginResponse
 import org.solodev.fleet.mngt.api.dto.auth.UserDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
+import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
+import org.solodev.fleet.mngt.api.dto.driver.AssignmentDto
+import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
+import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.maintenance.CompleteMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
@@ -273,7 +277,7 @@ class FleetApiClient(
     // ── Tracking ──────────────────────────────────────────────────────────────
 
     suspend fun getFleetStatus(): Result<FleetStatusDto> =
-        getItem("/v1/tracking/status")
+        getItem("/v1/tracking/fleet/status")
 
     suspend fun getVehicleState(vehicleId: String): Result<VehicleStateDto> =
         getItem("/v1/tracking/$vehicleId/state")
@@ -283,6 +287,35 @@ class FleetApiClient(
 
     suspend fun getActiveRoutes(): Result<List<RouteDto>> =
         getList("/v1/tracking/routes/active")
+
+    // ── Drivers ───────────────────────────────────────────────────────────────
+
+    suspend fun getDrivers(): Result<List<DriverDto>> =
+        getList("/v1/drivers")
+
+    suspend fun getDriver(id: String): Result<DriverDto> =
+        get("/v1/drivers/$id")
+
+    suspend fun createDriver(request: CreateDriverRequest): Result<DriverDto> =
+        post("/v1/drivers", request)
+
+    suspend fun deactivateDriver(id: String): Result<DriverDto> =
+        postEmpty("/v1/drivers/$id/deactivate")
+
+    suspend fun assignDriver(driverId: String, request: AssignDriverRequest): Result<AssignmentDto> =
+        post("/v1/drivers/$driverId/assign", request)
+
+    suspend fun releaseDriver(driverId: String): Result<AssignmentDto> =
+        postEmpty("/v1/drivers/$driverId/release")
+
+    suspend fun getDriverAssignments(driverId: String): Result<List<AssignmentDto>> =
+        getList("/v1/drivers/$driverId/assignments")
+
+    suspend fun getVehicleActiveDriver(vehicleId: String): Result<DriverDto> =
+        get("/v1/vehicles/$vehicleId/driver")
+
+    suspend fun getVehicleDriverHistory(vehicleId: String): Result<List<AssignmentDto>> =
+        getList("/v1/vehicles/$vehicleId/driver/history")
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
@@ -366,8 +399,11 @@ class FleetApiClient(
         if (status == HttpStatusCode.Unauthorized) { authState.signOut(); throw UnauthorizedException() }
         if (status == HttpStatusCode.TooManyRequests) throw RateLimitException()
         if (!status.isSuccess()) {
-            val text = runCatching { bodyAsText() }.getOrDefault(status.description)
-            throw ApiException(status.value, text)
+            val raw = runCatching { bodyAsText() }.getOrDefault(status.description)
+            val message = runCatching {
+                FleetJson.decodeFromString<ApiWrapper<Unit>>(raw).error?.message
+            }.getOrNull() ?: raw
+            throw ApiException(status.value, message)
         }
         @Suppress("UNCHECKED_CAST")
         if (R::class == Unit::class) return Unit as R

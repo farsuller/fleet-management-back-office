@@ -17,6 +17,15 @@ import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.GetDriverAssignmentsUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.GetDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.GetVehicleActiveDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.GetVehicleDriverHistoryUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.dashboard.GetDashboardUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
@@ -42,6 +51,9 @@ import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobsUseCa
 import org.solodev.fleet.mngt.domain.usecase.maintenance.ScheduleMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.maintenance.StartMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
+import org.solodev.fleet.mngt.domain.usecase.tracking.GetActiveRoutesUseCase
+import org.solodev.fleet.mngt.domain.usecase.tracking.GetFleetStatusUseCase
+import org.solodev.fleet.mngt.domain.usecase.tracking.GetVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateOdometerUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
@@ -69,6 +81,17 @@ val useCaseModule = module {
     factory { DeactivateCustomerUseCase(get()) }
     factory { GetCustomerRentalsUseCase(get()) }
     factory { GetCustomerPaymentsUseCase(get()) }
+
+    // Driver
+    factory { GetDriversUseCase(get()) }
+    factory { GetDriverUseCase(get()) }
+    factory { CreateDriverUseCase(get()) }
+    factory { DeactivateDriverUseCase(get()) }
+    factory { AssignDriverUseCase(get()) }
+    factory { ReleaseDriverUseCase(get()) }
+    factory { GetDriverAssignmentsUseCase(get()) }
+    factory { GetVehicleActiveDriverUseCase(get()) }
+    factory { GetVehicleDriverHistoryUseCase(get()) }
 
     // Rental
     factory { GetRentalsUseCase(get()) }
@@ -105,4 +128,9 @@ val useCaseModule = module {
 
     // Dashboard
     factory { GetDashboardUseCase(get(), get(), get(), get()) }
+
+    // Tracking
+    factory { GetFleetStatusUseCase(get()) }
+    factory { GetActiveRoutesUseCase(get()) }
+    factory { GetVehicleStateUseCase(get()) }
 }

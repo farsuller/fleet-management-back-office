@@ -52,11 +52,13 @@ data class PaymentDto(
 @Serializable
 data class AccountDto(
     val id: String? = null,
-    val code: String? = null,
-    val name: String? = null,
-    val type: AccountType? = null,
-    val balancePhp: Long? = null,
-    val parentId: String? = null,
+    @SerialName("accountCode") val code: String? = null,
+    @SerialName("accountName") val name: String? = null,
+    @SerialName("accountType") val type: AccountType? = null,
+    @SerialName("balance") val balancePhp: Long? = null,
+    @SerialName("parentAccountId") val parentId: String? = null,
+    val isActive: Boolean? = null,
+    val description: String? = null,
 )
 
 @Serializable

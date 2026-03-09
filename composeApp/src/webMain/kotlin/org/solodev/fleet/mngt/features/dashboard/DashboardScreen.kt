@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -41,6 +43,7 @@ import com.himanshoe.charty.pie.data.PieData
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.domain.usecase.dashboard.DashboardSnapshot
+import org.solodev.fleet.mngt.domain.usecase.dashboard.FinancialSummary
 import org.solodev.fleet.mngt.components.common.KpiCard
 import org.solodev.fleet.mngt.components.common.KpiCardError
 import org.solodev.fleet.mngt.navigation.AppRouter
@@ -48,6 +51,22 @@ import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+
+/** Converts a centavo amount to a ₱X,XXX display string (no decimals). */
+private fun formatPesosShort(centavos: Long): String {
+    val negative = centavos < 0
+    val abs = if (negative) -centavos else centavos
+    val pesos = abs / 100
+    val pesosStr = pesos.toString()
+    val withCommas = buildString {
+        pesosStr.forEachIndexed { i, c ->
+            val remaining = pesosStr.length - i
+            if (i > 0 && remaining % 3 == 0) append(',')
+            append(c)
+        }
+    }
+    return "${if (negative) "-" else ""}\u20b1 $withCommas"
+}
 
 @Composable
 fun DashboardScreen(router: AppRouter) {
@@ -71,6 +90,7 @@ fun DashboardScreen(router: AppRouter) {
 
             is UiState.Success -> {
                 KpiGrid(snapshot = s.data, isLoading = false)
+                FinancialSummaryRow(summary = s.data.financialSummary)
                 Spacer(Modifier.height(8.dp))
                 FleetChartsRow(snapshot = s.data)
                 RecentRentalsSection(snapshot = s.data, router = router)
@@ -82,6 +102,44 @@ fun DashboardScreen(router: AppRouter) {
                 Button(onClick = vm::refresh) { Text("Retry") }
             }
         }
+    }
+}
+
+@Composable
+private fun FinancialSummaryRow(summary: FinancialSummary?) {
+    val colors = fleetColors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        KpiCard(
+            label    = "Total Assets",
+            value    = summary?.let { formatPesosShort(it.totalAssetsPhp) } ?: "—",
+            icon     = Icons.Filled.AccountBalance,
+            iconTint = colors.primary,
+            modifier = Modifier.weight(1f),
+        )
+        KpiCard(
+            label    = "Rental Revenue",
+            value    = summary?.let { formatPesosShort(it.totalRevenuePhp) } ?: "—",
+            icon     = Icons.Filled.TrendingUp,
+            iconTint = colors.active,
+            modifier = Modifier.weight(1f),
+        )
+        KpiCard(
+            label    = "Cash Balance",
+            value    = summary?.let { formatPesosShort(it.cashBalancePhp) } ?: "—",
+            icon     = Icons.Filled.Payments,
+            iconTint = colors.paid,
+            modifier = Modifier.weight(1f),
+        )
+        KpiCard(
+            label    = "Accounts Receivable",
+            value    = summary?.let { formatPesosShort(it.accountsReceivablePhp) } ?: "—",
+            icon     = Icons.AutoMirrored.Filled.ReceiptLong,
+            iconTint = colors.maintenance,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

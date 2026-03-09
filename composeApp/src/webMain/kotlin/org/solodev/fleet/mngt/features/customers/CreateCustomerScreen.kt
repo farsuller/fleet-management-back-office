@@ -49,11 +49,17 @@ fun CreateCustomerDialog(onDismiss: () -> Unit, router: AppRouter) {
     val actionResult by vm.actionResult.collectAsState()
     val colors = fleetColors
 
-    var userId by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var licenseNumber by remember { mutableStateOf("") }
     var licenseExpiry by remember { mutableStateOf("") }
 
-    var userIdError by remember { mutableStateOf<String?>(null) }
+    var firstNameError by remember { mutableStateOf<String?>(null) }
+    var lastNameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
     var licenseNumberError by remember { mutableStateOf<String?>(null) }
     var licenseExpiryError by remember { mutableStateOf<String?>(null) }
     var serverError by remember { mutableStateOf<String?>(null) }
@@ -78,10 +84,34 @@ fun CreateCustomerDialog(onDismiss: () -> Unit, router: AppRouter) {
         serverError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
         OutlinedTextField(
-            userId, { userId = it; userIdError = null },
-            label = { Text("User ID or Email") },
-            isError = userIdError != null,
-            supportingText = userIdError?.let { { Text(it) } },
+            firstName, { firstName = it; firstNameError = null },
+            label = { Text("First Name") },
+            isError = firstNameError != null,
+            supportingText = firstNameError?.let { { Text(it) } },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+        OutlinedTextField(
+            lastName, { lastName = it; lastNameError = null },
+            label = { Text("Last Name") },
+            isError = lastNameError != null,
+            supportingText = lastNameError?.let { { Text(it) } },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+        OutlinedTextField(
+            email, { email = it; emailError = null },
+            label = { Text("Email") },
+            isError = emailError != null,
+            supportingText = emailError?.let { { Text(it) } },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+        OutlinedTextField(
+            phone, { phone = it; phoneError = null },
+            label = { Text("Phone") },
+            isError = phoneError != null,
+            supportingText = phoneError?.let { { Text(it) } },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
@@ -107,7 +137,10 @@ fun CreateCustomerDialog(onDismiss: () -> Unit, router: AppRouter) {
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = {
-                userIdError = if (userId.isBlank()) "User ID is required" else null
+                firstNameError = if (firstName.isBlank()) "First name is required" else null
+                lastNameError = if (lastName.isBlank()) "Last name is required" else null
+                emailError = if (email.isBlank() || !email.contains("@")) "Valid email required" else null
+                phoneError = if (phone.isBlank()) "Phone is required" else null
                 licenseNumberError = if (licenseNumber.isBlank()) "License number is required" else null
 
                 val expiryMs = parseDateToEpochMs(licenseExpiry)
@@ -117,12 +150,15 @@ fun CreateCustomerDialog(onDismiss: () -> Unit, router: AppRouter) {
                     else -> FieldValidator.validateLicenseExpiry(expiryMs)
                 }
 
-                if (listOf(userIdError, licenseNumberError, licenseExpiryError).all { it == null }) {
+                if (listOf(firstNameError, lastNameError, emailError, phoneError, licenseNumberError, licenseExpiryError).all { it == null }) {
                     vm.createCustomer(
                         CreateCustomerRequest(
-                            userId = userId,
-                            driverLicenseNumber = licenseNumber,
-                            licenseExpiryMs = expiryMs!!,
+                            email               = email,
+                            firstName           = firstName,
+                            lastName            = lastName,
+                            phone               = phone,
+                            driversLicense      = licenseNumber,
+                            driverLicenseExpiry = licenseExpiry,
                         )
                     ) { createdId ->
                         onDismiss()

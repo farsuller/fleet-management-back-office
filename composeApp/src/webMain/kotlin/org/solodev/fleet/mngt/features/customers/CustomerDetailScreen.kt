@@ -137,6 +137,30 @@ fun CustomerDetailScreen(customerId: String, router: AppRouter) {
                     InfoRow("Customer since", formatDate(customer.createdAt ?: 0L))
                 }
 
+                // Active assignment card (driver + vehicle join fields)
+                val hasAssignment = customer.assignedDriver != null || customer.activeVehicle != null
+                if (hasAssignment) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(colors.surface, RoundedCornerShape(12.dp))
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text("Active Assignment", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        customer.assignedDriver?.let { driver ->
+                            InfoRow("Driver", driver.driverName ?: "")
+                            InfoRow("License #", driver.licenseNumber ?: "")
+                            InfoRow("Driver Phone", driver.phone ?: "")
+                        }
+                        customer.activeVehicle?.let { vehicle ->
+                            InfoRow("Vehicle", "${vehicle.make} ${vehicle.model}")
+                            InfoRow("License Plate", vehicle.licensePlate ?: "")
+                            InfoRow("Year", vehicle.year?.toString() ?: "")
+                        }
+                    }
+                }
+
                 // Rental history section
                 Column(
                     modifier = Modifier

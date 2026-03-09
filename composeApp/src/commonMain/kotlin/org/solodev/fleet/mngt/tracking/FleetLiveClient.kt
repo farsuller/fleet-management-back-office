@@ -68,8 +68,7 @@ class FleetLiveClient(
                     return
                 }
                 client.webSocket(
-                    urlString = "$wsBaseUrl/v1/fleet/live",
-                    request = { headers.append("Authorization", "Bearer $token") },
+                    urlString = "$wsBaseUrl/v1/fleet/live?token=$token",
                 ) {
                     attempts = 0
                     _connectionState.emit(ConnectionState.Connected)

@@ -9,8 +9,6 @@ enum class UserRole {
     FLEET_MANAGER,
     CUSTOMER_SUPPORT,
     RENTAL_AGENT,
-    DRIVER,
-    CUSTOMER,
 }
 
 @Serializable

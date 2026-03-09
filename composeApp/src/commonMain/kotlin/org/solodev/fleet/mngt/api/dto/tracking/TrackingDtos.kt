@@ -50,11 +50,26 @@ data class VehicleRouteState(
 )
 
 @Serializable
+data class VehicleStatusSummary(
+    val vehicleId: String = "",
+    val licensePlate: String = "",
+    val make: String = "",
+    val model: String = "",
+    val routeId: String? = null,
+    val status: String = "OFFLINE",
+    val speed: Double = 0.0,
+    val progress: Double = 0.0,
+    val distanceFromRoute: Double = 0.0,
+    val timestamp: String = "",
+)
+
+@Serializable
 data class FleetStatusDto(
     val totalVehicles: Int? = null,
     val activeVehicles: Int? = null,
     val availableVehicles: Int? = null,
     val maintenanceVehicles: Int? = null,
+    val vehicles: List<VehicleStatusSummary> = emptyList(),
 )
 
 @Serializable

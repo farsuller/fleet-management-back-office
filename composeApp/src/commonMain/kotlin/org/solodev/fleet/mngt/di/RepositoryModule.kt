@@ -9,6 +9,8 @@ import org.solodev.fleet.mngt.repository.AuthRepository
 import org.solodev.fleet.mngt.repository.AuthRepositoryImpl
 import org.solodev.fleet.mngt.repository.CustomerRepository
 import org.solodev.fleet.mngt.repository.CustomerRepositoryImpl
+import org.solodev.fleet.mngt.repository.DriverRepository
+import org.solodev.fleet.mngt.repository.DriverRepositoryImpl
 import org.solodev.fleet.mngt.repository.MaintenanceRepository
 import org.solodev.fleet.mngt.repository.MaintenanceRepositoryImpl
 import org.solodev.fleet.mngt.repository.RentalRepository
@@ -29,6 +31,7 @@ val repositoryModule = module {
     single<VehicleRepository> { VehicleRepositoryImpl(api = get()) }
     single<RentalRepository> { RentalRepositoryImpl(api = get()) }
     single<CustomerRepository> { CustomerRepositoryImpl(api = get()) }
+    single<DriverRepository> { DriverRepositoryImpl(api = get()) }
     single<MaintenanceRepository> { MaintenanceRepositoryImpl(api = get()) }
     single<AccountingRepository> { AccountingRepositoryImpl(api = get()) }
     single<TrackingRepository> { TrackingRepositoryImpl(api = get()) }

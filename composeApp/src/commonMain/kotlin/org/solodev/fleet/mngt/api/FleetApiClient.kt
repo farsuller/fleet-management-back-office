@@ -24,6 +24,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.solodev.fleet.mngt.api.dto.accounting.AccountDto
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
+import org.solodev.fleet.mngt.api.dto.accounting.DriverCollectionRequest
+import org.solodev.fleet.mngt.api.dto.accounting.DriverRemittanceDto
+import org.solodev.fleet.mngt.api.dto.accounting.DriverRemittanceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.InvoiceDto
 import org.solodev.fleet.mngt.api.dto.accounting.PayInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentDto
@@ -247,6 +250,9 @@ class FleetApiClient(
     suspend fun getInvoice(id: String): Result<InvoiceDto> =
         get("/v1/accounting/invoices/$id")
 
+    suspend fun getInvoicesByCustomer(customerId: String): Result<List<InvoiceDto>> =
+        getList("/v1/accounting/invoices/customer/$customerId")
+
     suspend fun createInvoice(request: CreateInvoiceRequest): Result<InvoiceDto> =
         post("/v1/accounting/invoices", request)
 
@@ -268,6 +274,24 @@ class FleetApiClient(
 
     suspend fun getPaymentsByCustomer(customerId: String): Result<List<PaymentDto>> =
         getList("/v1/accounting/payments/customer/$customerId")
+
+    suspend fun recordDriverCollection(request: DriverCollectionRequest): Result<PaymentDto> =
+        post("/v1/accounting/payments/driver-collection", request)
+
+    suspend fun getDriverPendingPayments(driverId: String): Result<List<PaymentDto>> =
+        getList("/v1/accounting/payments/driver/$driverId/pending")
+
+    suspend fun getAllDriverPayments(driverId: String): Result<List<PaymentDto>> =
+        getList("/v1/accounting/payments/driver/$driverId/all")
+
+    suspend fun submitRemittance(request: DriverRemittanceRequest): Result<DriverRemittanceDto> =
+        post("/v1/accounting/remittances", request)
+
+    suspend fun getRemittancesByDriver(driverId: String): Result<List<DriverRemittanceDto>> =
+        getList("/v1/accounting/remittances/driver/$driverId")
+
+    suspend fun getRemittance(id: String): Result<DriverRemittanceDto> =
+        get("/v1/accounting/remittances/$id")
 
     suspend fun getAccounts(): Result<List<AccountDto>> =
         getList("/v1/accounting/accounts")

@@ -1,4 +1,4 @@
-package org.solodev.fleet.mngt.features.accounting
+﻿package org.solodev.fleet.mngt.features.accounting
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,14 +18,14 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,18 +40,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
+import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.InvoiceDto
 import org.solodev.fleet.mngt.api.dto.accounting.InvoiceStatus
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentMethodDto
@@ -61,33 +60,31 @@ import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
 
-private fun formatDate(epochMs: Long): String {
+internal fun formatDate(epochMs: Long): String {
     val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
     return "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
 }
 
-/** Formats centavo amount to ₱X,XXX.XX without String.format (unavailable in Kotlin/Wasm). */
-private fun formatPhp(centavos: Long): String {
-    val negative = centavos < 0
-    val abs = if (negative) -centavos else centavos
-    val pesos = abs / 100
-    val cents = abs % 100
-    val centsStr = cents.toString().padStart(2, '0')
-    val pesosStr = pesos.toString()
+/** Formats whole-unit PHP amount (e.g. 2800 â†’ â‚± 2,800). Backend uses whole integers not centavos. */
+internal fun formatPhp(amount: Long): String {
+    val negative = amount < 0
+    val abs = if (negative) -amount else amount
+    val str = abs.toString()
     val withCommas = buildString {
-        pesosStr.forEachIndexed { i, c ->
-            val remaining = pesosStr.length - i
+        str.forEachIndexed { i, c ->
+            val remaining = str.length - i
             if (i > 0 && remaining % 3 == 0) append(',')
             append(c)
         }
     }
-    return "${if (negative) "-" else ""}\u20b1 $withCommas.$centsStr"
+    return "${if (negative) "-" else ""}\u20b1 $withCommas"
 }
 
 private fun InvoiceStatus?.badgeColor(): Color = when (this) {
     InvoiceStatus.PAID      -> Color(0xFF16A34A)
     InvoiceStatus.OVERDUE   -> Color(0xFFEF4444)
-    InvoiceStatus.PENDING   -> Color(0xFFF59E0B)
+    InvoiceStatus.PENDING,
+    InvoiceStatus.ISSUED    -> Color(0xFFF59E0B)
     InvoiceStatus.DRAFT     -> Color(0xFF6B7280)
     InvoiceStatus.CANCELLED -> Color(0xFF9CA3AF)
     else                    -> Color(0xFF9CA3AF)
@@ -103,7 +100,6 @@ fun InvoicesTab(router: AppRouter) {
     var detailInvoice by remember { mutableStateOf<InvoiceDto?>(null) }
     var showCreateDialog by remember { mutableStateOf(false) }
     var createError by remember { mutableStateOf<String?>(null) }
-    val nowMs = Clock.System.now().toEpochMilliseconds()
 
     LaunchedEffect(createResult) {
         createResult?.onSuccess { showCreateDialog = false; createError = null }
@@ -146,39 +142,48 @@ fun InvoicesTab(router: AppRouter) {
                 Button(onClick = vm::refresh) { Text("Retry") }
             }
             is UiState.Success -> PaginatedTable(
-                headers = listOf("Invoice #", "Customer", "Rental #", "Status", "Amount (₱)", "Due Date"),
+                headers = listOf("Invoice #", "Customer", "Status", "Total", "Balance", "Due Date"),
                 items = s.data,
                 onRowClick = { idx -> detailInvoice = s.data[idx] },
                 emptyMessage = "No invoices found",
                 rowContent = { invoice, _ ->
-                    val isOverdue = invoice.status != InvoiceStatus.PAID &&
-                        (invoice.dueDateMs ?: 0L) in 1 until nowMs
                     Text(
-                        (invoice.id ?: "").take(8) + "…",
-                        modifier = Modifier.weight(1f),
+                        invoice.invoiceNumber ?: (invoice.id ?: "").take(8) + "â€¦",
+                        modifier = Modifier.weight(1.2f),
                         fontSize = 13.sp,
                         color = colors.text1,
                     )
-                    Text(invoice.customerName ?: "—", modifier = Modifier.weight(1.5f), fontSize = 13.sp, color = colors.text1)
-                    Text((invoice.rentalId ?: "").take(8) + "…", modifier = Modifier.weight(1f), fontSize = 13.sp, color = colors.text2)
                     Text(
-                        invoice.status?.name ?: "—",
+                        invoice.customer?.fullName ?: "â€”",
+                        modifier = Modifier.weight(1.5f),
+                        fontSize = 13.sp,
+                        color = colors.text1,
+                    )
+                    Text(
+                        invoice.status?.name ?: "â€”",
                         modifier = Modifier.weight(1f),
                         fontSize = 12.sp,
                         color = invoice.status.badgeColor(),
                         fontWeight = FontWeight.Medium,
                     )
                     Text(
-                        formatPhp(invoice.amountPhp ?: 0L),
+                        formatPhp(invoice.total ?: 0L),
                         modifier = Modifier.weight(1f),
                         fontSize = 13.sp,
                         color = colors.text1,
                     )
                     Text(
-                        invoice.dueDateMs?.let { formatDate(it) } ?: "—",
+                        formatPhp(invoice.balance ?: 0L),
                         modifier = Modifier.weight(1f),
                         fontSize = 13.sp,
-                        color = if (isOverdue) Color(0xFFEF4444) else colors.text1,
+                        color = if ((invoice.balance ?: 0L) > 0L && invoice.status != InvoiceStatus.PAID)
+                            Color(0xFFEF4444) else colors.text1,
+                    )
+                    Text(
+                        invoice.dueDate?.let { formatDate(it) } ?: "â€”",
+                        modifier = Modifier.weight(1f),
+                        fontSize = 13.sp,
+                        color = colors.text1,
                     )
                 },
             )
@@ -188,9 +193,9 @@ fun InvoicesTab(router: AppRouter) {
     detailInvoice?.let { invoice ->
         InvoiceDetailDialog(
             invoice = invoice,
-            paymentMethods = (vm.paymentMethods.collectAsState().value).filter { it.isActive == true },
-            onPay = { methodId, amtPhp ->
-                vm.payInvoice(invoice.id ?: "", methodId, amtPhp)
+            paymentMethods = vm.paymentMethods.collectAsState().value.filter { it.isActive == true },
+            onPay = { method, amount ->
+                vm.payInvoice(invoice.id ?: "", method, amount)
                 detailInvoice = null
             },
             onDismiss = { detailInvoice = null },
@@ -200,7 +205,7 @@ fun InvoicesTab(router: AppRouter) {
     if (showCreateDialog) {
         CreateInvoiceDialog(
             error = createError,
-            onSubmit = { rentalId, dueDateMs -> vm.createInvoice(rentalId, dueDateMs) },
+            onSubmit = { req -> vm.createInvoice(req) },
             onDismiss = { showCreateDialog = false; createError = null },
         )
     }
@@ -211,11 +216,13 @@ fun InvoicesTab(router: AppRouter) {
 private fun InvoiceDetailDialog(
     invoice: InvoiceDto,
     paymentMethods: List<PaymentMethodDto>,
-    onPay: (methodId: String, amountPhp: Long) -> Unit,
+    onPay: (method: String, amount: Long) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val colors = fleetColors
-    val canPay = invoice.status == InvoiceStatus.PENDING || invoice.status == InvoiceStatus.OVERDUE
+    val canPay = invoice.status == InvoiceStatus.PENDING ||
+        invoice.status == InvoiceStatus.ISSUED ||
+        invoice.status == InvoiceStatus.OVERDUE
     var selectedMethod by remember { mutableStateOf(paymentMethods.firstOrNull()) }
     var expanded by remember { mutableStateOf(false) }
 
@@ -231,29 +238,37 @@ private fun InvoiceDetailDialog(
             ) {
                 Text("Invoice Detail", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = colors.onBackground)
 
-                DetailRow("Invoice #", invoice.id ?: "—")
-                DetailRow("Customer", invoice.customerName ?: "—")
-                DetailRow("Rental #", invoice.rentalId ?: "—")
-                DetailRow("Amount", formatPhp(invoice.amountPhp ?: 0L))
-                DetailRow("Status", invoice.status?.name ?: "—", invoice.status.badgeColor())
-                invoice.dueDateMs?.let { DetailRow("Due Date", formatDate(it)) }
-                invoice.paidAt?.let { DetailRow("Paid At", formatDate(it)) }
+                DetailRow("Invoice #", invoice.invoiceNumber ?: invoice.id ?: "â€”")
+                invoice.customer?.let { c ->
+                    DetailRow("Customer", c.fullName ?: "â€”")
+                    c.email?.let { DetailRow("Email", it) }
+                    c.phoneNumber?.let { DetailRow("Phone", it) }
+                }
+                invoice.rentalId?.let { DetailRow("Rental #", it.take(8) + "â€¦") }
+                invoice.subtotal?.let { DetailRow("Subtotal", formatPhp(it)) }
+                invoice.tax?.let { DetailRow("Tax", formatPhp(it)) }
+                DetailRow("Total", formatPhp(invoice.total ?: 0L))
+                DetailRow("Paid", formatPhp(invoice.paidAmount ?: 0L))
+                DetailRow("Balance", formatPhp(invoice.balance ?: 0L),
+                    if ((invoice.balance ?: 0L) > 0) Color(0xFFEF4444) else Color(0xFF16A34A))
+                DetailRow("Status", invoice.status?.name ?: "â€”", invoice.status.badgeColor())
+                invoice.dueDate?.let { DetailRow("Due Date", formatDate(it)) }
+                invoice.paidDate?.let { DetailRow("Paid At", formatDate(it)) }
 
                 if (canPay && paymentMethods.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
-                    Text("Pay Invoice", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = colors.onBackground)
+                    Text("Record Payment", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = colors.onBackground)
 
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                    ) {
+                    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                         OutlinedTextField(
                             value = selectedMethod?.name ?: "Select payment method",
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Payment Method") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
+                            modifier = Modifier
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                .fillMaxWidth(),
                         )
                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             paymentMethods.forEach { method ->
@@ -268,8 +283,8 @@ private fun InvoiceDetailDialog(
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
                             onClick = {
-                                selectedMethod?.id?.let { methodId ->
-                                    onPay(methodId, invoice.amountPhp ?: 0L)
+                                selectedMethod?.name?.let { method ->
+                                    onPay(method, invoice.balance ?: invoice.total ?: 0L)
                                 }
                             },
                             enabled = selectedMethod != null,
@@ -289,7 +304,7 @@ private fun InvoiceDetailDialog(
 }
 
 @Composable
-private fun DetailRow(label: String, value: String, valueColor: Color? = null) {
+internal fun DetailRow(label: String, value: String, valueColor: Color? = null) {
     val colors = fleetColors
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(label, modifier = Modifier.width(100.dp), color = colors.text2, fontSize = 13.sp)
@@ -300,10 +315,13 @@ private fun DetailRow(label: String, value: String, valueColor: Color? = null) {
 @Composable
 private fun CreateInvoiceDialog(
     error: String?,
-    onSubmit: (rentalId: String, dueDateMs: Long) -> Unit,
+    onSubmit: (CreateInvoiceRequest) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var customerId by remember { mutableStateOf("") }
     var rentalId by remember { mutableStateOf("") }
+    var subtotalText by remember { mutableStateOf("") }
+    var taxText by remember { mutableStateOf("0") }
     var dueDateText by remember { mutableStateOf("") }
     var validationError by remember { mutableStateOf<String?>(null) }
 
@@ -320,13 +338,33 @@ private fun CreateInvoiceDialog(
                 Text("Create Invoice", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 
                 OutlinedTextField(
-                    value = rentalId,
-                    onValueChange = { rentalId = it; validationError = null },
-                    label = { Text("Rental ID") },
+                    value = customerId,
+                    onValueChange = { customerId = it; validationError = null },
+                    label = { Text("Customer ID") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )
-
+                OutlinedTextField(
+                    value = rentalId,
+                    onValueChange = { rentalId = it; validationError = null },
+                    label = { Text("Rental ID (optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = subtotalText,
+                    onValueChange = { subtotalText = it; validationError = null },
+                    label = { Text("Subtotal (â‚±)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = taxText,
+                    onValueChange = { taxText = it; validationError = null },
+                    label = { Text("Tax (â‚±)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
                 OutlinedTextField(
                     value = dueDateText,
                     onValueChange = { dueDateText = it; validationError = null },
@@ -343,16 +381,28 @@ private fun CreateInvoiceDialog(
                     TextButton(onClick = onDismiss) { Text("Cancel") }
                     Spacer(Modifier.width(8.dp))
                     Button(onClick = {
-                        val id = rentalId.trim()
-                        if (id.isBlank()) { validationError = "Rental ID is required"; return@Button }
-                        val dueDateMs = runCatching {
-                            LocalDate.parse(dueDateText.trim()).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
-                        }.getOrElse { validationError = "Date must be YYYY-MM-DD"; return@Button }
+                        val cId = customerId.trim()
+                        if (cId.isBlank()) { validationError = "Customer ID is required"; return@Button }
+                        val subtotal = subtotalText.trim().toLongOrNull()
+                        if (subtotal == null || subtotal < 0) { validationError = "Enter a valid subtotal"; return@Button }
+                        val tax = taxText.trim().toLongOrNull() ?: 0L
+                        val dueDate = dueDateText.trim()
+                        runCatching { LocalDate.parse(dueDate) }
+                            .onFailure { validationError = "Date must be YYYY-MM-DD"; return@Button }
                         validationError = null
-                        onSubmit(id, dueDateMs)
+                        onSubmit(
+                            CreateInvoiceRequest(
+                                customerId = cId,
+                                rentalId = rentalId.trim().ifBlank { null },
+                                subtotal = subtotal,
+                                tax = tax,
+                                dueDate = "${dueDate}T00:00:00Z",
+                            )
+                        )
                     }) { Text("Create") }
                 }
             }
         }
     }
 }
+

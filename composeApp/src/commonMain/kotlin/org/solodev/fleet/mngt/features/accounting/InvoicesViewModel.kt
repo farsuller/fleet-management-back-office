@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.InvoiceDto
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentDto
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentMethodDto
@@ -76,8 +77,8 @@ class InvoicesViewModel(
         getPaymentMethodsUseCase().onSuccess { _paymentMethods.value = it }
     }
 
-    fun payInvoice(invoiceId: String, paymentMethodId: String, amountPhp: Long) = viewModelScope.launch {
-        payInvoiceUseCase(invoiceId, paymentMethodId, amountPhp)
+    fun payInvoice(invoiceId: String, paymentMethod: String, amount: Long) = viewModelScope.launch {
+        payInvoiceUseCase(invoiceId, paymentMethod, amount)
             .onSuccess { payment ->
                 _actionResult.value = Result.success(payment)
                 loadList(forceRefresh = true)
@@ -87,8 +88,8 @@ class InvoicesViewModel(
 
     fun clearActionResult() { _actionResult.value = null }
 
-    fun createInvoice(rentalId: String, dueDateMs: Long) = viewModelScope.launch {
-        createInvoiceUseCase(rentalId, dueDateMs)
+    fun createInvoice(request: CreateInvoiceRequest) = viewModelScope.launch {
+        createInvoiceUseCase(request)
             .onSuccess { invoice ->
                 _createResult.value = Result.success(invoice)
                 loadList(forceRefresh = true)
@@ -98,3 +99,4 @@ class InvoicesViewModel(
 
     fun clearCreateResult() { _createResult.value = null }
 }
+

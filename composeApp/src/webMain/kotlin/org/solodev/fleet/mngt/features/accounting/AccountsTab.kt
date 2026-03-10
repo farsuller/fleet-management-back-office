@@ -36,24 +36,6 @@ import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
 
-/** Formats centavo amount to ₱X,XXX.XX without String.format (unavailable in Kotlin/Wasm). */
-private fun formatPhp(centavos: Long): String {
-    val negative = centavos < 0
-    val abs = if (negative) -centavos else centavos
-    val pesos = abs / 100
-    val cents = abs % 100
-    val centsStr = cents.toString().padStart(2, '0')
-    val pesosStr = pesos.toString()
-    val withCommas = buildString {
-        pesosStr.forEachIndexed { i, c ->
-            val remaining = pesosStr.length - i
-            if (i > 0 && remaining % 3 == 0) append(',')
-            append(c)
-        }
-    }
-    return "${if (negative) "-" else ""}\u20b1 $withCommas.$centsStr"
-}
-
 @Composable
 fun AccountsTab() {
     val vm = koinViewModel<AccountsViewModel>()

@@ -248,9 +248,9 @@ private fun PaymentHistoryRow(payment: PaymentDto) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text((payment.id ?: "").take(8) + "…", modifier = Modifier.weight(1f), fontSize = 12.sp)
-        Text(payment.paymentMethodName ?: "", modifier = Modifier.weight(1f), fontSize = 12.sp)
-        Text("₱${payment.amountPhp ?: 0L}", modifier = Modifier.weight(1f), fontSize = 12.sp)
-        Text(formatDate(payment.paidAt ?: 0L), modifier = Modifier.weight(1f), fontSize = 12.sp)
+        Text(payment.paymentMethod ?: "", modifier = Modifier.weight(1f), fontSize = 12.sp)
+        Text("₱${payment.amount ?: 0L}", modifier = Modifier.weight(1f), fontSize = 12.sp)
+        Text(formatDate(payment.paymentDate ?: 0L), modifier = Modifier.weight(1f), fontSize = 12.sp)
     }
 }
 

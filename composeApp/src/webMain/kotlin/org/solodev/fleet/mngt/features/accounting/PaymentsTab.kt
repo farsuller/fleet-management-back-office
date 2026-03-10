@@ -1,7 +1,6 @@
-package org.solodev.fleet.mngt.features.accounting
+﻿package org.solodev.fleet.mngt.features.accounting
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,11 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.components.common.PaginatedTable
 import org.solodev.fleet.mngt.components.common.TableSkeleton
@@ -57,7 +54,6 @@ fun PaymentsTab() {
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Header with refresh button
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
@@ -72,7 +68,6 @@ fun PaymentsTab() {
             }
         }
 
-        // Filter row
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -113,72 +108,55 @@ fun PaymentsTab() {
             }
             is UiState.Success -> {
                 val filtered = s.data.filter { payment ->
-                    (methodFilter.isBlank() || (payment.paymentMethodName ?: "").contains(methodFilter, ignoreCase = true)) &&
-                    (fromMs == null || (payment.paidAt ?: 0L) >= fromMs) &&
-                    (toMs == null || (payment.paidAt ?: 0L) <= toMs)
+                    (methodFilter.isBlank() || (payment.paymentMethod ?: "").contains(methodFilter, ignoreCase = true)) &&
+                    (fromMs == null || (payment.paymentDate ?: 0L) >= fromMs) &&
+                    (toMs == null || (payment.paymentDate ?: 0L) <= toMs)
                 }
                 PaginatedTable(
-                headers = listOf("Invoice #", "Customer", "Amount (₱)", "Method", "Date"),
-                items = filtered,
-                onRowClick = {},
-                emptyMessage = "No payments found",
-                rowContent = { payment, _ ->
-                    Text(
-                        (payment.invoiceId ?: "").take(8) + "…",
-                        modifier = Modifier.weight(1f),
-                        fontSize = 13.sp,
-                        color = colors.text1,
-                    )
-                    Text(
-                        payment.customerName ?: "—",
-                        modifier = Modifier.weight(1.5f),
-                        fontSize = 13.sp,
-                        color = colors.text1,
-                    )
-                    Text(
-                        formatPhp(payment.amountPhp ?: 0L),
-                        modifier = Modifier.weight(1f),
-                        fontSize = 13.sp,
-                        color = colors.text1,
-                    )
-                    Text(
-                        payment.paymentMethodName ?: "—",
-                        modifier = Modifier.weight(1f),
-                        fontSize = 13.sp,
-                        color = colors.text2,
-                    )
-                    Text(
-                        payment.paidAt?.let { formatPaymentDate(it) } ?: "—",
-                        modifier = Modifier.weight(1f),
-                        fontSize = 13.sp,
-                        color = colors.text2,
-                    )
-                },
-            )
+                    headers = listOf("Payment #", "Invoice #", "Amount ()", "Method", "Type", "Date"),
+                    items = filtered,
+                    onRowClick = {},
+                    emptyMessage = "No payments found",
+                    rowContent = { payment, _ ->
+                        Text(
+                            payment.paymentNumber ?: payment.id?.take(8)?.let { "$it..." } ?: "--",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = colors.text1,
+                        )
+                        Text(
+                            payment.invoiceId?.take(8)?.let { "$it..." } ?: "--",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = colors.text1,
+                        )
+                        Text(
+                            formatPhp(payment.amount ?: 0L),
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = colors.text1,
+                        )
+                        Text(
+                            payment.paymentMethod ?: "--",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = colors.text2,
+                        )
+                        Text(
+                            payment.collectionType?.name?.replace('_', ' ') ?: "--",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = colors.text2,
+                        )
+                        Text(
+                            payment.paymentDate?.let { formatDate(it) } ?: "--",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = colors.text2,
+                        )
+                    },
+                )
             }
         }
     }
-}
-
-/** Formats centavo amount to ₱X,XXX.XX without String.format (unavailable in Kotlin/Wasm). */
-private fun formatPhp(centavos: Long): String {
-    val negative = centavos < 0
-    val abs = if (negative) -centavos else centavos
-    val pesos = abs / 100
-    val cents = abs % 100
-    val centsStr = cents.toString().padStart(2, '0')
-    val pesosStr = pesos.toString()
-    val withCommas = buildString {
-        pesosStr.forEachIndexed { i, c ->
-            val remaining = pesosStr.length - i
-            if (i > 0 && remaining % 3 == 0) append(',')
-            append(c)
-        }
-    }
-    return "${if (negative) "-" else ""}\u20b1 $withCommas.$centsStr"
-}
-
-private fun formatPaymentDate(epochMs: Long): String {
-    val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
-    return "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
 }

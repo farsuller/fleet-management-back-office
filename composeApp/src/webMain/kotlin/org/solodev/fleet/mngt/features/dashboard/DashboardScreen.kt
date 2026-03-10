@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -42,10 +44,10 @@ import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
-import org.solodev.fleet.mngt.domain.usecase.dashboard.DashboardSnapshot
-import org.solodev.fleet.mngt.domain.usecase.dashboard.FinancialSummary
 import org.solodev.fleet.mngt.components.common.KpiCard
 import org.solodev.fleet.mngt.components.common.KpiCardError
+import org.solodev.fleet.mngt.domain.model.DashboardSnapshot
+import org.solodev.fleet.mngt.domain.model.FinancialSummary
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.FleetColors
@@ -74,32 +76,34 @@ fun DashboardScreen(router: AppRouter) {
     val state by vm.uiState.collectAsState()
     val colors = fleetColors
 
-    Column(
+    LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        Text(
-            "Overview",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = colors.onBackground,
-        )
+        item {
+            Text(
+                "Overview",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.onBackground,
+            )
 
-        when (val s = state) {
-            is UiState.Loading -> KpiGrid(snapshot = null, isLoading = true)
+            when (val s = state) {
+                is UiState.Loading -> KpiGrid(snapshot = null, isLoading = true)
 
-            is UiState.Success -> {
-                KpiGrid(snapshot = s.data, isLoading = false)
-                FinancialSummaryRow(summary = s.data.financialSummary)
-                Spacer(Modifier.height(8.dp))
-                FleetChartsRow(snapshot = s.data)
-                RecentRentalsSection(snapshot = s.data, router = router)
-                UrgentMaintenanceSection(snapshot = s.data, router = router)
-            }
+                is UiState.Success -> {
+                    KpiGrid(snapshot = s.data, isLoading = false)
+                    FinancialSummaryRow(summary = s.data.financialSummary)
+                    Spacer(Modifier.height(8.dp))
+                    FleetChartsRow(snapshot = s.data)
+                    RecentRentalsSection(snapshot = s.data, router = router)
+                    UrgentMaintenanceSection(snapshot = s.data, router = router)
+                }
 
-            is UiState.Error -> {
-                KpiGrid(snapshot = null, isLoading = false, error = s.message)
-                Button(onClick = vm::refresh) { Text("Retry") }
+                is UiState.Error -> {
+                    KpiGrid(snapshot = null, isLoading = false, error = s.message)
+                    Button(onClick = vm::refresh) { Text("Retry") }
+                }
             }
         }
     }
@@ -122,7 +126,7 @@ private fun FinancialSummaryRow(summary: FinancialSummary?) {
         KpiCard(
             label    = "Rental Revenue",
             value    = summary?.let { formatPesosShort(it.totalRevenuePhp) } ?: "—",
-            icon     = Icons.Filled.TrendingUp,
+            icon     = Icons.AutoMirrored.Filled.TrendingUp,
             iconTint = colors.active,
             modifier = Modifier.weight(1f),
         )

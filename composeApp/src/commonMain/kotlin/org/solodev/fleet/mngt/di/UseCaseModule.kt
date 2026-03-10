@@ -5,10 +5,17 @@ import org.koin.dsl.module
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetAccountsUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoiceUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoicesUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoicesByCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.CreateInvoiceUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentsByCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentMethodsUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.RecordDriverCollectionUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetDriverPendingPaymentsUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetAllDriverPaymentsUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.SubmitRemittanceUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetRemittancesByDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetRemittanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.auth.LoginUseCase
 import org.solodev.fleet.mngt.domain.usecase.auth.LogoutUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
@@ -106,11 +113,18 @@ val useCaseModule = module {
     // Accounting
     factory { GetInvoicesUseCase(get()) }
     factory { GetInvoiceUseCase(get()) }
+    factory { GetInvoicesByCustomerUseCase(get()) }
     factory { CreateInvoiceUseCase(get()) }
     factory { GetPaymentsUseCase(get()) }
     factory { GetPaymentsByCustomerUseCase(get()) }
     factory { GetAccountsUseCase(get()) }
     factory { GetPaymentMethodsUseCase(get()) }
+    factory { RecordDriverCollectionUseCase(get()) }
+    factory { GetDriverPendingPaymentsUseCase(get()) }
+    factory { GetAllDriverPaymentsUseCase(get()) }
+    factory { SubmitRemittanceUseCase(get()) }
+    factory { GetRemittancesByDriverUseCase(get()) }
+    factory { GetRemittanceUseCase(get()) }
 
     // Maintenance
     factory { GetMaintenanceJobsUseCase(get()) }

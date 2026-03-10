@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.solodev.fleet.mngt.domain.usecase.dashboard.DashboardSnapshot
+import org.solodev.fleet.mngt.domain.model.DashboardSnapshot
 import org.solodev.fleet.mngt.domain.usecase.dashboard.GetDashboardUseCase
 import org.solodev.fleet.mngt.ui.UiState
 

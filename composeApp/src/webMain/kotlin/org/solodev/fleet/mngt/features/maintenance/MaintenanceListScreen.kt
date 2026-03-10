@@ -107,7 +107,10 @@ fun MaintenanceListScreen(router: AppRouter) {
         if (actionResult != null) vm.clearActionResult()
     }
 
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
         // Header
         Row(
             Modifier.fillMaxWidth(),

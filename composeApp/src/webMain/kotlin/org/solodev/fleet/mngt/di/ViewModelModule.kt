@@ -4,10 +4,15 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.solodev.fleet.mngt.domain.usecase.accounting.CreateInvoiceUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetAccountsUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetAllDriverPaymentsUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetDriverPendingPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoiceUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoicesUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentMethodsUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentsUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.GetRemittancesByDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.RecordDriverCollectionUseCase
+import org.solodev.fleet.mngt.domain.usecase.accounting.SubmitRemittanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.auth.LoginUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.DeactivateCustomerUseCase
@@ -38,8 +43,10 @@ import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateOdometerUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
 import org.solodev.fleet.mngt.features.accounting.AccountsViewModel
+import org.solodev.fleet.mngt.features.accounting.DriverPaymentsViewModel
 import org.solodev.fleet.mngt.features.accounting.InvoicesViewModel
 import org.solodev.fleet.mngt.features.accounting.PaymentsViewModel
+import org.solodev.fleet.mngt.features.accounting.RemittancesViewModel
 import org.solodev.fleet.mngt.features.auth.LoginViewModel
 import org.solodev.fleet.mngt.features.customers.CustomersViewModel
 import org.solodev.fleet.mngt.features.dashboard.DashboardViewModel
@@ -110,6 +117,22 @@ val viewModelModule = module {
     }
     factory { PaymentsViewModel(getPaymentsUseCase = get()) }
     factory { AccountsViewModel(getAccountsUseCase = get()) }
+    factory {
+        DriverPaymentsViewModel(
+            getDriversUseCase = get(),
+            getDriverPendingPaymentsUseCase = get(),
+            getAllDriverPaymentsUseCase = get(),
+            recordDriverCollectionUseCase = get(),
+        )
+    }
+    factory {
+        RemittancesViewModel(
+            getDriversUseCase = get(),
+            getDriverPendingPaymentsUseCase = get(),
+            getRemittancesByDriverUseCase = get(),
+            submitRemittanceUseCase = get(),
+        )
+    }
     factory {
         MaintenanceViewModel(
             getMaintenanceJobsUseCase = get(),

@@ -2,6 +2,7 @@ package org.solodev.fleet.mngt.domain.usecase.rental
 
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import org.solodev.fleet.mngt.api.dto.accounting.PayInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalStatus
 import org.solodev.fleet.mngt.repository.AccountingRepository
@@ -43,6 +44,11 @@ class GetPaymentMethodsUseCase(private val repository: AccountingRepository) {
 
 class PayInvoiceUseCase(private val repository: AccountingRepository) {
     @OptIn(ExperimentalUuidApi::class)
-    suspend operator fun invoke(invoiceId: String, paymentMethodId: String, amountPhp: Long) =
-        repository.payInvoice(invoiceId, paymentMethodId, amountPhp, Uuid.random().toString())
+    suspend operator fun invoke(invoiceId: String, paymentMethod: String, amount: Long, notes: String? = null) =
+        repository.payInvoice(
+            id = invoiceId,
+            request = PayInvoiceRequest(amount = amount, paymentMethod = paymentMethod, notes = notes),
+            idempotencyKey = Uuid.random().toString(),
+        )
 }
+

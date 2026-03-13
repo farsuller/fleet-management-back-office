@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
-import fleetmanagementbackoffice.composeapp.generated.resources.car_top
+import fleetmanagementbackoffice.composeapp.generated.resources.car_icon
 import org.jetbrains.compose.resources.painterResource
 import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
 import org.solodev.fleet.mngt.api.dto.tracking.VehicleRouteState
@@ -128,7 +128,7 @@ fun FleetMapCanvas(
 
         // Layer 3 — Car icon markers (composable layer so painterResource works)
         Box(modifier = Modifier.matchParentSize()) {
-            val carPainter = painterResource(Res.drawable.car_top)
+            val carPainter = painterResource(Res.drawable.car_icon)
             animatedVehicles.forEach { v ->
                 if (v.lat == 0.0 && v.lon == 0.0) return@forEach
                 val (cx, cy) = MapProjection.toCanvasXY(v.lat, v.lon, mapState, canvasW, canvasH)

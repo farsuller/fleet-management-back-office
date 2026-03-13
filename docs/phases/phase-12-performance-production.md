@@ -18,7 +18,6 @@
 
 - [ ] Dead code elimination via Kotlin/JS IR `--mode=PRODUCTION`
 - [ ] Webpack tree-shaking enabled
-- [ ] All images/icons as inline SVG or Compose vector drawables (no PNG assets > 8KB)
 - [ ] Google Fonts (Inter) loaded with `display=swap` + Latin charset subset only
 - [ ] Fleet tracking screen lazy-loaded (dynamic import — heaviest SVG computation deferred)
 - [ ] `FrontendMetrics` calls stripped in production via `BuildConfig` flag

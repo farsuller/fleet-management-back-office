@@ -167,6 +167,7 @@ val viewModelModule = module {
             deactivateDriverUseCase = get(),
             assignDriverUseCase = get(),
             releaseDriverUseCase = get(),
+            driverRepository = get(),
         )
     }
 }

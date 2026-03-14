@@ -63,6 +63,9 @@ class VehiclesViewModel(
     private val _activeTab = MutableStateFlow(VehicleTab.INFO)
     val activeTab: StateFlow<VehicleTab> = _activeTab.asStateFlow()
 
+    private val _selectedVehicleId = MutableStateFlow<String?>(null)
+    val selectedVehicleId: StateFlow<String?> = _selectedVehicleId.asStateFlow()
+
     // ── Mutation feedback ─────────────────────────────────────────────────────
 
     private val _actionResult = MutableStateFlow<Result<Unit>?>(null)
@@ -101,6 +104,7 @@ class VehiclesViewModel(
     // ── Detail actions ────────────────────────────────────────────────────────
 
     fun loadVehicle(vehicleId: String) {
+        _selectedVehicleId.value = vehicleId
         _detailState.value = UiState.Loading
         _activeTab.value = VehicleTab.INFO
         viewModelScope.launch {
@@ -118,6 +122,11 @@ class VehiclesViewModel(
                 }
                 .onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load vehicle") }
         }
+    }
+
+    fun closeDetail() {
+        _selectedVehicleId.value = null
+        _detailState.value = null
     }
 
     fun setActiveTab(tab: VehicleTab) {

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Description
@@ -55,6 +56,7 @@ private data class NavItem(
 private val navItems = listOf(
     NavItem("Dashboard",    Icons.Filled.Dashboard,       Screen.Dashboard),
     NavItem("Vehicles",     Icons.Filled.DirectionsCar,   Screen.Vehicles),
+    NavItem("Drivers",      Icons.Filled.Badge,           Screen.Drivers),
     NavItem("Rentals",      Icons.AutoMirrored.Filled.ReceiptLong, Screen.Rentals),
     NavItem("Customers",    Icons.Filled.Group,           Screen.Customers),
     NavItem("Maintenance",  Icons.Filled.Build,           Screen.Maintenance),
@@ -301,6 +303,7 @@ private fun screenTitle(screen: Screen): String = when (screen) {
     is Screen.Dashboard      -> "Dashboard"
     is Screen.Vehicles,
     is Screen.VehicleDetail  -> "Vehicles"
+    is Screen.Drivers        -> "Drivers"
     is Screen.Rentals,
     is Screen.RentalDetail   -> "Rentals"
     is Screen.Customers,

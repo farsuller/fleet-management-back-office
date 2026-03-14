@@ -5,6 +5,9 @@ import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.AssignmentDto
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
+import org.solodev.fleet.mngt.api.dto.driver.EndShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
+import org.solodev.fleet.mngt.api.dto.driver.StartShiftRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface DriverRepository {
@@ -17,6 +20,9 @@ interface DriverRepository {
     suspend fun getAssignmentHistory(driverId: String): Result<List<AssignmentDto>>
     suspend fun getVehicleActiveDriver(vehicleId: String): Result<DriverDto>
     suspend fun getVehicleDriverHistory(vehicleId: String): Result<List<AssignmentDto>>
+    suspend fun startShift(request: StartShiftRequest): Result<ShiftResponse>
+    suspend fun endShift(request: EndShiftRequest): Result<ShiftResponse>
+    suspend fun getActiveShift(): Result<ShiftResponse?>
 }
 
 class DriverRepositoryImpl(private val api: FleetApiClient) : DriverRepository {
@@ -50,4 +56,13 @@ class DriverRepositoryImpl(private val api: FleetApiClient) : DriverRepository {
 
     override suspend fun getVehicleDriverHistory(vehicleId: String) =
         api.getVehicleDriverHistory(vehicleId)
+
+    override suspend fun startShift(request: StartShiftRequest) =
+        api.startDriverShift(request)
+
+    override suspend fun endShift(request: EndShiftRequest) =
+        api.endDriverShift(request)
+
+    override suspend fun getActiveShift() =
+        api.getActiveDriverShift()
 }

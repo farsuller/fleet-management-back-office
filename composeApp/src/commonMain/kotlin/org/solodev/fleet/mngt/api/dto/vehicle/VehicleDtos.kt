@@ -25,6 +25,7 @@ data class VehicleDto(
     val color: String? = null,
     val state: VehicleState? = null,
     val mileageKm: Long? = null,
+    val version: Long? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val createdAt: Long? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val updatedAt: Long? = null,
 )
@@ -37,6 +38,7 @@ data class CreateVehicleRequest(
     val model: String,
     val year: Int,
     val color: String,
+    val mileageKm: Long? = 0,
 )
 
 @Serializable
@@ -46,6 +48,8 @@ data class UpdateVehicleRequest(
     val model: String? = null,
     val year: Int? = null,
     val color: String? = null,
+    val mileageKm: Long? = null,
+    val version: Long? = null,
 )
 
 @Serializable

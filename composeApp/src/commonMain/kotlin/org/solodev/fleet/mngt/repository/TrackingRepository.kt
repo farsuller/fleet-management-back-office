@@ -1,6 +1,7 @@
 package org.solodev.fleet.mngt.repository
 
 import org.solodev.fleet.mngt.api.FleetApiClient
+import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionStatus
 import org.solodev.fleet.mngt.api.dto.tracking.CreateRouteRequest
 import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
@@ -14,6 +15,8 @@ interface TrackingRepository {
     suspend fun getLocationHistory(vehicleId: String, limit: Int = 50): Result<List<LocationHistoryEntry>>
     suspend fun getActiveRoutes(forceRefresh: Boolean = false): Result<List<RouteDto>>
     suspend fun createRoute(name: String, description: String?, geojson: String): Result<RouteDto>
+    suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus>
+    suspend fun setCoordinateReceptionEnabled(enabled: Boolean): Result<CoordinateReceptionStatus>
 }
 
 class TrackingRepositoryImpl(private val api: FleetApiClient) : TrackingRepository {
@@ -42,4 +45,10 @@ class TrackingRepositoryImpl(private val api: FleetApiClient) : TrackingReposito
     override suspend fun createRoute(name: String, description: String?, geojson: String): Result<RouteDto> =
         api.createRoute(CreateRouteRequest(name, description, geojson))
             .onSuccess { routesCache.invalidate("routes") }  // stale on next load
+
+    override suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus> =
+        api.getCoordinateReceptionStatus()
+
+    override suspend fun setCoordinateReceptionEnabled(enabled: Boolean): Result<CoordinateReceptionStatus> =
+        api.setCoordinateReceptionEnabled(enabled)
 }

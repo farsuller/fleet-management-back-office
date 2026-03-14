@@ -22,11 +22,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -232,12 +239,31 @@ fun LiveTrackingScreen(router: AppRouter) {
                         fontWeight = FontWeight.SemiBold,
                         color      = colors.onSurface,
                     )
-                    Text(
+                     Text(
                         text     = "${fleetStatus?.activeVehicles ?: fleetState.size} active",
                         fontSize = 11.sp,
                         color    = colors.text2,
                     )
                 }
+
+                // ── Coordinate Reception Toggle ───────────────────────────────
+                val receptionState by vm.receptionStatus.collectAsState()
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Reception", fontSize = 11.sp, color = colors.text2)
+                    (receptionState as? UiState.Success)?.data?.let { status ->
+                        Switch(
+                            checked = status.enabled,
+                            onCheckedChange = { vm.toggleReception(it) },
+                            modifier = Modifier.scale(0.7f),
+                            colors = SwitchDefaults.colors(checkedThumbColor = colors.primary)
+                        )
+                    }
+                }
+                
                 HorizontalDivider(color = colors.border)
 
                 val sidebarEntries = fleetStatus?.vehicles?.map { summary ->
@@ -369,6 +395,37 @@ private fun VehicleInfoPanel(state: VehicleRouteState) {
         InfoRow("Heading",  state.headingDeg?.let { "${it.toInt()}°" } ?: "—")
         InfoRow("Progress", state.routeProgress?.let { "${(it * 1000).toInt().toDouble() / 10}%" } ?: "—")
         InfoRow("Route",    state.routeId ?: "—")
+
+        // ── Sensor Fusion Section ──────────────────────────────────────────
+        Spacer(Modifier.height(8.dp))
+        Text("Sensor Fusion", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.primary)
+        
+        SensorRow(androidx.compose.material.icons.Icons.Default.Battery5Bar, "Battery", state.batteryLevel?.let { "$it%" } ?: "—")
+        SensorRow(androidx.compose.material.icons.Icons.Default.Sensors,    "Accel",   state.accelX?.let { "X:${it.toInt()}" } ?: "—")
+        
+        if (state.harshBrake == true || state.harshAccel == true || state.sharpTurn == true) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(androidx.compose.material.icons.Icons.Default.Warning, null, tint = colors.cancelled, modifier = Modifier.size(12.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Harsh Event Detected", fontSize = 10.sp, color = colors.cancelled)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SensorRow(icon: ImageVector, label: String, value: String) {
+    val colors = fleetColors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(icon, null, modifier = Modifier.size(12.dp), tint = colors.text2)
+            Text(label, fontSize = 11.sp, color = colors.text2)
+        }
+        Text(value, fontSize = 11.sp, color = colors.onSurface, fontWeight = FontWeight.Medium)
     }
 }
 

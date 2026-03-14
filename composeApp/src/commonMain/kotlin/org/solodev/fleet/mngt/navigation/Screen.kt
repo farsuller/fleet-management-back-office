@@ -26,7 +26,8 @@ sealed class Screen(val route: String) {
     data object Accounting : Screen("accounting")
     data object LiveTracking : Screen("tracking")
     data object Reports : Screen("reports")
-    data object Users : Screen("users")
+    data object Drivers : Screen("drivers")
+    data object Users   : Screen("users")
     data class UserDetail(val userId: String) : Screen("users/$userId")
     data object Settings : Screen("settings")
 }

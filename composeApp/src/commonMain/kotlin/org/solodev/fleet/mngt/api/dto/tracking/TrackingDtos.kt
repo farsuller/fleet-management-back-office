@@ -36,6 +36,17 @@ data class VehicleStateDelta(
     val routeId: String? = null,
     val routeProgress: Double? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val recordedAt: Long? = null,
+    // NEW — sensor fusion fields
+    val accelX:       Double?  = null,
+    val accelY:       Double?  = null,
+    val accelZ:       Double?  = null,
+    val gyroX:        Double?  = null,
+    val gyroY:        Double?  = null,
+    val gyroZ:        Double?  = null,
+    val batteryLevel: Int?     = null,
+    val harshBrake:   Boolean? = null,
+    val harshAccel:   Boolean? = null,
+    val sharpTurn:    Boolean? = null,
 )
 
 @Serializable
@@ -48,6 +59,27 @@ data class VehicleRouteState(
     val routeId: String? = null,
     val routeProgress: Double? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val recordedAt: Long? = null,
+    // NEW — sensor fusion fields
+    val accelX:       Double?  = null,
+    val accelY:       Double?  = null,
+    val accelZ:       Double?  = null,
+    val gyroX:        Double?  = null,
+    val gyroY:        Double?  = null,
+    val gyroZ:        Double?  = null,
+    val batteryLevel: Int?     = null,
+    val harshBrake:   Boolean? = null,
+    val harshAccel:   Boolean? = null,
+    val sharpTurn:    Boolean? = null,
+)
+
+@Serializable
+data class CoordinateReceptionRequest(val enabled: Boolean)
+
+@Serializable
+data class CoordinateReceptionStatus(
+    val enabled:   Boolean,
+    @Serializable(with = FlexibleEpochMsSerializer::class) val updatedAt: Long? = null,
+    val updatedBy: String,
 )
 
 @Serializable
@@ -83,6 +115,17 @@ data class LocationHistoryEntry(
     val speedKph: Double? = null,
     val headingDeg: Double? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val recordedAt: Long? = null,
+    // NEW — sensor fusion fields
+    val accelX:       Double? = null,
+    val accelY:       Double? = null,
+    val accelZ:       Double? = null,
+    val gyroX:        Double? = null,
+    val gyroY:        Double? = null,
+    val gyroZ:        Double? = null,
+    val batteryLevel: Int?    = null,
+    val harshBrake:   Boolean = false,
+    val harshAccel:   Boolean = false,
+    val sharpTurn:    Boolean = false,
 )
 
 @Serializable

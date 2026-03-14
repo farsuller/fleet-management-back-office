@@ -9,11 +9,15 @@ import kotlinx.coroutines.launch
 import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
+import org.solodev.fleet.mngt.api.dto.driver.EndShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
+import org.solodev.fleet.mngt.api.dto.driver.StartShiftRequest
 import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
+import org.solodev.fleet.mngt.repository.DriverRepository
 import org.solodev.fleet.mngt.ui.UiState
 
 class DriversViewModel(
@@ -22,6 +26,7 @@ class DriversViewModel(
     private val deactivateDriverUseCase: DeactivateDriverUseCase,
     private val assignDriverUseCase: AssignDriverUseCase,
     private val releaseDriverUseCase: ReleaseDriverUseCase,
+    private val driverRepository: DriverRepository,
 ) : ViewModel() {
 
     private val _listState = MutableStateFlow<UiState<List<DriverDto>>>(UiState.Loading)
@@ -33,7 +38,43 @@ class DriversViewModel(
     private val _actionResult = MutableStateFlow<Result<Unit>?>(null)
     val actionResult: StateFlow<Result<Unit>?> = _actionResult.asStateFlow()
 
-    init { loadList() }
+    private val _activeShift = MutableStateFlow<UiState<ShiftResponse?>>(UiState.Loading)
+    val activeShift: StateFlow<UiState<ShiftResponse?>> = _activeShift.asStateFlow()
+
+    init {
+        loadList()
+        loadActiveShift()
+    }
+
+    fun loadActiveShift() {
+        viewModelScope.launch {
+            driverRepository.getActiveShift()
+                .onSuccess { _activeShift.value = UiState.Success(it) }
+                .onFailure { _activeShift.value = UiState.Error(it.message ?: "Failed to load active shift") }
+        }
+    }
+
+    fun startShift(vehicleId: String) {
+        viewModelScope.launch {
+            driverRepository.startShift(StartShiftRequest(vehicleId))
+                .onSuccess {
+                    _activeShift.value = UiState.Success(it)
+                    _actionResult.value = Result.success(Unit)
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
+        }
+    }
+
+    fun endShift(notes: String? = null) {
+        viewModelScope.launch {
+            driverRepository.endShift(EndShiftRequest(notes))
+                .onSuccess {
+                    _activeShift.value = UiState.Success(null)
+                    _actionResult.value = Result.success(Unit)
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
+        }
+    }
 
     fun refresh() = loadList(forceRefresh = true)
 

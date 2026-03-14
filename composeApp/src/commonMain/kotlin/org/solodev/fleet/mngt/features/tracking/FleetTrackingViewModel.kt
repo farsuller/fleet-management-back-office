@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionStatus
 import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
 import org.solodev.fleet.mngt.api.dto.tracking.VehicleRouteState
@@ -60,11 +61,32 @@ class FleetTrackingViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    // ── Coordinate reception toggle ───────────────────────────────────────────
+    private val _receptionStatus = MutableStateFlow<UiState<CoordinateReceptionStatus>>(UiState.Loading)
+    val receptionStatus: StateFlow<UiState<CoordinateReceptionStatus>> = _receptionStatus.asStateFlow()
+
     init {
         loadMap()
+        loadReceptionStatus()
         collectConnectionState()
         collectDeltas()
         fleetLiveClient.connect()
+    }
+
+    fun loadReceptionStatus() {
+        viewModelScope.launch {
+            trackingRepository.getCoordinateReceptionStatus()
+                .onSuccess { _receptionStatus.value = UiState.Success(it) }
+                .onFailure { _receptionStatus.value = UiState.Error(it.message ?: "Failed to load reception status") }
+        }
+    }
+
+    fun toggleReception(enabled: Boolean) {
+        viewModelScope.launch {
+            trackingRepository.setCoordinateReceptionEnabled(enabled)
+                .onSuccess { _receptionStatus.value = UiState.Success(it) }
+                .onFailure { /* error handled by UI observing current state */ }
+        }
     }
 
     fun loadMap(forceRefresh: Boolean = false) {

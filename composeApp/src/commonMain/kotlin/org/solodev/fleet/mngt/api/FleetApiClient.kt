@@ -41,12 +41,17 @@ import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.AssignmentDto
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
+import org.solodev.fleet.mngt.api.dto.driver.EndShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
+import org.solodev.fleet.mngt.api.dto.driver.StartShiftRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CompleteMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.rental.CompleteRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
+import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionRequest
+import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionStatus
 import org.solodev.fleet.mngt.api.dto.tracking.CreateRouteRequest
 import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
@@ -149,13 +154,13 @@ class FleetApiClient(
         post("/v1/vehicles", request)
 
     suspend fun updateVehicle(id: String, request: UpdateVehicleRequest): Result<VehicleDto> =
-        put("/v1/vehicles/$id", request)
+        patch("/v1/vehicles/$id", request)
 
     suspend fun updateVehicleState(id: String, request: VehicleStateRequest): Result<VehicleDto> =
         patch("/v1/vehicles/$id/state", request)
 
     suspend fun updateOdometer(id: String, request: OdometerRequest): Result<VehicleDto> =
-        patch("/v1/vehicles/$id/odometer", request)
+        post("/v1/vehicles/$id/odometer", request)
 
     suspend fun deleteVehicle(id: String): Result<Unit> =
         delete("/v1/vehicles/$id")
@@ -316,6 +321,14 @@ class FleetApiClient(
     suspend fun createRoute(request: CreateRouteRequest): Result<RouteDto> =
         post("/v1/tracking/routes", request)
 
+    // ── Coordinate Reception Control ──────────────────────────────────────────
+
+    suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus> =
+        getItem("/v1/tracking/admin/coordinate-reception")
+
+    suspend fun setCoordinateReceptionEnabled(enabled: Boolean): Result<CoordinateReceptionStatus> =
+        post("/v1/tracking/admin/coordinate-reception", CoordinateReceptionRequest(enabled))
+
     // ── Drivers ───────────────────────────────────────────────────────────────
 
     suspend fun getDrivers(): Result<List<DriverDto>> =
@@ -344,6 +357,17 @@ class FleetApiClient(
 
     suspend fun getVehicleDriverHistory(vehicleId: String): Result<List<AssignmentDto>> =
         getList("/v1/vehicles/$vehicleId/driver/history")
+
+    // ── Driver Shifts ────────────────────────────────────────────────────────
+
+    suspend fun startDriverShift(request: StartShiftRequest): Result<ShiftResponse> =
+        post("/v1/drivers/shifts/start", request)
+
+    suspend fun endDriverShift(request: EndShiftRequest): Result<ShiftResponse> =
+        post("/v1/drivers/shifts/end", request)
+
+    suspend fun getActiveDriverShift(): Result<ShiftResponse?> =
+        getItem("/v1/drivers/shifts/active")
 
     // ── Private helpers ───────────────────────────────────────────────────────
 

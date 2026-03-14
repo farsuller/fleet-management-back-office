@@ -227,6 +227,7 @@ data class FleetExtendedColors(
     val onSurface:      Color,
     val overdue:        Color,
     val paid:           Color,
+    val surfaceVariant: Color,
 )
 
 val LocalFleetColors = staticCompositionLocalOf {
@@ -259,6 +260,7 @@ val LocalFleetColors = staticCompositionLocalOf {
         onSurface      = FleetColors.Text1,
         overdue        = FleetColors.Cancelled,
         paid           = FleetColors.Active,
+        surfaceVariant = Color(0xFF1C2436),
     )
 }
 
@@ -292,6 +294,7 @@ private fun buildExtendedColors(dark: Boolean) = if (dark) {
         onSurface      = FleetColors.Text1,
         overdue        = FleetColors.Cancelled,
         paid           = FleetColors.Active,
+        surfaceVariant = Color(0xFF1C2436),
     )
 } else {
     FleetExtendedColors(
@@ -323,6 +326,7 @@ private fun buildExtendedColors(dark: Boolean) = if (dark) {
         onSurface      = FleetColors.LightText1,
         overdue        = FleetColors.Cancelled,
         paid           = FleetColors.Active,
+        surfaceVariant = FleetColors.LightSurfaceVariant,
     )
 }
 

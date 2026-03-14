@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,7 +45,7 @@ import org.solodev.fleet.mngt.theme.fleetColors
 fun <T> PaginatedTable(
     headers:       List<String>,
     items:         List<T>,
-    rowContent:    @Composable (item: T, index: Int) -> Unit,
+    rowContent:    @Composable RowScope.(item: T, index: Int) -> Unit,
     modifier:      Modifier = Modifier,
     onRowClick:    ((index: Int) -> Unit)? = null,
     hasMore:       Boolean = false,

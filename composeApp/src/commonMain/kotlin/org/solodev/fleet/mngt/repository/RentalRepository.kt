@@ -9,7 +9,7 @@ import org.solodev.fleet.mngt.api.dto.rental.RentalStatus
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface RentalRepository {
-    suspend fun getRentals(cursor: String? = null, limit: Int = 20, status: RentalStatus? = null, forceRefresh: Boolean = false): Result<PagedResponse<RentalDto>>
+    suspend fun getRentals(page: Int = 1, limit: Int = 20, status: RentalStatus? = null, forceRefresh: Boolean = false): Result<PagedResponse<RentalDto>>
     suspend fun getRental(id: String): Result<RentalDto>
     suspend fun createRental(request: CreateRentalRequest): Result<RentalDto>
     suspend fun activateRental(id: String): Result<RentalDto>
@@ -23,14 +23,14 @@ class RentalRepositoryImpl(private val api: FleetApiClient) : RentalRepository {
     private val listCache = InMemoryCache<String, PagedResponse<RentalDto>>(ttlMs = 30_000L)
 
     override suspend fun getRentals(
-        cursor: String?,
+        page: Int,
         limit: Int,
         status: RentalStatus?,
         forceRefresh: Boolean,
     ): Result<PagedResponse<RentalDto>> {
-        val key = "r:$cursor:$limit:${status?.name}"
+        val key = "r:$page:$limit:${status?.name}"
         if (!forceRefresh) listCache.get(key)?.let { return Result.success(it) }
-        return api.getRentals(cursor, limit, status?.name).onSuccess { listCache.put(key, it) }
+        return api.getRentals(page, limit, status?.name).onSuccess { listCache.put(key, it) }
     }
 
     override suspend fun getRental(id: String) = api.getRental(id)

@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +49,8 @@ import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import org.solodev.fleet.mngt.components.common.SkeletonBox
 
 private fun formatDate(epochMs: Long): String {
     val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
@@ -67,7 +72,27 @@ fun CustomerDetailScreen(customerId: String, router: AppRouter) {
     val colors = fleetColors
     val nowMs = Clock.System.now().toEpochMilliseconds()
 
+    var showErrorDialog by remember { mutableStateOf<Boolean>(false) }
+
     LaunchedEffect(customerId) { vm.loadCustomer(customerId) }
+    
+    // Auto-show dialog on error
+    LaunchedEffect(detailState) {
+        if (detailState is UiState.Error) {
+            showErrorDialog = true
+        }
+    }
+
+    if (showErrorDialog && detailState is UiState.Error) {
+        ServerErrorDialog(
+            message = (detailState as UiState.Error).message,
+            onRetry = {
+                vm.loadCustomer(customerId)
+                showErrorDialog = false
+            },
+            onDismiss = { showErrorDialog = false }
+        )
+    }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -81,16 +106,23 @@ fun CustomerDetailScreen(customerId: String, router: AppRouter) {
         }
 
         when (val s = detailState) {
-            null, is UiState.Loading -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            is UiState.Error -> Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
+            null, is UiState.Loading -> Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(s.message, color = MaterialTheme.colorScheme.error)
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = { vm.loadCustomer(customerId) }) { Text("Retry") }
+                SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 200.dp)
+                SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 150.dp)
+                SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 250.dp)
+            }
+            is UiState.Error -> {
+                // Inline error removed in favor of modal
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 200.dp)
+                    SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 150.dp)
+                }
             }
             is UiState.Success -> {
                 val snapshot = s.data
@@ -261,11 +293,11 @@ private fun RentalHistoryRow(rental: RentalDto, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text((rental.id ?: "").take(8) + "…", modifier = Modifier.weight(1f), fontSize = 12.sp)
-        Text(rental.vehiclePlate ?: "", modifier = Modifier.weight(1f), fontSize = 12.sp)
+        Text(rental.vehiclePlateNumber ?: "", modifier = Modifier.weight(1f), fontSize = 12.sp)
         RentalStatusBadge((rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge(), modifier = Modifier.weight(1f))
         Text(formatDate(rental.startDate ?: 0L), modifier = Modifier.weight(1f), fontSize = 12.sp)
         Text(formatDate(rental.endDate ?: 0L), modifier = Modifier.weight(1f), fontSize = 12.sp)
-        Text("₱${rental.totalAmountPhp ?: 0L}", modifier = Modifier.weight(1f), fontSize = 12.sp)
+        Text("₱${rental.totalCost ?: 0}", modifier = Modifier.weight(1f), fontSize = 12.sp)
     }
 }
 

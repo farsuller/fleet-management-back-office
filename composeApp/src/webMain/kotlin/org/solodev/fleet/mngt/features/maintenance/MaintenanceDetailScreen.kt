@@ -138,7 +138,7 @@ private fun MaintenanceDetailContent(
         DetailRow("Type", job.type?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "-")
         DetailRow("Priority", job.priority?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "-")
         DetailRow("Scheduled", job.scheduledDate?.let { formatMaintenanceDate(it) } ?: "-")
-        DetailRow("Est. Cost", job.estimatedCostPhp?.let { "₱${it / 100}" } ?: "-")
+        DetailRow("Est. Cost", job.estimatedCostPhp?.let { "PHP ${it / 100}" } ?: "-")
         job.description?.takeIf { it.isNotBlank() }?.let { DetailRow("Description", it) }
         job.createdAt?.let { DetailRow("Created", formatMaintenanceDate(it)) }
     }
@@ -217,14 +217,14 @@ private fun CompleteJobDialog(
                 OutlinedTextField(
                     value = laborText,
                     onValueChange = { laborText = it; error = null },
-                    label = { Text("Labor Cost (₱)") },
+                    label = { Text("Labor Cost (PHP)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = partsText,
                     onValueChange = { partsText = it; error = null },
-                    label = { Text("Parts Cost (₱)") },
+                    label = { Text("Parts Cost (PHP)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )

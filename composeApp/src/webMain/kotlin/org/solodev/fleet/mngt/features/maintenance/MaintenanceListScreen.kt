@@ -65,6 +65,7 @@ import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 
 private fun MaintenanceStatus.toUiBadge() = when (this) {
     MaintenanceStatus.SCHEDULED   -> UiMaintenanceStatus.SCHEDULED
@@ -101,6 +102,25 @@ fun MaintenanceListScreen(router: AppRouter) {
 
     var showScheduleDialog by remember { mutableStateOf(false) }
     var scheduleError by remember { mutableStateOf<String?>(null) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+
+    // Auto-show dialog on error
+    LaunchedEffect(state) {
+        if (state is UiState.Error) {
+            showErrorDialog = true
+        }
+    }
+
+    if (showErrorDialog && state is UiState.Error) {
+        ServerErrorDialog(
+            message = (state as UiState.Error).message,
+            onRetry = {
+                vm.refresh()
+                showErrorDialog = false
+            },
+            onDismiss = { showErrorDialog = false }
+        )
+    }
 
     LaunchedEffect(actionResult) {
         actionResult?.onFailure { scheduleError = it.message }
@@ -174,13 +194,9 @@ fun MaintenanceListScreen(router: AppRouter) {
 
         when (val s = state) {
             is UiState.Loading -> TableSkeleton(rows = 8, columnCount = 7)
-            is UiState.Error -> Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(s.message, color = MaterialTheme.colorScheme.error)
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = vm::refresh) { Text("Retry") }
+            is UiState.Error -> {
+                // Inline error removed in favor of modal
+                TableSkeleton(rows = 8, columnCount = 7)
             }
             is UiState.Success -> {
                 // Client-side filter by priority/type
@@ -210,7 +226,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                             fontSize = 13.sp,
                         )
                         Text(
-                            text = job.estimatedCostPhp?.let { "₱${it / 100}" } ?: "-",
+                            text = job.estimatedCostPhp?.let { "PHP ${it / 100}" } ?: "-",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                         )
@@ -348,7 +364,7 @@ private fun ScheduleJobDialog(
                 OutlinedTextField(
                     value = estimatedCostText,
                     onValueChange = { estimatedCostText = it },
-                    label = { Text("Estimated Cost (₱)") },
+                    label = { Text("Estimated Cost (PHP)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )

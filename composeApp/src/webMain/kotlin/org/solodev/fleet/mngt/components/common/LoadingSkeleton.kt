@@ -25,28 +25,39 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.solodev.fleet.mngt.theme.FleetSpacing
+import androidx.compose.ui.composed
 import org.solodev.fleet.mngt.theme.LocalThemeState
 
 @Composable
-private fun shimmerBrush(): Brush {
+fun shimmerBrush(): Brush {
     val isDark = LocalThemeState.current.isDark
-    val baseColor    = if (isDark) Color(0xFF1A2035) else Color(0xFFE5E7EB)
-    val highlightColor = if (isDark) Color(0xFF252D42) else Color(0xFFF3F4F6)
+    // More distinct colors for visibility
+    val baseColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+    val highlightColor = if (isDark) Color(0xFF334155) else Color(0xFFF8FAFC)
+
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
-        initialValue   = 0f,
-        targetValue    = 1000f,
-        animationSpec  = infiniteRepeatable(
-            animation  = tween(1000, easing = LinearEasing),
+        initialValue = -1000f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "shimmerX",
     )
+
+    // Diagonal gradient for a more premium look
     return Brush.linearGradient(
         colors = listOf(baseColor, highlightColor, baseColor),
-        start = Offset(translateAnim - 300f, 0f),
-        end   = Offset(translateAnim, 0f),
+        start = Offset(translateAnim, translateAnim),
+        end = Offset(translateAnim + 500f, translateAnim + 500f),
     )
+}
+
+/** Reusable modifier that applies a shimmer background. */
+fun Modifier.shimmer(radius: Dp = 0.dp): Modifier = composed {
+    this.clip(RoundedCornerShape(radius))
+        .background(shimmerBrush())
 }
 
 @Composable
@@ -58,22 +69,11 @@ fun SkeletonBox(
     Box(
         modifier = modifier
             .height(height)
-            .clip(RoundedCornerShape(radius))
-            .background(shimmerBrush()),
+            .shimmer(radius)
     )
 }
 
-/** Skeleton for a KPI card (icon row + title + value). */
-@Composable
-fun KpiCardSkeleton(modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        SkeletonBox(modifier = Modifier.width(32.dp), height = 32.dp, radius = 8.dp)
-        Spacer(Modifier.height(12.dp))
-        SkeletonBox(modifier = Modifier.fillMaxWidth(0.5f), height = 12.dp)
-        Spacer(Modifier.height(8.dp))
-        SkeletonBox(modifier = Modifier.fillMaxWidth(0.3f), height = 24.dp)
-    }
-}
+
 
 /** Skeleton for a generic table row. */
 @Composable

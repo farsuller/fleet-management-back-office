@@ -38,6 +38,7 @@ import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CompleteRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CreateRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.DeleteRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetPaymentMethodsUseCase as RentalGetPaymentMethodsUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalsUseCase
@@ -107,6 +108,7 @@ val useCaseModule = module {
     factory { ActivateRentalUseCase(get()) }
     factory { CancelRentalUseCase(get()) }
     factory { CompleteRentalUseCase(get()) }
+    factory { DeleteRentalUseCase(get()) }
     factory(named("rentalPaymentMethods")) { RentalGetPaymentMethodsUseCase(get()) }
     factory { PayInvoiceUseCase(get()) }
 

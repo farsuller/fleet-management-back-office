@@ -38,6 +38,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +63,7 @@ import org.solodev.fleet.mngt.components.common.VehicleStatusBadge
 import org.solodev.fleet.mngt.components.common.ConfirmDialog
 import org.solodev.fleet.mngt.components.common.VehicleHealthCard
 import org.solodev.fleet.mngt.components.common.MaintenanceHealthCard
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.FleetColors
@@ -98,6 +100,26 @@ fun VehiclesListScreen(router: AppRouter) {
     var showAddSheet by remember { mutableStateOf(false) }
     var vehicleToEdit by remember { mutableStateOf<VehicleDto?>(null) }
     var vehicleToDelete by remember { mutableStateOf<VehicleDto?>(null) }
+
+    var showErrorDialog by remember { mutableStateOf<Boolean>(false) }
+    
+    // Auto-show dialog on error
+    LaunchedEffect(state) {
+        if (state is UiState.Error) {
+            showErrorDialog = true
+        }
+    }
+
+    if (showErrorDialog && state is UiState.Error) {
+        ServerErrorDialog(
+            message = (state as UiState.Error).message,
+            onRetry = {
+                vm.refresh()
+                showErrorDialog = false
+            },
+            onDismiss = { showErrorDialog = false }
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -161,10 +183,9 @@ fun VehiclesListScreen(router: AppRouter) {
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 when (val s = state) {
                     is UiState.Loading -> org.solodev.fleet.mngt.components.common.TableSkeleton(rows = 8)
-                    is UiState.Error -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        Text(s.message, color = MaterialTheme.colorScheme.error)
-                        Spacer(Modifier.height(8.dp))
-                        Button(onClick = vm::refresh) { Text("Retry") }
+                    is UiState.Error -> {
+                        // Inline error removed in favor of modal
+                        org.solodev.fleet.mngt.components.common.TableSkeleton(rows = 8)
                     }
                     is UiState.Success -> PaginatedTable(
                         headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),

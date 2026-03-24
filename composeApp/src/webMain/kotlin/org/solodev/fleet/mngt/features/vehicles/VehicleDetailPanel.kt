@@ -147,7 +147,7 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                         }
 
                         // Compact Tabs
-                        ScrollableTabRow(
+                        PrimaryScrollableTabRow(
                                 selectedTabIndex = activeTab.ordinal,
                                 containerColor = colors.surface,
                                 contentColor = colors.primary,
@@ -241,7 +241,7 @@ private fun InfoContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesViewM
             
             Column(Modifier.padding(start = 20.dp, top = 4.dp)) {
                 LinearProgressIndicator(
-                    progress = 1f - progress,
+                    progress = { 1f - progress },
                     modifier = Modifier.fillMaxWidth().height(8.dp).padding(vertical = 4.dp),
                     color = if (isDue) fleetColors.cancelled else if (progress > 0.8f) fleetColors.maintenance else fleetColors.primary,
                     trackColor = fleetColors.surfaceVariant,

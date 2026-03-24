@@ -10,11 +10,11 @@ import org.solodev.fleet.mngt.repository.RentalRepository
 
 class GetRentalsUseCase(private val repository: RentalRepository) {
     suspend operator fun invoke(
-        cursor: String? = null,
+        page: Int = 1,
         limit: Int = 20,
         status: RentalStatus? = null,
         forceRefresh: Boolean = false,
-    ) = repository.getRentals(cursor, limit, status, forceRefresh)
+    ) = repository.getRentals(page, limit, status, forceRefresh)
 }
 
 class GetRentalUseCase(private val repository: RentalRepository) {

@@ -24,7 +24,7 @@ fun LabeledInfo(
 ) {
     val colors = fleetColors
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.*
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -88,7 +88,7 @@ fun AddVehicleSheet(
 
         if (!errors.hasErrors()) {
             if (isEdit) {
-                vehicle?.id?.let { id ->
+                vehicle.id?.let { id ->
                     val request = UpdateVehicleRequest(
                         licensePlate = formState.licensePlate,
                         make = formState.make,

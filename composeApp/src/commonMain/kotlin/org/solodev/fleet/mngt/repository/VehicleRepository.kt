@@ -11,7 +11,7 @@ import org.solodev.fleet.mngt.api.dto.vehicle.VehicleStateRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface VehicleRepository {
-    suspend fun getVehicles(cursor: String? = null, limit: Int = 20, state: VehicleState? = null, forceRefresh: Boolean = false): Result<PagedResponse<VehicleDto>>
+    suspend fun getVehicles(page: Int = 1, limit: Int = 20, state: VehicleState? = null, forceRefresh: Boolean = false): Result<PagedResponse<VehicleDto>>
     suspend fun getVehicle(id: String): Result<VehicleDto>
     suspend fun createVehicle(request: CreateVehicleRequest): Result<VehicleDto>
     suspend fun updateVehicle(id: String, request: UpdateVehicleRequest): Result<VehicleDto>
@@ -26,14 +26,14 @@ class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository
     private val listCache = InMemoryCache<String, PagedResponse<VehicleDto>>(ttlMs = 120_000L)
 
     override suspend fun getVehicles(
-        cursor: String?,
+        page: Int,
         limit: Int,
         state: VehicleState?,
         forceRefresh: Boolean,
     ): Result<PagedResponse<VehicleDto>> {
-        val key = "v:$cursor:$limit:${state?.name}"
+        val key = "v:$page:$limit:${state?.name}"
         if (!forceRefresh) listCache.get(key)?.let { return Result.success(it) }
-        return api.getVehicles(cursor, limit, state?.name).onSuccess { listCache.put(key, it) }
+        return api.getVehicles(page, limit, state?.name).onSuccess { listCache.put(key, it) }
     }
 
     override suspend fun getVehicle(id: String) = api.getVehicle(id)

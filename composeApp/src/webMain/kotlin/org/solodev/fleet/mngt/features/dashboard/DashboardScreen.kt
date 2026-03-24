@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -83,8 +84,7 @@ fun DashboardScreen(router: AppRouter) {
         item {
             Text(
                 "Overview",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.headlineMedium,
                 color = colors.onBackground,
             )
 
@@ -220,8 +220,7 @@ private fun RecentRentalsSection(snapshot: DashboardSnapshot, router: AppRouter)
         ) {
             Text(
                 "Active Rentals",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.headlineSmall,
                 color = colors.onBackground,
             )
             Button(onClick = { router.navigate(Screen.Rentals) }) { Text("View All") }
@@ -266,8 +265,7 @@ private fun UrgentMaintenanceSection(snapshot: DashboardSnapshot, router: AppRou
         ) {
             Text(
                 "Upcoming Maintenance",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.headlineSmall,
                 color = colors.onBackground,
             )
             Button(onClick = { router.navigate(Screen.Maintenance) }) { Text("View All") }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -95,6 +96,8 @@ fun AddVehicleSheet(
                         year = formState.year.toIntOrNull() ?: 0,
                         color = formState.color,
                         mileageKm = formState.mileage.toLongOrNull(),
+                        lastServiceMileage = formState.lastServiceMileage.toIntOrNull(),
+                        nextServiceMileage = formState.nextServiceMileage.toIntOrNull(),
                         version = vehicle.version
                     )
                     vm.updateVehicle(id, request)
@@ -109,7 +112,9 @@ fun AddVehicleSheet(
                         model = formState.model,
                         year = formState.year.toIntOrNull() ?: 0,
                         color = formState.color,
-                        mileageKm = formState.mileage.toLongOrNull() ?: 0L
+                        mileageKm = formState.mileage.toLongOrNull() ?: 0,
+                        lastServiceMileage = formState.lastServiceMileage.toIntOrNull(),
+                        nextServiceMileage = formState.nextServiceMileage.toIntOrNull()
                     )
                 ) { createdId ->
                     onDismiss()
@@ -127,6 +132,7 @@ fun AddVehicleSheet(
         dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
     ) {
         val infoIcon = painterResource(Res.drawable.info_icon)
+        val serviceIcon = painterResource(Res.drawable.ic_service)
 
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
@@ -277,8 +283,15 @@ fun AddVehicleSheet(
                         )
                     }
                 }
-
-                Spacer(Modifier.height(8.dp))
+            
+            Spacer(Modifier.height(16.dp))
+            Text("Maintenance Info", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = colors.primary)
+            HorizontalDivider(color = colors.primary.copy(alpha = 0.2f))
+            
+            LabeledTextField("Last Service Mileage", formState.lastServiceMileage, { formState = formState.copy(lastServiceMileage = it) }, serviceIcon, "Odometer reading at last oil change.", isNumber = true)
+            LabeledTextField("Next Service Mileage", formState.nextServiceMileage, { formState = formState.copy(nextServiceMileage = it) }, serviceIcon, "Odometer reading when next service is due.", isNumber = true)
+            
+            Spacer(Modifier.height(24.dp))
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Button(
@@ -296,9 +309,30 @@ fun AddVehicleSheet(
                         border = BorderStroke(1.dp, colors.border)
                     ) {
                         Text("Cancel")
-                    }
                 }
-            }
         }
+    }
+}
+}
+}
+
+@Composable
+private fun LabeledTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    infoIcon: Painter,
+    infoText: String,
+    isNumber: Boolean = false
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        LabeledInfo(label, infoIcon)
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
     }
 }

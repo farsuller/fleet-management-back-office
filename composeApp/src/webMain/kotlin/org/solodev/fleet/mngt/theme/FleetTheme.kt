@@ -1,7 +1,8 @@
 package org.solodev.fleet.mngt.theme
 
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
+import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -19,6 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.Font
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.*
 
 // ─── Color Tokens ─────────────────────────────────────────────────────────────
 
@@ -116,35 +120,46 @@ private val FleetLightColorScheme = lightColorScheme(
 
 // ─── Typography ───────────────────────────────────────────────────────────────
 
+@Composable
+fun FunnelDisplayFamily() = FontFamily(
+    Font(Res.font.funneldisplay_regular, FontWeight.Normal),
+    Font(Res.font.funneldisplay_medium, FontWeight.Medium),
+    Font(Res.font.funneldisplay_semibold, FontWeight.SemiBold),
+    Font(Res.font.funneldisplay_bold, FontWeight.Bold),
+    Font(Res.font.funneldisplay_extrabold, FontWeight.ExtraBold),
+    Font(Res.font.funneldisplay_light, FontWeight.Light),
+)
+
 private val InterFamily = FontFamily.Default
 
-val FleetTypography = Typography(
+@Composable
+fun fleetTypography() = Typography(
     displayLarge = TextStyle(
-        fontFamily = InterFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize   = 32.sp,
-        lineHeight = 38.4.sp,
+        fontFamily = FunnelDisplayFamily(),
+        fontWeight = FontWeight.ExtraBold,
+        fontSize   = 36.sp,
+        lineHeight = 44.sp,
     ),
     headlineLarge = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.Bold,
         fontSize   = 32.sp,
         lineHeight = 38.4.sp,
     ),
     headlineMedium = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.SemiBold,
         fontSize   = 24.sp,
         lineHeight = 31.2.sp,
     ),
     headlineSmall = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.SemiBold,
         fontSize   = 18.sp,
         lineHeight = 25.2.sp,
     ),
     bodyLarge = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.Normal,
         fontSize   = 14.sp,
         lineHeight = 21.sp,
@@ -346,7 +361,7 @@ fun FleetTheme(
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography  = FleetTypography,
+            typography  = fleetTypography(),
             content     = content,
         )
     }

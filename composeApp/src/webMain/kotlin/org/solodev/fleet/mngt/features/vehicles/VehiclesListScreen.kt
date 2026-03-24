@@ -60,6 +60,8 @@ import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.components.common.VehicleStatus
 import org.solodev.fleet.mngt.components.common.VehicleStatusBadge
 import org.solodev.fleet.mngt.components.common.ConfirmDialog
+import org.solodev.fleet.mngt.components.common.VehicleHealthCard
+import org.solodev.fleet.mngt.components.common.MaintenanceHealthCard
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.FleetColors
@@ -133,30 +135,25 @@ fun VehiclesListScreen(router: AppRouter) {
                 }
             }
 
-            // State filter chips
+            // Fleet Health Overview & Maintenance Cards
+            val stats by vm.stats.collectAsState()
+            val maintenanceStats by vm.maintenanceStats.collectAsState()
+            
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                val states: List<VehicleState?> = listOf(null) + VehicleState.entries.filter { it != VehicleState.UNKNOWN }
-                states.forEach { s ->
-                    val label = s?.name ?: "All Vehicles"
-                    FilterChip(
-                        selected = s == stateFilter,
-                        onClick = { vm.setStateFilter(s) },
-                        label = { Text(label, fontSize = 12.sp) },
-                        shape = RoundedCornerShape(20.dp),
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = colors.primary.copy(alpha = 0.15f),
-                            selectedLabelColor = colors.primary,
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            borderColor = colors.border,
-                            selectedBorderColor = colors.primary.copy(alpha = 0.5f),
-                            borderWidth = 1.dp,
-                            enabled = true,
-                            selected = s == stateFilter
-                        )
+                Box(Modifier.weight(1f)) {
+                    VehicleHealthCard(
+                        stats = stats,
+                        onSeeAllClick = { vm.setStateFilter(null) },
+                        onFilterClick = { vm.setStateFilter(it) }
+                    )
+                }
+                Box(Modifier.weight(1f)) {
+                    MaintenanceHealthCard(
+                        stats = maintenanceStats,
+                        onSeeAllClick = { /* Optional: Navigate to maintenance tab or filter */ }
                     )
                 }
             }

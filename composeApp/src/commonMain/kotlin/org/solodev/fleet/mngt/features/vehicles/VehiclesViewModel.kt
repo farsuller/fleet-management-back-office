@@ -32,6 +32,22 @@ data class VehicleDetailSnapshot(
     val locationHistory: List<LocationHistoryEntry> = emptyList(),
 )
 
+data class VehicleStats(
+    val total: Int = 0,
+    val good: Int = 0,
+    val needsService: Int = 0,
+    val damaged: Int = 0,
+    val trend: String = "+0%",
+)
+
+data class MaintenanceStats(
+    val totalInMaintenance: Int = 0,
+    val overdue: Int = 0,
+    val upcoming: Int = 0,
+    val onTrack: Int = 0,
+    val total: Int = 0,
+)
+
 class VehiclesViewModel(
     private val getVehiclesUseCase: GetVehiclesUseCase,
     private val getVehicleUseCase: GetVehicleUseCase,
@@ -51,6 +67,12 @@ class VehiclesViewModel(
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    private val _stats = MutableStateFlow(VehicleStats())
+    val stats: StateFlow<VehicleStats> = _stats.asStateFlow()
+
+    private val _maintenanceStats = MutableStateFlow(MaintenanceStats())
+    val maintenanceStats: StateFlow<MaintenanceStats> = _maintenanceStats.asStateFlow()
 
     private val _stateFilter = MutableStateFlow<VehicleState?>(null)
     val stateFilter: StateFlow<VehicleState?> = _stateFilter.asStateFlow()
@@ -93,12 +115,51 @@ class VehiclesViewModel(
                 .onSuccess {
                     _listState.value = UiState.Success(it)
                     _isRefreshing.value = false
+                    calculateStats(it.items)
                 }
                 .onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load vehicles")
                     _isRefreshing.value = false
                 }
         }
+    }
+
+    private fun calculateStats(items: List<VehicleDto>) {
+        val totalCount = items.size
+        val maintenanceCount = items.count { it.state == VehicleState.MAINTENANCE }
+        val damagedCount = items.count { it.state == VehicleState.RETIRED }
+        val goodCount = totalCount - maintenanceCount - damagedCount
+
+        _stats.value = VehicleStats(
+            total = totalCount,
+            good = goodCount,
+            needsService = maintenanceCount,
+            damaged = damagedCount,
+            trend = "+5%"
+        )
+
+        // Maintenance Stats
+        val currentMileage = items.map { it.mileageKm ?: 0L }
+        val overdueCount = items.count { 
+            val next = it.nextServiceMileage ?: 0
+            val current = it.mileageKm ?: 0L
+            current >= next && next > 0
+        }
+        val upcomingCount = items.count { 
+            val next = it.nextServiceMileage ?: 0
+            val current = it.mileageKm ?: 0L
+            val diff = next - current
+            diff in 1..500
+        }
+        val onTrackCount = totalCount - overdueCount - upcomingCount
+
+        _maintenanceStats.value = MaintenanceStats(
+            totalInMaintenance = maintenanceCount,
+            overdue = overdueCount,
+            upcoming = upcomingCount,
+            onTrack = onTrackCount,
+            total = totalCount
+        )
     }
 
     // ── Detail actions ────────────────────────────────────────────────────────
@@ -161,6 +222,7 @@ class VehiclesViewModel(
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadVehicle(vehicleId)
+                    loadList(forceRefresh = true)
                 }
                 .onFailure { _actionResult.value = Result.failure(it) }
         }

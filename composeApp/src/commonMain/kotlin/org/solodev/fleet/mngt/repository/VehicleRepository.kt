@@ -48,7 +48,7 @@ class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository
         api.updateVehicleState(id, VehicleStateRequest(state)).onSuccess { listCache.clear() }
 
     override suspend fun updateOdometer(id: String, readingKm: Long) =
-        api.updateOdometer(id, OdometerRequest(readingKm))
+        api.updateOdometer(id, OdometerRequest(mileageKm = readingKm))
 
     override suspend fun deleteVehicle(id: String) =
         api.deleteVehicle(id).onSuccess { listCache.clear() }

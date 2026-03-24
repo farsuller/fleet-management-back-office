@@ -16,18 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
-import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -53,20 +45,34 @@ private data class NavItem(
     val screen: Screen,
 )
 
-private val navItems = listOf(
-    NavItem("Dashboard",    Icons.Filled.Dashboard,       Screen.Dashboard),
-    NavItem("Vehicles",     Icons.Filled.DirectionsCar,   Screen.Vehicles),
-    NavItem("Drivers",      Icons.Filled.Badge,           Screen.Drivers),
-    NavItem("Rentals",      Icons.AutoMirrored.Filled.ReceiptLong, Screen.Rentals),
-    NavItem("Customers",    Icons.Filled.Group,           Screen.Customers),
-    NavItem("Maintenance",  Icons.Filled.Build,           Screen.Maintenance),
-    NavItem("Accounting",   Icons.Filled.AccountBalance,  Screen.Accounting),
-    NavItem("Live Tracking",Icons.Filled.LocationOn,      Screen.LiveTracking),
-    NavItem("Reports",      Icons.Filled.Description,     Screen.Reports),
+private data class NavSection(
+    val title: String,
+    val items: List<NavItem>,
 )
 
-private val bottomNavItems = listOf(
-    NavItem("Settings",     Icons.Filled.Settings,        Screen.Settings),
+private val navSections = listOf(
+    NavSection("MAIN", listOf(
+        NavItem("Dashboard", Icons.Default.Dashboard, Screen.Dashboard)
+    )),
+    NavSection("FLEET MANAGEMENT", listOf(
+        NavItem("Vehicles", Icons.Default.DirectionsCar, Screen.Vehicles),
+        NavItem("Drivers", Icons.Default.Badge, Screen.Drivers),
+        NavItem("Maintenance", Icons.Default.Build, Screen.Maintenance),
+        NavItem("Live Tracking", Icons.Default.LocationOn, Screen.LiveTracking)
+    )),
+    NavSection("BOOKINGS", listOf(
+        NavItem("Rentals", Icons.AutoMirrored.Filled.ReceiptLong, Screen.Rentals)
+    )),
+    NavSection("CUSTOMERS", listOf(
+        NavItem("Customers", Icons.Default.Group, Screen.Customers)
+    )),
+    NavSection("FINANCE & REPORTS", listOf(
+        NavItem("Accounting", Icons.Default.AccountBalance, Screen.Accounting),
+        NavItem("Reports", Icons.Default.Description, Screen.Reports)
+    )),
+    NavSection("SETTINGS", listOf(
+        NavItem("Settings", Icons.Default.Settings, Screen.Settings)
+    ))
 )
 
 @Composable
@@ -84,7 +90,7 @@ fun AppShell(
         // ── Sidebar ──────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
-                .width(220.dp)
+                .width(240.dp) // Slightly wider for the sections
                 .fillMaxHeight()
                 .background(colors.surface)
                 .padding(vertical = 16.dp),
@@ -97,64 +103,72 @@ fun AppShell(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(colors.primary.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.DirectionsCar,
+                        imageVector = Icons.Default.DirectionsCar,
                         contentDescription = null,
                         tint = colors.primary,
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier.size(18.dp),
                     )
                 }
                 Text(
                     "Fleet Manager",
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = colors.onBackground,
                 )
             }
+            
+            Spacer(Modifier.height(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                navSections.forEach { section ->
+                    SidebarCategoryHeader(section.title)
+                    section.items.forEach { item ->
+                        SidebarItem(
+                            item = item,
+                            isSelected = when (item.screen) {
+                                is Screen.Dashboard -> router.currentScreen is Screen.Dashboard
+                                is Screen.Vehicles  -> router.currentScreen is Screen.Vehicles || router.currentScreen is Screen.VehicleDetail
+                                is Screen.Rentals   -> router.currentScreen is Screen.Rentals || router.currentScreen is Screen.RentalDetail
+                                is Screen.Customers -> router.currentScreen is Screen.Customers || router.currentScreen is Screen.CustomerDetail
+                                is Screen.Maintenance -> router.currentScreen is Screen.Maintenance || router.currentScreen is Screen.MaintenanceDetail
+                                is Screen.Settings -> router.currentScreen is Screen.Settings
+                                else -> router.currentScreen == item.screen
+                            },
+                            onClick = { router.navigate(item.screen) },
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                }
+
+                if (isAdmin) {
+                    SidebarCategoryHeader("ADMIN")
+                    SidebarItem(
+                        item = NavItem("Users", Icons.Default.AdminPanelSettings, Screen.Users),
+                        isSelected = router.currentScreen is Screen.Users || router.currentScreen is Screen.UserDetail,
+                        onClick = { router.navigate(Screen.Users) },
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
+
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 12.dp),
                 color = colors.border,
             )
-            Spacer(Modifier.height(6.dp))
-
-            navItems.forEach { item ->
-                SidebarItem(
-                    item = item,
-                    isSelected = router.currentScreen::class == item.screen::class,
-                    onClick = { router.navigate(item.screen) },
-                )
-            }
-
-            if (isAdmin) {
-                SidebarItem(
-                    item = NavItem("Users", Icons.Filled.AdminPanelSettings, Screen.Users),
-                    isSelected = router.currentScreen is Screen.Users,
-                    onClick = { router.navigate(Screen.Users) },
-                )
-            }
-
-            // Push Settings to the bottom of the sidebar
-            Spacer(Modifier.weight(1f))
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                color = colors.border,
-            )
-            Spacer(Modifier.height(4.dp))
-            bottomNavItems.forEach { item ->
-                SidebarItem(
-                    item = item,
-                    isSelected = router.currentScreen::class == item.screen::class,
-                    onClick = { router.navigate(item.screen) },
-                )
-            }
+            Spacer(Modifier.height(8.dp))
             SidebarActionItem(
                 label = "Logout",
-                icon = Icons.AutoMirrored.Filled.Logout,
+                icon = Icons.AutoMirrored.Default.Logout,
                 onClick = { dispatcher.signOut() },
             )
         }
@@ -297,6 +311,19 @@ private fun TopBar(router: AppRouter) {
                 .background(colors.border),
         )
     }
+}
+
+@Composable
+private fun SidebarCategoryHeader(title: String) {
+    Text(
+        text = title,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = fleetColors.onBackground.copy(alpha = 0.4f),
+        modifier = Modifier
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .fillMaxWidth()
+    )
 }
 
 private fun screenTitle(screen: Screen): String = when (screen) {

@@ -9,7 +9,9 @@ data class VehicleFormState(
     val model: String = "",
     val year: String = "",
     val color: String = "",
-    val mileage: String = "0"
+    val mileage: String = "0",
+    val lastServiceMileage: String = "0",
+    val nextServiceMileage: String = "10000"
 ) {
     constructor(vehicle: VehicleDto?) : this(
         vin = vehicle?.vin ?: "",
@@ -18,7 +20,9 @@ data class VehicleFormState(
         model = vehicle?.model ?: "",
         year = vehicle?.year?.toString() ?: "",
         color = vehicle?.color ?: "",
-        mileage = vehicle?.mileageKm?.toString() ?: "0"
+        mileage = vehicle?.mileageKm?.toString() ?: "0",
+        lastServiceMileage = vehicle?.lastServiceMileage?.toString() ?: "0",
+        nextServiceMileage = vehicle?.nextServiceMileage?.toString() ?: "10000"
     )
 }
 

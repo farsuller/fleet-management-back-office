@@ -93,10 +93,8 @@ fun KpiCard(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text       = value,
-                    fontSize   = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                    style      = MaterialTheme.typography.headlineLarge,
                     color      = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 32.sp,
                 )
                 trend?.let {
                     Spacer(Modifier.height(4.dp))

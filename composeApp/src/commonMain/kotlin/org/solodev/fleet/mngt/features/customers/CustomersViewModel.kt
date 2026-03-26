@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
@@ -32,6 +36,7 @@ class CustomersViewModel(
     private val deactivateCustomerUseCase: DeactivateCustomerUseCase,
     private val getCustomerRentalsUseCase: GetCustomerRentalsUseCase,
     private val getCustomerPaymentsUseCase: GetCustomerPaymentsUseCase,
+    private val authState: AuthState,
 ) : ViewModel() {
 
     // ── List state ────────────────────────────────────────────────────────────
@@ -52,7 +57,12 @@ class CustomersViewModel(
     private val _actionResult = MutableStateFlow<Result<Unit>?>(null)
     val actionResult: StateFlow<Result<Unit>?> = _actionResult.asStateFlow()
 
-    init { loadList() }
+    init {
+        viewModelScope.launch {
+            authState.status.filterIsInstance<AuthStatus.Authenticated>().first()
+            loadList()
+        }
+    }
 
     // ── List actions ──────────────────────────────────────────────────────────
 

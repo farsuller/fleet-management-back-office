@@ -125,7 +125,12 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                         Column(
                                 Modifier.fillMaxSize()
                                         .verticalScroll(rememberScrollState())
-                                        .padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
+                                        .padding(
+                                                start = 16.dp,
+                                                end = 8.dp,
+                                                top = 16.dp,
+                                                bottom = 16.dp
+                                        ),
                                 verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
                             // Summary header
@@ -150,8 +155,7 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                     Icon(
                                             painterResource(Res.drawable.ic_car),
                                             null,
-                                            modifier = Modifier.size(16.dp),
-                                            tint = colors.primary
+                                            modifier = Modifier.size(64.dp),
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Text(

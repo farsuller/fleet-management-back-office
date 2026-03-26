@@ -92,6 +92,7 @@ fun KpiCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .fillMaxHeight()
                     .padding(FleetSpacing.cardPaddingSm),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -249,6 +250,7 @@ fun KpiCardError(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(FleetSpacing.cardPaddingSm),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -278,7 +280,7 @@ fun KpiCardError(
 /** Skeleton for premium KPI card. */
 @Composable
 fun KpiCardSkeleton(modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SkeletonBox(modifier = Modifier.size(44.dp), radius = 10.dp)
             Spacer(Modifier.width(16.dp))

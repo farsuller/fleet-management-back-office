@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
@@ -27,6 +31,7 @@ class DriversViewModel(
     private val assignDriverUseCase: AssignDriverUseCase,
     private val releaseDriverUseCase: ReleaseDriverUseCase,
     private val driverRepository: DriverRepository,
+    private val authState: AuthState,
 ) : ViewModel() {
 
     private val _listState = MutableStateFlow<UiState<List<DriverDto>>>(UiState.Loading)
@@ -42,8 +47,11 @@ class DriversViewModel(
     val activeShift: StateFlow<UiState<ShiftResponse?>> = _activeShift.asStateFlow()
 
     init {
-        loadList()
-        loadActiveShift()
+        viewModelScope.launch {
+            authState.status.filterIsInstance<AuthStatus.Authenticated>().first()
+            loadList()
+            loadActiveShift()
+        }
     }
 
     fun loadActiveShift() {

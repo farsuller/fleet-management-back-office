@@ -6,12 +6,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.domain.model.DashboardSnapshot
 import org.solodev.fleet.mngt.domain.usecase.dashboard.GetDashboardUseCase
 import org.solodev.fleet.mngt.ui.UiState
 
 class DashboardViewModel(
     private val getDashboardUseCase: GetDashboardUseCase,
+    private val authState: AuthState,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<DashboardSnapshot>>(UiState.Loading)
@@ -22,7 +27,11 @@ class DashboardViewModel(
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
-        load()
+        viewModelScope.launch {
+            // Wait for authenticated status before initial load
+            authState.status.filterIsInstance<AuthStatus.Authenticated>().first()
+            load()
+        }
     }
 
     /**

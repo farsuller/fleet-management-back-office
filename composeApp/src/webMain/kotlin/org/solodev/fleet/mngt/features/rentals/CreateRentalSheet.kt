@@ -3,15 +3,17 @@ package org.solodev.fleet.mngt.features.rentals
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,14 +25,17 @@ import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Instant
+import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
+import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
+import org.solodev.fleet.mngt.components.common.ActionErrorDialog
 import org.solodev.fleet.mngt.components.common.LabeledInfo
 import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 import org.solodev.fleet.mngt.components.common.VehicleSelectionCard
@@ -39,7 +44,7 @@ import org.solodev.fleet.mngt.ui.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
+fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: RentalDto? = null) {
     val vm = koinViewModel<RentalsViewModel>()
     val colors = fleetColors
     val infoIcon = painterResource(Res.drawable.info_icon)
@@ -48,11 +53,11 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
     val customersState by vm.customers.collectAsState()
     val actionResult by vm.actionResult.collectAsState()
 
-    var selectedVehicle by remember { mutableStateOf<VehicleDto?>(null) }
-    var selectedCustomer by remember { mutableStateOf<CustomerDto?>(null) }
+    var selectedVehicle by remember(rental) { mutableStateOf<VehicleDto?>(null) }
+    var selectedCustomer by remember(rental) { mutableStateOf<CustomerDto?>(null) }
     var isNewCustomer by remember { mutableStateOf(false) }
 
-    // New Customer Form State
+    // New Customer Form State (only for Create)
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -61,27 +66,55 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
     var licenseExpiry by remember { mutableStateOf("") }
 
     // Rental Details
-    var startDate by remember {
+    var startDate by remember(rental) {
         mutableStateOf(
-                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+                rental?.startDate?.let {
+                    Instant.fromEpochMilliseconds(it)
+                            .toLocalDateTime(TimeZone.UTC)
+                            .date
+                            .toString()
+                }
+                        ?: Clock.System.now()
+                                .toLocalDateTime(TimeZone.currentSystemDefault())
+                                .date
+                                .toString()
         )
     }
-    var endDate by remember {
+    var endDate by remember(rental) {
         mutableStateOf(
-                Clock.System.now()
-                        .plus(7.days)
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                        .date
-                        .toString()
+                rental?.endDate?.let {
+                    Instant.fromEpochMilliseconds(it)
+                            .toLocalDateTime(TimeZone.UTC)
+                            .date
+                            .toString()
+                }
+                        ?: Clock.System.now()
+                                .plus(7.days)
+                                .toLocalDateTime(TimeZone.currentSystemDefault())
+                                .date
+                                .toString()
         )
     }
-    var dailyRate by remember { mutableStateOf("1500") }
+    var dailyRate by remember(rental) { mutableStateOf(rental?.dailyRate?.toString() ?: "1500") }
 
     var errors by remember { mutableStateOf<String?>(null) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) { vm.loadCreationResources() }
+    LaunchedEffect(rental) { vm.loadCreationResources(rental?.vehicleId, rental?.customerId) }
+
+    LaunchedEffect(availableVehiclesState, customersState) {
+        if (rental != null) {
+            val vehicles = (availableVehiclesState as? UiState.Success)?.data
+            if (selectedVehicle == null && vehicles != null) {
+                selectedVehicle = vehicles.find { it.id == rental.vehicleId }
+            }
+            val customers = (customersState as? UiState.Success)?.data
+            if (selectedCustomer == null && customers != null) {
+                selectedCustomer = customers.find { it.id == rental.customerId }
+            }
+        }
+    }
 
     LaunchedEffect(actionResult) {
         actionResult?.onFailure {
@@ -96,11 +129,11 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
     var showEndDatePicker by remember { mutableStateOf(false) }
 
     fun handleSubmit() {
-        if (selectedVehicle == null) {
+        if (selectedVehicle == null && rental == null) {
             errors = "Please select a vehicle"
             return
         }
-        if (!isNewCustomer && selectedCustomer == null) {
+        if (!isNewCustomer && selectedCustomer == null && rental == null) {
             errors = "Please select a customer"
             return
         }
@@ -110,7 +143,19 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
         val startIso = LocalDate.parse(startDate).atStartOfDayIn(TimeZone.UTC).toString()
         val endIso = LocalDate.parse(endDate).atStartOfDayIn(TimeZone.UTC).toString()
 
-        if (isNewCustomer) {
+        if (rental != null) {
+            // Edit Flow
+            val updateReq =
+                    UpdateRentalRequest(
+                            startDate = startIso,
+                            endDate = endIso,
+                            dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L,
+                            vehicleId = selectedVehicle?.id,
+                            customerId = selectedCustomer?.id
+                    )
+            vm.updateRental(rental.id!!, updateReq) { onDismiss() }
+        } else if (isNewCustomer) {
+            // Create Flow with New Customer
             val customerReq =
                     CreateCustomerRequest(
                             email = email,
@@ -132,6 +177,7 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
                 vm.createRental(rentalReq) { onDismiss() }
             }
         } else {
+            // Create Flow with Existing Customer
             val rentalReq =
                     CreateRentalRequest(
                             customerId = selectedCustomer!!.id!!,
@@ -143,6 +189,9 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
             vm.createRental(rentalReq) { onDismiss() }
         }
     }
+
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -162,6 +211,20 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
                                     .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
+                // Handle Success/Error from ActionResult
+                actionResult?.let { result ->
+                    if (result.isFailure) {
+                        ActionErrorDialog(
+                            title = if (rental != null) "Update Failed" else "Creation Failed",
+                            message = result.exceptionOrNull()?.message ?: "An unexpected error occurred",
+                            onDismiss = {
+                                vm.clearActionResult()
+                                isSubmitting = false
+                            }
+                        )
+                    }
+                }
+
                 // Header
                 Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -170,31 +233,36 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                                "Create New Rental",
+                                if (rental != null) "Edit Rental #${rental.rentalNumber ?: ""}"
+                                else "Create New Rental",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.onBackground
                         )
                         Text(
-                                "Set up a new rental agreement with an available vehicle.",
+                                if (rental != null) "Update rental terms or details."
+                                else "Set up a new rental agreement with an available vehicle.",
                                 fontSize = 14.sp,
                                 color = colors.onBackground.copy(alpha = 0.6f)
                         )
                     }
-
-                    Button(
-                            onClick = ::handleSubmit,
-                            enabled = !isSubmitting,
-                            shape = RoundedCornerShape(12.dp)
-                    ) {
-                        if (isSubmitting)
-                                CircularProgressIndicator(
-                                        Modifier.size(20.dp),
-                                        color = Color.White,
-                                        strokeWidth = 2.dp
-                                )
-                        else Text("Confirm Rental", fontWeight = FontWeight.SemiBold)
-                    }
+ 
+                     Button(
+                             onClick = ::handleSubmit,
+                             enabled = !isSubmitting,
+                             shape = RoundedCornerShape(12.dp)
+                     ) {
+                         if (isSubmitting)
+                                 CircularProgressIndicator(
+                                         Modifier.size(20.dp),
+                                         color = Color.White,
+                                         strokeWidth = 2.dp
+                                 )
+                        else Text(
+                                if (rental != null) "Save Changes" else "Confirm Rental",
+                                fontWeight = FontWeight.SemiBold
+                        )
+                     }
                 }
 
                 errors?.let {
@@ -238,19 +306,79 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState) {
                                         fontSize = 14.sp
                                 )
                             } else {
-                                LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        contentPadding = PaddingValues(end = 16.dp)
-                                ) {
-                                    items(s.data) { vehicle ->
-                                        VehicleSelectionCard(
-                                                vehicle = vehicle,
-                                                selected = selectedVehicle?.id == vehicle.id,
-                                                onClick = {
-                                                    selectedVehicle = vehicle
-                                                    errors = null
-                                                }
-                                        )
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    LazyRow(
+                                            state = listState,
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                            contentPadding = PaddingValues(horizontal = 16.dp)
+                                    ) {
+                                        items(s.data) { vehicle ->
+                                            VehicleSelectionCard(
+                                                    vehicle = vehicle,
+                                                    selected = selectedVehicle?.id == vehicle.id,
+                                                    onClick = {
+                                                        selectedVehicle = vehicle
+                                                        errors = null
+                                                    }
+                                            )
+                                        }
+                                    }
+
+                                    // Scroll Buttons
+                                    if (listState.canScrollBackward) {
+                                        Surface(
+                                                modifier =
+                                                        Modifier.align(Alignment.CenterStart)
+                                                                .padding(start = 4.dp)
+                                                                .size(32.dp),
+                                                shape = RoundedCornerShape(16.dp),
+                                                tonalElevation = 2.dp,
+                                                shadowElevation = 4.dp
+                                        ) {
+                                            IconButton(
+                                                    onClick = {
+                                                        scope.launch {
+                                                            listState.animateScrollBy(-400f)
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxSize()
+                                            ) {
+                                                Icon(
+                                                        Icons.Default.KeyboardArrowLeft,
+                                                        null,
+                                                        modifier = Modifier.size(20.dp),
+                                                        tint = colors.primary
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    if (listState.canScrollForward) {
+                                        Surface(
+                                                modifier =
+                                                        Modifier.align(Alignment.CenterEnd)
+                                                                .padding(end = 4.dp)
+                                                                .size(32.dp),
+                                                shape = RoundedCornerShape(16.dp),
+                                                tonalElevation = 2.dp,
+                                                shadowElevation = 4.dp
+                                        ) {
+                                            IconButton(
+                                                    onClick = {
+                                                        scope.launch {
+                                                            listState.animateScrollBy(400f)
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxSize()
+                                            ) {
+                                                Icon(
+                                                        Icons.Default.KeyboardArrowRight,
+                                                        null,
+                                                        modifier = Modifier.size(20.dp),
+                                                        tint = colors.primary
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }

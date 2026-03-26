@@ -56,6 +56,7 @@ import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.rental.CompleteRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionRequest
 import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionStatus
@@ -201,6 +202,9 @@ class FleetApiClient(
 
     suspend fun completeRental(id: String, request: CompleteRentalRequest): Result<RentalDto> =
         post("/v1/rentals/$id/complete", request)
+
+    suspend fun updateRental(id: String, request: UpdateRentalRequest): Result<RentalDto> =
+        patch("/v1/rentals/$id", request)
 
     suspend fun deleteRental(id: String): Result<Unit> =
         delete("/v1/rentals/$id")

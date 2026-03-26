@@ -57,6 +57,7 @@ fun RentalsListScreen(router: AppRouter) {
     
     val sheetState = rememberModalBottomSheetState()
     var showCreateSheet by remember { mutableStateOf(false) }
+    var rentalToEdit by remember { mutableStateOf<RentalDto?>(null) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var rentalToDelete by remember { mutableStateOf<RentalDto?>(null) }
     
@@ -102,6 +103,7 @@ fun RentalsListScreen(router: AppRouter) {
                     if (authStatus is AuthStatus.Authenticated) {
                         Button(onClick = { 
                             vm.loadCreationResources()
+                            rentalToEdit = null
                             showCreateSheet = true 
                         }) {
                             Icon(Icons.Filled.Add, contentDescription = null)
@@ -114,19 +116,19 @@ fun RentalsListScreen(router: AppRouter) {
 
             // KPI Cards
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(IntrinsicSize.Max),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Box(Modifier.weight(1f)) {
-                    RentalHealthCard(
-                        stats = stats,
-                        onSeeAllClick = { },
-                        onFilterClick = { }
-                    )
-                }
-                Box(Modifier.weight(1f)) {
-                    RevenueHealthCard(revenuePhp = stats.revenuePhp)
-                }
+                RentalHealthCard(
+                    stats = stats,
+                    onSeeAllClick = { },
+                    onFilterClick = { },
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
+                RevenueHealthCard(
+                    revenuePhp = stats.revenuePhp,
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
             }
 
             Spacer(Modifier.height(8.dp))
@@ -164,7 +166,8 @@ fun RentalsListScreen(router: AppRouter) {
                             ) {
                                 IconButton(
                                     onClick = {
-                                        // TODO: Implement Edit Rental
+                                        rentalToEdit = rental
+                                        showCreateSheet = true
                                     },
                                     modifier = Modifier.size(28.dp)
                                 ) {
@@ -196,8 +199,12 @@ fun RentalsListScreen(router: AppRouter) {
 
     if (showCreateSheet) {
         CreateRentalSheet(
-            onDismiss = { showCreateSheet = false },
-            sheetState = sheetState
+            onDismiss = { 
+                showCreateSheet = false
+                rentalToEdit = null
+            },
+            sheetState = sheetState,
+            rental = rentalToEdit
         )
     }
 

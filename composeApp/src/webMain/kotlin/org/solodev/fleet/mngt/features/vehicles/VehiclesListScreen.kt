@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -162,11 +163,12 @@ fun VehiclesListScreen(router: AppRouter) {
             val maintenanceStats by vm.maintenanceStats.collectAsState()
             
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                Modifier.fillMaxWidth().height(IntrinsicSize.Max).padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Box(Modifier.weight(1f)) {
                     VehicleHealthCard(
+                        modifier = Modifier.fillMaxHeight(),
                         stats = stats,
                         onSeeAllClick = { vm.setStateFilter(null) },
                         onFilterClick = { vm.setStateFilter(it) }
@@ -174,6 +176,7 @@ fun VehiclesListScreen(router: AppRouter) {
                 }
                 Box(Modifier.weight(1f)) {
                     MaintenanceHealthCard(
+                        modifier = Modifier.fillMaxHeight(),
                         stats = maintenanceStats,
                         onSeeAllClick = { /* Optional: Navigate to maintenance tab or filter */ }
                     )

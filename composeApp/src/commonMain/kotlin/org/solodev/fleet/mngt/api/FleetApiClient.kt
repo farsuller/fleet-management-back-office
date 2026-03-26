@@ -51,6 +51,7 @@ import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.driver.EndShiftRequest
 import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
 import org.solodev.fleet.mngt.api.dto.driver.StartShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CompleteMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
@@ -358,6 +359,12 @@ class FleetApiClient(
 
     suspend fun deactivateDriver(id: String): Result<DriverDto> =
         postEmpty("/v1/drivers/$id/deactivate")
+
+    suspend fun activateDriver(id: String): Result<DriverDto> =
+        postEmpty("/v1/drivers/$id/activate")
+
+    suspend fun updateDriver(id: String, request: UpdateDriverRequest): Result<DriverDto> =
+        patch("/v1/drivers/$id", request)
 
     suspend fun assignDriver(driverId: String, request: AssignDriverRequest): Result<AssignmentDto> =
         post("/v1/drivers/$driverId/assign", request)

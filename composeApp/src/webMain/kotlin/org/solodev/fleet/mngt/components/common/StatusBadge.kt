@@ -20,6 +20,7 @@ import org.solodev.fleet.mngt.theme.fleetColors
 enum class VehicleStatus { AVAILABLE, RENTED, MAINTENANCE, RETIRED, RESERVED }
 enum class RentalStatus  { RESERVED, ACTIVE, COMPLETED, CANCELLED }
 enum class MaintenanceStatus { SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED }
+enum class DriverStatus { ACTIVE, AVAILABLE, DISABLED }
 enum class Priority { LOW, NORMAL, HIGH, URGENT }
 
 // ─── Resolved appearance ──────────────────────────────────────────────────────
@@ -61,6 +62,16 @@ private fun maintenanceStyle(status: MaintenanceStatus): BadgeStyle {
         MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", { c.maintenance })
         MaintenanceStatus.COMPLETED   -> BadgeStyle("Completed",   { c.completed })
         MaintenanceStatus.CANCELLED   -> BadgeStyle("Cancelled",   { c.cancelled })
+    }
+}
+
+@Composable
+private fun driverStyle(status: DriverStatus): BadgeStyle {
+    val c = fleetColors
+    return when (status) {
+        DriverStatus.ACTIVE    -> BadgeStyle("Active",    { c.active })
+        DriverStatus.AVAILABLE -> BadgeStyle("Available", { c.available })
+        DriverStatus.DISABLED  -> BadgeStyle("Disabled",  { c.cancelled })
     }
 }
 
@@ -112,6 +123,10 @@ fun RentalStatusBadge(status: RentalStatus, modifier: Modifier = Modifier) =
 @Composable
 fun MaintenanceStatusBadge(status: MaintenanceStatus, modifier: Modifier = Modifier) =
     BadgePill(maintenanceStyle(status), modifier)
+
+@Composable
+fun DriverStatusBadge(status: DriverStatus, modifier: Modifier = Modifier) =
+    BadgePill(driverStyle(status), modifier)
 
 @Composable
 fun PriorityBadge(priority: Priority, modifier: Modifier = Modifier) =

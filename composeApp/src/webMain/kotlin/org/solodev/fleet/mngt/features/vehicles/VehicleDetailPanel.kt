@@ -17,10 +17,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.ic_service
+import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import fleetmanagementbackoffice.composeapp.generated.resources.*
-import org.jetbrains.compose.resources.painterResource
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
@@ -51,15 +53,15 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
     }
 
     AnimatedVisibility(
-            visible = vehicleId != null,
-            enter = slideInHorizontally(initialOffsetX = { it }),
-            exit = slideOutHorizontally(targetOffsetX = { it }),
-            modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp)
+        visible = vehicleId != null,
+        enter = slideInHorizontally(initialOffsetX = { it }),
+        exit = slideOutHorizontally(targetOffsetX = { it }),
+        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp)
     ) {
         Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = colors.surface,
-                shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+            modifier = Modifier.fillMaxSize(),
+            color = colors.surface,
+            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
         ) {
             Column(Modifier.fillMaxSize()) {
                 // Header
@@ -87,9 +89,9 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
 
                 lastError?.let {
                     Surface(
-                            color = colors.cancelled.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth()
+                        color = colors.cancelled.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth()
                     ) {
                         Row(
                             Modifier.padding(12.dp),
@@ -118,14 +120,16 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
 
                 when (val s = detailState) {
                     is UiState.Loading ->
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
-                            }
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+
                     is UiState.Error ->
-                            Column(Modifier.padding(16.dp)) {
-                                Text(s.message, color = MaterialTheme.colorScheme.error)
-                                Button(onClick = { vm.loadVehicle(vehicleId) }) { Text("Retry") }
-                            }
+                        Column(Modifier.padding(16.dp)) {
+                            Text(s.message, color = MaterialTheme.colorScheme.error)
+                            Button(onClick = { vm.loadVehicle(vehicleId) }) { Text("Retry") }
+                        }
+
                     is UiState.Success -> {
                         val snapshot = s.data
                         val vehicle = snapshot.vehicle
@@ -148,19 +152,19 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
 
                         // Compact Tabs
                         PrimaryScrollableTabRow(
-                                selectedTabIndex = activeTab.ordinal,
-                                containerColor = colors.surface,
-                                contentColor = colors.primary,
-                                edgePadding = 0.dp,
-                                divider = {}
+                            selectedTabIndex = activeTab.ordinal,
+                            containerColor = colors.surface,
+                            contentColor = colors.primary,
+                            edgePadding = 0.dp,
+                            divider = {}
                         ) {
                             VehicleTab.entries.forEach { tab ->
                                 Tab(
-                                        selected = activeTab == tab,
-                                        onClick = { vm.setActiveTab(tab) },
-                                        text = {
-                                            Text(tab.name.take(4).uppercase(), fontSize = 11.sp)
-                                        }
+                                    selected = activeTab == tab,
+                                    onClick = { vm.setActiveTab(tab) },
+                                    text = {
+                                        Text(tab.name.take(4).uppercase(), fontSize = 11.sp)
+                                    }
                                 )
                             }
                         }
@@ -176,11 +180,13 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                                 VehicleTab.STATE -> StateContent(vehicle, canEdit, vm)
                                 VehicleTab.ODOMETER -> OdometerContent(vehicle, canEdit, vm, infoIcon)
                                 VehicleTab.MAINTENANCE ->
-                                        MaintenanceContent(snapshot.maintenanceJobs)
+                                    MaintenanceContent(snapshot.maintenanceJobs)
+
                                 VehicleTab.HISTORY -> HistoryContent(snapshot.locationHistory)
                             }
                         }
                     }
+
                     else -> {}
                 }
             }
@@ -191,10 +197,17 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
 // Reuse logic from VehicleDetailScreen but more compact
 
 @Composable
-private fun InfoContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesViewModel, infoIcon: Painter, serviceIcon: Painter, colors: org.solodev.fleet.mngt.theme.FleetExtendedColors) {
+private fun InfoContent(
+    vehicle: VehicleDto,
+    canEdit: Boolean,
+    vm: VehiclesViewModel,
+    infoIcon: Painter,
+    serviceIcon: Painter,
+    colors: org.solodev.fleet.mngt.theme.FleetExtendedColors
+) {
     Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         DetailItem("Vehicle Identification Number", vehicle.vin ?: "", infoIcon)
         DetailItem("Manufacturer of the Vehicle", vehicle.make ?: "", infoIcon)
@@ -208,18 +221,18 @@ private fun InfoContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesViewM
             val last = vehicle.lastServiceMileage ?: 0
             val next = vehicle.nextServiceMileage ?: 0
             val current = vehicle.mileageKm ?: 0L
-            
+
             val totalDistance = (next - last).coerceAtLeast(1)
             val drivenSinceLast = (current - last).coerceAtMost(totalDistance.toLong()).coerceAtLeast(0).toFloat()
             val progress = (drivenSinceLast / totalDistance).coerceIn(0f, 1f)
             val remaining = (next - current).coerceAtLeast(0)
-            
+
             val isDue = current >= next
-            
+
             Spacer(Modifier.height(8.dp))
             HorizontalDivider(color = colors.primary.copy(alpha = 0.2f))
             Spacer(Modifier.height(8.dp))
-            
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 LabeledInfo("Maintenance Health", serviceIcon)
                 if (isDue) {
@@ -238,7 +251,7 @@ private fun InfoContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesViewM
                     }
                 }
             }
-            
+
             Column(Modifier.padding(start = 20.dp, top = 4.dp)) {
                 LinearProgressIndicator(
                     progress = { 1f - progress },
@@ -248,7 +261,8 @@ private fun InfoContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesViewM
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    val remainingText = if (isDue) "Overdue by ${current - next} km" else "$remaining km until next service"
+                    val remainingText =
+                        if (isDue) "Overdue by ${current - next} km" else "$remaining km until next service"
                     Text(
                         remainingText,
                         fontSize = 12.sp,
@@ -269,29 +283,31 @@ private fun StateContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesView
             when (vehicle.state) {
                 VehicleState.AVAILABLE -> {
                     ActionBtn(
-                            "Send to Maintenance",
-                            colors = ButtonDefaults.buttonColors(containerColor = fleetColors.maintenance)
+                        "Send to Maintenance",
+                        colors = ButtonDefaults.buttonColors(containerColor = fleetColors.maintenance)
                     ) { vm.changeState(vehicle.id!!, VehicleState.MAINTENANCE) }
                     ActionBtn(
-                            "Retire Vehicle",
-                            colors = ButtonDefaults.buttonColors(containerColor = fleetColors.cancelled)
+                        "Retire Vehicle",
+                        colors = ButtonDefaults.buttonColors(containerColor = fleetColors.cancelled)
                     ) { vm.changeState(vehicle.id!!, VehicleState.RETIRED) }
                 }
+
                 VehicleState.MAINTENANCE -> {
                     ActionBtn("Mark Available") { vm.changeState(vehicle.id!!, VehicleState.AVAILABLE) }
                 }
+
                 else ->
-                        Text(
-                                "No manual transitions available.",
-                                fontSize = 13.sp,
-                                color = fleetColors.onBackground.copy(alpha = 0.5f)
-                        )
+                    Text(
+                        "No manual transitions available.",
+                        fontSize = 13.sp,
+                        color = fleetColors.onBackground.copy(alpha = 0.5f)
+                    )
             }
         } else {
             Text(
-                    "Insufficient permissions.",
-                    fontSize = 13.sp,
-                    color = fleetColors.onBackground.copy(alpha = 0.5f)
+                "Insufficient permissions.",
+                fontSize = 13.sp,
+                color = fleetColors.onBackground.copy(alpha = 0.5f)
             )
         }
     }
@@ -312,14 +328,14 @@ private fun OdometerContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesV
                 )
             }
             Button(
-                    onClick = {
-                        val valLong = reading.toLongOrNull() ?: 0L
-                        if (valLong > (vehicle.mileageKm ?: 0L)) {
-                            vm.recordOdometer(vehicle.id!!, valLong)
-                            reading = ""
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    val valLong = reading.toLongOrNull() ?: 0L
+                    if (valLong > (vehicle.mileageKm ?: 0L)) {
+                        vm.recordOdometer(vehicle.id!!, valLong)
+                        reading = ""
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
             ) { Text("Update Odometer") }
         }
     }
@@ -329,29 +345,29 @@ private fun OdometerContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesV
 private fun MaintenanceContent(jobs: List<MaintenanceJobDto>) {
     if (jobs.isEmpty()) {
         Text(
-                "No maintenance history.",
-                fontSize = 13.sp,
-                color = fleetColors.onBackground.copy(alpha = 0.5f)
+            "No maintenance history.",
+            fontSize = 13.sp,
+            color = fleetColors.onBackground.copy(alpha = 0.5f)
         )
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             jobs.take(10).forEach { job ->
                 Card(
-                        colors =
-                                CardDefaults.cardColors(containerColor = fleetColors.surfaceVariant)
+                    colors =
+                        CardDefaults.cardColors(containerColor = fleetColors.surfaceVariant)
                 ) {
                     Column(Modifier.padding(12.dp)) {
                         Text(
-                                job.description ?: "Repair",
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 13.sp
+                            job.description ?: "Repair",
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp
                         )
                         Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             MaintenanceStatusBadge(
-                                    (job.status ?: MaintenanceStatus.UNKNOWN).toUiBadge()
+                                (job.status ?: MaintenanceStatus.UNKNOWN).toUiBadge()
                             )
                             PriorityBadge((job.priority ?: MaintenancePriority.UNKNOWN).toUiBadge())
                         }
@@ -366,9 +382,9 @@ private fun MaintenanceContent(jobs: List<MaintenanceJobDto>) {
 private fun HistoryContent(history: List<LocationHistoryEntry>) {
     if (history.isEmpty()) {
         Text(
-                "No tracking data.",
-                fontSize = 13.sp,
-                color = fleetColors.onBackground.copy(alpha = 0.5f)
+            "No tracking data.",
+            fontSize = 13.sp,
+            color = fleetColors.onBackground.copy(alpha = 0.5f)
         )
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -393,50 +409,54 @@ private fun DetailItem(label: String, value: String, infoIcon: Painter) {
 
 @Composable
 private fun ActionBtn(
-        label: String,
-        colors: ButtonColors = ButtonDefaults.buttonColors(),
-        onClick: () -> Unit
+    label: String,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    onClick: () -> Unit
 ) {
     Button(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
-            colors = colors,
-            shape = RoundedCornerShape(8.dp)
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = colors,
+        shape = RoundedCornerShape(8.dp)
     ) { Text(label, fontSize = 13.sp) }
 }
 
 private fun VehicleState.toUiBadge() =
-        when (this) {
-            VehicleState.AVAILABLE -> VehicleStatus.AVAILABLE
-            VehicleState.RENTED -> VehicleStatus.RENTED
-            VehicleState.MAINTENANCE -> VehicleStatus.MAINTENANCE
-            VehicleState.RETIRED -> VehicleStatus.RETIRED
-            VehicleState.RESERVED -> VehicleStatus.RESERVED
-            VehicleState.UNKNOWN -> VehicleStatus.RETIRED
-        }
+    when (this) {
+        VehicleState.AVAILABLE -> VehicleStatus.AVAILABLE
+        VehicleState.RENTED -> VehicleStatus.RENTED
+        VehicleState.MAINTENANCE -> VehicleStatus.MAINTENANCE
+        VehicleState.RETIRED -> VehicleStatus.RETIRED
+        VehicleState.RESERVED -> VehicleStatus.RESERVED
+        VehicleState.UNKNOWN -> VehicleStatus.RETIRED
+    }
 
 private fun org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.toUiBadge() =
-        when (this) {
-            org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.SCHEDULED ->
-                    org.solodev.fleet.mngt.components.common.MaintenanceStatus.SCHEDULED
-            org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.IN_PROGRESS ->
-                    org.solodev.fleet.mngt.components.common.MaintenanceStatus.IN_PROGRESS
-            org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.COMPLETED ->
-                    org.solodev.fleet.mngt.components.common.MaintenanceStatus.COMPLETED
-            org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.CANCELLED ->
-                    org.solodev.fleet.mngt.components.common.MaintenanceStatus.CANCELLED
-            org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.UNKNOWN ->
-                    org.solodev.fleet.mngt.components.common.MaintenanceStatus.CANCELLED
-        }
+    when (this) {
+        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.SCHEDULED ->
+            org.solodev.fleet.mngt.components.common.MaintenanceStatus.SCHEDULED
+
+        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.IN_PROGRESS ->
+            org.solodev.fleet.mngt.components.common.MaintenanceStatus.IN_PROGRESS
+
+        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.COMPLETED ->
+            org.solodev.fleet.mngt.components.common.MaintenanceStatus.COMPLETED
+
+        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.CANCELLED ->
+            org.solodev.fleet.mngt.components.common.MaintenanceStatus.CANCELLED
+
+        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.UNKNOWN ->
+            org.solodev.fleet.mngt.components.common.MaintenanceStatus.CANCELLED
+    }
 
 private fun MaintenancePriority.toUiBadge() =
-        when (this) {
-            MaintenancePriority.LOW -> Priority.LOW
-            MaintenancePriority.NORMAL -> Priority.NORMAL
-            MaintenancePriority.HIGH -> Priority.HIGH
-            MaintenancePriority.URGENT -> Priority.URGENT
-            MaintenancePriority.UNKNOWN -> Priority.NORMAL
-        }
+    when (this) {
+        MaintenancePriority.LOW -> Priority.LOW
+        MaintenancePriority.NORMAL -> Priority.NORMAL
+        MaintenancePriority.HIGH -> Priority.HIGH
+        MaintenancePriority.URGENT -> Priority.URGENT
+        MaintenancePriority.UNKNOWN -> Priority.NORMAL
+    }
 
 /** Formats a coordinate to 5 decimal places without String.format (unavailable in Kotlin/Wasm). */
 private fun Double.formatCoord(): String {

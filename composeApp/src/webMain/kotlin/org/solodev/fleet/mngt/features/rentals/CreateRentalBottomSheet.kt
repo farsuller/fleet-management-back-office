@@ -204,7 +204,7 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
                     modifier =
-                            Modifier.widthIn(max = 1000.dp)
+                            Modifier.widthIn(max = 1800.dp)
                                     .fillMaxWidth()
                                     .padding(horizontal = 24.dp)
                                     .padding(bottom = 40.dp)
@@ -386,121 +386,165 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                     }
                 }
 
-                HorizontalDivider(color = colors.border.copy(alpha = 0.5f))
+                // 2. Details & Terms Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(32.dp)
+                ) {
+                    // Left Column: Rental Terms
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        LabeledInfo("Rental Terms", infoIcon)
+                        
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LabeledInfo("Start Date", infoIcon)
+                            Box {
+                                OutlinedTextField(
+                                    value = startDate,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    trailingIcon = { Icon(Icons.Default.DateRange, null) }
+                                )
+                                Box(
+                                    modifier = Modifier.matchParentSize().clickable { showStartDatePicker = true }
+                                )
+                            }
+                        }
 
-                // 2. Customer Selection
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Row(
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LabeledInfo("End Date", infoIcon)
+                            Box {
+                                OutlinedTextField(
+                                    value = endDate,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    trailingIcon = { Icon(Icons.Default.DateRange, null) }
+                                )
+                                Box(
+                                    modifier = Modifier.matchParentSize().clickable { showEndDatePicker = true }
+                                )
+                            }
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LabeledInfo("Daily Rate (PHP)", infoIcon)
+                            OutlinedTextField(
+                                value = dailyRate,
+                                onValueChange = {
+                                    if (it.all { char -> char.isDigit() }) dailyRate = it
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                prefix = { Text("PHP") }
+                            )
+                        }
+                    }
+
+                    // Right Column: Customer Information
+                    Column(
+                        modifier = Modifier.weight(1.8f),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        LabeledInfo("Customer Information", infoIcon)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("New Customer", fontSize = 13.sp, color = colors.text2)
-                            Spacer(Modifier.width(8.dp))
-                            Switch(
+                        ) {
+                            LabeledInfo("Customer Information", infoIcon)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("New Customer", fontSize = 13.sp, color = colors.text2)
+                                Spacer(Modifier.width(8.dp))
+                                Switch(
                                     checked = isNewCustomer,
                                     onCheckedChange = {
                                         isNewCustomer = it
                                         errors = null
                                     },
                                     small = true
-                            )
+                                )
+                            }
                         }
-                    }
 
-                    if (isNewCustomer) {
-                        Surface(
+                        if (isNewCustomer) {
+                            Surface(
                                 border = BorderStroke(1.dp, colors.primary.copy(alpha = 0.3f)),
                                 shape = RoundedCornerShape(16.dp),
                                 color = colors.primary.copy(alpha = 0.02f)
-                        ) {
-                            Column(
+                            ) {
+                                Column(
                                     Modifier.padding(20.dp),
                                     verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    OutlinedTextField(
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                        OutlinedTextField(
                                             firstName,
                                             { firstName = it },
                                             label = { Text("First Name") },
                                             modifier = Modifier.weight(1f)
-                                    )
-                                    OutlinedTextField(
+                                        )
+                                        OutlinedTextField(
                                             lastName,
                                             { lastName = it },
                                             label = { Text("Last Name") },
                                             modifier = Modifier.weight(1f)
-                                    )
-                                }
-                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    OutlinedTextField(
+                                        )
+                                    }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                        OutlinedTextField(
                                             email,
                                             { email = it },
                                             label = { Text("Email") },
                                             modifier = Modifier.weight(1.5f)
-                                    )
-                                    OutlinedTextField(
+                                        )
+                                        OutlinedTextField(
                                             phone,
                                             { phone = it },
                                             label = { Text("Phone") },
                                             modifier = Modifier.weight(1f)
-                                    )
-                                }
-                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    OutlinedTextField(
+                                        )
+                                    }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                        OutlinedTextField(
                                             licenseNumber,
                                             { licenseNumber = it.uppercase() },
                                             label = { Text("Driver License #") },
                                             modifier = Modifier.weight(1f)
-                                    )
-                                    OutlinedTextField(
+                                        )
+                                        OutlinedTextField(
                                             licenseExpiry,
                                             { licenseExpiry = it },
                                             label = { Text("Expiry (YYYY-MM-DD)") },
                                             modifier = Modifier.weight(1f),
                                             placeholder = { Text("2028-12-31") }
-                                    )
-                                }
-                                Text(
+                                        )
+                                    }
+                                    Text(
                                         "Customer ID will be auto-generated upon saving.",
                                         fontSize = 11.sp,
                                         color = colors.primary.copy(alpha = 0.7f),
                                         fontWeight = FontWeight.Medium
-                                )
+                                    )
+                                }
                             }
-                        }
-                    } else {
-                        when (val s = customersState) {
-                            is UiState.Loading -> LinearProgressIndicator(Modifier.fillMaxWidth())
-                            is UiState.Error -> Text(s.message, color = colors.cancelled)
-                            is UiState.Success -> {
-                                var expanded by remember { mutableStateOf(false) }
-                                var filterText by remember { mutableStateOf("") }
-                                val filtered =
-                                        s.data.filter {
-                                            (it.firstName ?: "").contains(
-                                                    filterText,
-                                                    ignoreCase = true
-                                            ) ||
-                                                    (it.lastName ?: "").contains(
-                                                            filterText,
-                                                            ignoreCase = true
-                                                    ) ||
-                                                    (it.email ?: "").contains(
-                                                            filterText,
-                                                            ignoreCase = true
-                                                    )
-                                        }
+                        } else {
+                            when (val s = customersState) {
+                                is UiState.Loading -> LinearProgressIndicator(Modifier.fillMaxWidth())
+                                is UiState.Error -> Text(s.message, color = colors.cancelled)
+                                is UiState.Success -> {
+                                    var expanded by remember { mutableStateOf(false) }
+                                    var filterText by remember { mutableStateOf("") }
+                                    val filtered = s.data.filter {
+                                        (it.firstName ?: "").contains(filterText, ignoreCase = true) ||
+                                                (it.lastName ?: "").contains(filterText, ignoreCase = true) ||
+                                                (it.email ?: "").contains(filterText, ignoreCase = true)
+                                    }
 
-                                Box {
-                                    OutlinedTextField(
-                                            value =
-                                                    selectedCustomer?.let {
-                                                        "${it.firstName} ${it.lastName}"
-                                                    }
-                                                            ?: filterText,
+                                    Box {
+                                        OutlinedTextField(
+                                            value = selectedCustomer?.let { "${it.firstName} ${it.lastName}" } ?: filterText,
                                             onValueChange = {
                                                 filterText = it
                                                 if (selectedCustomer != null) {
@@ -513,105 +557,38 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                                             trailingIcon = {
                                                 IconButton(onClick = { expanded = !expanded }) {
                                                     Icon(
-                                                            if (expanded)
-                                                                    Icons.Default.KeyboardArrowUp
-                                                            else Icons.Default.KeyboardArrowDown,
-                                                            null
+                                                        if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                                        null
                                                     )
                                                 }
                                             },
                                             singleLine = true
-                                    )
-                                    DropdownMenu(
+                                        )
+                                        DropdownMenu(
                                             expanded = expanded && filtered.isNotEmpty(),
                                             onDismissRequest = { expanded = false },
-                                            modifier =
-                                                    Modifier.widthIn(min = 300.dp)
-                                                            .fillMaxWidth(0.5f)
-                                    ) {
-                                        filtered.take(10).forEach { customer ->
-                                            DropdownMenuItem(
+                                            modifier = Modifier.widthIn(min = 300.dp).fillMaxWidth(0.5f)
+                                        ) {
+                                            filtered.take(10).forEach { customer ->
+                                                DropdownMenuItem(
                                                     text = {
                                                         Column {
-                                                            Text(
-                                                                    "${customer.firstName} ${customer.lastName}",
-                                                                    fontWeight = FontWeight.Medium
-                                                            )
-                                                            Text(
-                                                                    customer.email ?: "",
-                                                                    fontSize = 11.sp,
-                                                                    color = colors.text2
-                                                            )
+                                                            Text("${customer.firstName} ${customer.lastName}", fontWeight = FontWeight.Medium)
+                                                            Text(customer.email ?: "", fontSize = 11.sp, color = colors.text2)
                                                         }
                                                     },
                                                     onClick = {
                                                         selectedCustomer = customer
-                                                        filterText =
-                                                                "${customer.firstName} ${customer.lastName}"
+                                                        filterText = "${customer.firstName} ${customer.lastName}"
                                                         expanded = false
                                                     }
-                                            )
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }
-
-                HorizontalDivider(color = colors.border.copy(alpha = 0.5f))
-
-                // 3. Rental Terms
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        LabeledInfo("Start Date", infoIcon)
-                        Box {
-                            OutlinedTextField(
-                                    value = startDate,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    trailingIcon = { Icon(Icons.Default.DateRange, null) }
-                            )
-                            Box(
-                                    modifier =
-                                            Modifier.matchParentSize().clickable {
-                                                showStartDatePicker = true
-                                            }
-                            )
-                        }
-                    }
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        LabeledInfo("End Date", infoIcon)
-                        Box {
-                            OutlinedTextField(
-                                    value = endDate,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    trailingIcon = { Icon(Icons.Default.DateRange, null) }
-                            )
-                            Box(
-                                    modifier =
-                                            Modifier.matchParentSize().clickable {
-                                                showEndDatePicker = true
-                                            }
-                            )
-                        }
-                    }
-                    Column(
-                            Modifier.weight(0.8f),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        LabeledInfo("Daily Rate (PHP)", infoIcon)
-                        OutlinedTextField(
-                                value = dailyRate,
-                                onValueChange = {
-                                    if (it.all { char -> char.isDigit() }) dailyRate = it
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                prefix = { Text("PHP") }
-                        )
                     }
                 }
 

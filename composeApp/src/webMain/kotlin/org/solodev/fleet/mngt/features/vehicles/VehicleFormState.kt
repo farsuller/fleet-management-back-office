@@ -34,6 +34,6 @@ data class VehicleFormErrors(
     val year: String? = null,
     val serverError: String? = null
 ) {
-    fun hasErrors(): Boolean = 
+    fun hasErrors(): Boolean =
         vin != null || licensePlate != null || make != null || model != null || year != null
 }

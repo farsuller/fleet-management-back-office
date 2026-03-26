@@ -26,7 +26,6 @@ import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import org.solodev.fleet.mngt.components.common.ActionErrorDialog
 import org.solodev.fleet.mngt.components.common.LabeledInfo
 import org.solodev.fleet.mngt.components.common.VehicleSelectionCard
 import org.solodev.fleet.mngt.theme.fleetColors
@@ -79,6 +78,7 @@ fun AssignDriverSheet(
     }
 
     ModalBottomSheet(
+        modifier = Modifier.fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
@@ -88,9 +88,9 @@ fun AssignDriverSheet(
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
                 modifier = Modifier
-                    .widthIn(max = 1000.dp)
+                    .widthIn(max = 1800.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 48.dp)
                     .padding(bottom = 40.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(24.dp)

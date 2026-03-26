@@ -5,14 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +22,7 @@ import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
@@ -29,7 +32,6 @@ import org.solodev.fleet.mngt.components.common.*
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
-import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,12 +97,12 @@ fun DriversListScreen(
                         color = colors.onBackground.copy(alpha = 0.6f)
                     )
                 }
-                
+
                 if (canManage) {
                     Button(
                         onClick = {
                             driverToEdit = null
-                            showCreateSheet = true 
+                            showCreateSheet = true
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
@@ -114,7 +116,9 @@ fun DriversListScreen(
 
             // Active Shift Status Card (if any)
             if (activeShiftState is UiState.Success && (activeShiftState as UiState.Success<ShiftResponse?>).data != null) {
-                ActiveShiftCard((activeShiftState as UiState.Success<ShiftResponse?>).data!!, onEndShift = { viewModel.endShift() })
+                ActiveShiftCard(
+                    (activeShiftState as UiState.Success<ShiftResponse?>).data!!,
+                    onEndShift = { viewModel.endShift() })
             }
 
             // KPI Cards Overview
@@ -128,7 +132,7 @@ fun DriversListScreen(
                     onFilterClick = { /* Handle filter */ },
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
-                
+
                 // Secondary Card: Performance/Shift Overview (Placeholder)
                 Card(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -139,25 +143,39 @@ fun DriversListScreen(
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
-                                modifier = Modifier.size(44.dp).clip(RoundedCornerShape(10.dp)).background(colors.surface2),
+                                modifier = Modifier.size(44.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(colors.surface2),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.TrendingUp, null, tint = colors.primary, modifier = Modifier.size(24.dp))
+                                Icon(
+                                    Icons.Default.TrendingUp,
+                                    null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
                             Spacer(Modifier.width(16.dp))
                             Column {
-                                Text("Shift Activity", style = MaterialTheme.typography.bodyMedium, color = colors.text2)
-                                Text("${stats.active} Active", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Shift Activity",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = colors.text2
+                                )
+                                Text(
+                                    "${stats.active} Active",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
-                        
+
                         LinearProgressIndicator(
                             progress = { if (stats.total > 0) stats.active.toFloat() / stats.total else 0f },
                             modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                             color = colors.primary,
                             trackColor = colors.border
                         )
-                        
+
                         Text(
                             "Currently ${stats.active} drivers are on active shifts across the fleet.",
                             fontSize = 12.sp,
@@ -184,20 +202,40 @@ fun DriversListScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
-                                        modifier = Modifier.size(32.dp).clip(CircleShape).background(colors.primary.copy(alpha = 0.1f)),
+                                        modifier = Modifier.size(32.dp).clip(CircleShape)
+                                            .background(colors.primary.copy(alpha = 0.1f)),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text((driver.firstName ?: " ").take(1).uppercase(), color = colors.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text(
+                                            (driver.firstName ?: " ").take(1).uppercase(),
+                                            color = colors.primary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp
+                                        )
                                     }
                                     Spacer(Modifier.width(12.dp))
-                                    Text("${driver.firstName} ${driver.lastName}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                                    Text(
+                                        "${driver.firstName} ${driver.lastName}",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
                                 }
-                                Text(driver.email ?: "—", modifier = Modifier.weight(1f), fontSize = 13.sp, color = colors.text2)
-                                Text(driver.licenseNumber ?: "—", modifier = Modifier.weight(1f), fontSize = 13.sp, color = colors.text2)
+                                Text(
+                                    driver.email ?: "—",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text2
+                                )
+                                Text(
+                                    driver.licenseNumber ?: "—",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text2
+                                )
                                 Box(Modifier.weight(1f)) {
-                                    val status = if (driver.currentAssignment?.isActive == true) DriverStatus.ACTIVE 
-                                                else if (driver.isActive == true) DriverStatus.AVAILABLE 
-                                                else DriverStatus.DISABLED
+                                    val status = if (driver.currentAssignment?.isActive == true) DriverStatus.ACTIVE
+                                    else if (driver.isActive == true) DriverStatus.AVAILABLE
+                                    else DriverStatus.DISABLED
                                     DriverStatusBadge(status)
                                 }
                                 Row(
@@ -225,7 +263,12 @@ fun DriversListScreen(
                                                 onClick = { assigningDriver = driver },
                                                 modifier = Modifier.size(28.dp)
                                             ) {
-                                                Icon(Icons.Default.Link, "Assign", tint = colors.available, modifier = Modifier.size(16.dp))
+                                                Icon(
+                                                    Icons.Default.Link,
+                                                    "Assign",
+                                                    tint = colors.available,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
                                             }
                                         }
                                     }
@@ -242,7 +285,7 @@ fun DriversListScreen(
             DriverDetailPanel(
                 driverId = selectedDriverId,
                 onClose = { viewModel.closeDetail() },
-                onEdit = { 
+                onEdit = {
                     driverToEdit = it
                     showCreateSheet = true
                 },
@@ -253,7 +296,7 @@ fun DriversListScreen(
 
     if (showCreateSheet) {
         DriverSheet(
-            onDismiss = { 
+            onDismiss = {
                 showCreateSheet = false
                 driverToEdit = null
             },
@@ -286,15 +329,19 @@ fun ActiveShiftCard(shift: ShiftResponse, onEndShift: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                 modifier = Modifier.size(48.dp).clip(CircleShape).background(colors.primary),
-                 contentAlignment = Alignment.Center
+                modifier = Modifier.size(48.dp).clip(CircleShape).background(colors.primary),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Filled.Timer, null, tint = Color.White)
             }
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text("Active Shift: ${shift.vehicleId}", fontWeight = FontWeight.Bold, color = colors.primary)
-                Text("Started: ${shift.startedAt ?: "—"}", fontSize = 12.sp, color = colors.onBackground.copy(alpha = 0.6f))
+                Text(
+                    "Started: ${shift.startedAt ?: "—"}",
+                    fontSize = 12.sp,
+                    color = colors.onBackground.copy(alpha = 0.6f)
+                )
             }
             Button(
                 onClick = onEndShift,

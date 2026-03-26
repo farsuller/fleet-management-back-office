@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,13 +12,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fleetmanagementbackoffice.composeapp.generated.resources.*
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
-import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
-import org.solodev.fleet.mngt.components.common.ActionErrorDialog
+import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.components.common.LabeledInfo
 import org.solodev.fleet.mngt.theme.fleetColors
 
@@ -136,7 +134,10 @@ fun DriverSheet(
                         if (isSubmitting) {
                             CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                         } else {
-                            Text(if (driver != null) "Save Changes" else "Create Driver", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                if (driver != null) "Save Changes" else "Create Driver",
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -215,7 +216,11 @@ fun DriverSheet(
                     ) {
                         Column {
                             Text("Account Status", fontWeight = FontWeight.SemiBold)
-                            Text("Deactivating the driver will prevent them from being assigned.", fontSize = 12.sp, color = colors.onBackground.copy(alpha = 0.6f))
+                            Text(
+                                "Deactivating the driver will prevent them from being assigned.",
+                                fontSize = 12.sp,
+                                color = colors.onBackground.copy(alpha = 0.6f)
+                            )
                         }
                         Switch(
                             checked = isActive,

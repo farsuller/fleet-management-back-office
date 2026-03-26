@@ -8,6 +8,7 @@ import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.driver.EndShiftRequest
 import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
 import org.solodev.fleet.mngt.api.dto.driver.StartShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface DriverRepository {
@@ -15,6 +16,8 @@ interface DriverRepository {
     suspend fun getDriver(id: String): Result<DriverDto>
     suspend fun createDriver(request: CreateDriverRequest): Result<DriverDto>
     suspend fun deactivateDriver(id: String): Result<DriverDto>
+    suspend fun activateDriver(id: String): Result<DriverDto>
+    suspend fun updateDriver(id: String, request: UpdateDriverRequest): Result<DriverDto>
     suspend fun assignToVehicle(driverId: String, request: AssignDriverRequest): Result<AssignmentDto>
     suspend fun releaseFromVehicle(driverId: String): Result<AssignmentDto>
     suspend fun getAssignmentHistory(driverId: String): Result<List<AssignmentDto>>
@@ -41,6 +44,12 @@ class DriverRepositoryImpl(private val api: FleetApiClient) : DriverRepository {
 
     override suspend fun deactivateDriver(id: String) =
         api.deactivateDriver(id).onSuccess { listCache.clear() }
+
+    override suspend fun activateDriver(id: String) =
+        api.activateDriver(id).onSuccess { listCache.clear() }
+
+    override suspend fun updateDriver(id: String, request: UpdateDriverRequest) =
+        api.updateDriver(id, request).onSuccess { listCache.clear() }
 
     override suspend fun assignToVehicle(driverId: String, request: AssignDriverRequest) =
         api.assignDriver(driverId, request).onSuccess { listCache.clear() }

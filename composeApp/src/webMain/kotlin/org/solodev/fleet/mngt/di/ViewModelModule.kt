@@ -61,11 +61,13 @@ import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobsUseCa
 import org.solodev.fleet.mngt.domain.usecase.maintenance.ScheduleMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.maintenance.StartMaintenanceUseCase
 import org.solodev.fleet.mngt.features.maintenance.MaintenanceViewModel
+import org.solodev.fleet.mngt.domain.usecase.driver.ActivateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.UpdateDriverUseCase
 import org.solodev.fleet.mngt.features.drivers.DriversViewModel
 import org.solodev.fleet.mngt.features.tracking.FleetTrackingViewModel
 import org.solodev.fleet.mngt.features.users.UsersViewModel
@@ -191,9 +193,13 @@ val viewModelModule = module {
         DriversViewModel(
             getDriversUseCase = get(),
             createDriverUseCase = get(),
+            updateDriverUseCase = get(),
+            activateDriverUseCase = get(),
             deactivateDriverUseCase = get(),
             assignDriverUseCase = get(),
             releaseDriverUseCase = get(),
+            getVehiclesUseCase = get(),
+            getVehicleUseCase = get(),
             driverRepository = get(),
             authState = get(),
         )

@@ -24,6 +24,7 @@ import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.ActivateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
@@ -33,6 +34,7 @@ import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.GetVehicleActiveDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.GetVehicleDriverHistoryUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.UpdateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.dashboard.GetDashboardUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
@@ -94,12 +96,14 @@ val useCaseModule = module {
     factory { GetDriversUseCase(get()) }
     factory { GetDriverUseCase(get()) }
     factory { CreateDriverUseCase(get()) }
+    factory { ActivateDriverUseCase(get()) }
     factory { DeactivateDriverUseCase(get()) }
     factory { AssignDriverUseCase(get()) }
     factory { ReleaseDriverUseCase(get()) }
     factory { GetDriverAssignmentsUseCase(get()) }
     factory { GetVehicleActiveDriverUseCase(get()) }
     factory { GetVehicleDriverHistoryUseCase(get()) }
+    factory { UpdateDriverUseCase(get()) }
 
     // Rental
     factory { GetRentalsUseCase(get()) }

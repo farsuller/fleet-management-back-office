@@ -126,7 +126,7 @@ fun AddVehicleSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.widthIn(max = 1000.dp),
         containerColor = colors.surface,
         contentColor = colors.onBackground,
         dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
@@ -137,9 +137,9 @@ fun AddVehicleSheet(
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
                 modifier = Modifier
-                    .widthIn(max = 1200.dp) // Aligns with typical wide table layouts
+                    .widthIn(max = 1000.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 48.dp)
                     .padding(bottom = 40.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -157,7 +157,7 @@ fun AddVehicleSheet(
                     Button(
                         onClick = handleSubmit,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.height(40.dp)
+                        modifier = Modifier.height(40.dp),
                     ) {
                         Text(if (isEdit) "Update" else "Add Vehicle", fontWeight = FontWeight.SemiBold)
                     }
@@ -169,74 +169,115 @@ fun AddVehicleSheet(
                     }
                 }
 
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Column(Modifier.weight(1.5f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Vehicle Identification Number", infoIcon)
-                        OutlinedTextField(
-                            value = formState.vin,
-                            onValueChange = { 
-                                val newVin = it.uppercase()
-                                if (newVin.length <= 17) formState = formState.copy(vin = newVin)
-                                errors = errors.copy(vin = null) 
-                            },
-                            label = { Text("VIN (17 characters)") },
-                            isError = errors.vin != null,
-                            supportingText = { errors.vin?.let { Text(it) } },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                        )
-                    }
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Plate Number", infoIcon)
-                        OutlinedTextField(
-                            value = formState.licensePlate,
-                            onValueChange = { formState = formState.copy(licensePlate = it.uppercase()); errors = errors.copy(licensePlate = null) },
-                            label = { Text("License Plate") },
-                            isError = errors.licensePlate != null,
-                            supportingText = { errors.licensePlate?.let { Text(it) } },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                        )
-                    }
-                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(48.dp)
+                ) {
+                    // Left Column: Vehicle Details
+                    Column(
+                        modifier = Modifier.weight(1.5f),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        // VIN & Plate
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Column(Modifier.weight(1.5f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Vehicle Identification Number", infoIcon)
+                                OutlinedTextField(
+                                    value = formState.vin,
+                                    onValueChange = { 
+                                        val newVin = it.uppercase()
+                                        if (newVin.length <= 17) formState = formState.copy(vin = newVin)
+                                        errors = errors.copy(vin = null) 
+                                    },
+                                    label = { Text("VIN (17 characters)") },
+                                    isError = errors.vin != null,
+                                    supportingText = { errors.vin?.let { Text(it) } },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                )
+                            }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Plate Number", infoIcon)
+                                OutlinedTextField(
+                                    value = formState.licensePlate,
+                                    onValueChange = { formState = formState.copy(licensePlate = it.uppercase()); errors = errors.copy(licensePlate = null) },
+                                    label = { Text("License Plate") },
+                                    isError = errors.licensePlate != null,
+                                    supportingText = { errors.licensePlate?.let { Text(it) } },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                )
+                            }
+                        }
 
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Manufacturer of the Vehicle (Toyota, Honda, etc.)", infoIcon)
-                        OutlinedTextField(formState.make, { formState = formState.copy(make = it); errors = errors.copy(make = null) }, label = { Text("Make") }, isError = errors.make != null, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                    }
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Vehicle Model (Corolla, Camry, etc.)", infoIcon)
-                        OutlinedTextField(formState.model, { formState = formState.copy(model = it); errors = errors.copy(model = null) }, label = { Text("Model") }, isError = errors.model != null, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                    }
-                    Column(Modifier.weight(0.6f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Year of the Vehicle", infoIcon)
-                        Box {
-                            OutlinedTextField(
-                                value = formState.year,
-                                onValueChange = { },
-                                label = { Text("Year") },
-                                isError = errors.year != null,
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                readOnly = true
-                            )
-                            // Transparent overlay to catch clicks since TextField is readOnly
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .pointerInput(Unit) {
-                                        awaitPointerEventScope {
-                                            while (true) {
-                                                val event = awaitPointerEvent(PointerEventPass.Main)
-                                                if (event.changes.any { it.pressed }) {
-                                                    showYearPicker = true
+                        // Make & Model & Year
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Make", infoIcon)
+                                OutlinedTextField(formState.make, { formState = formState.copy(make = it); errors = errors.copy(make = null) }, label = { Text("Make") }, isError = errors.make != null, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Model", infoIcon)
+                                OutlinedTextField(formState.model, { formState = formState.copy(model = it); errors = errors.copy(model = null) }, label = { Text("Model") }, isError = errors.model != null, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            }
+                            Column(Modifier.weight(0.7f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Year", infoIcon)
+                                Box {
+                                    OutlinedTextField(
+                                        value = formState.year,
+                                        onValueChange = { },
+                                        label = { Text("Year") },
+                                        isError = errors.year != null,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true,
+                                        readOnly = true
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .pointerInput(Unit) {
+                                                awaitPointerEventScope {
+                                                    while (true) {
+                                                        val event = awaitPointerEvent(PointerEventPass.Main)
+                                                        if (event.changes.any { it.pressed }) {
+                                                            showYearPicker = true
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                            )
+                                    )
+                                }
+                            }
                         }
+
+                        // Color & Odometer
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Color", infoIcon)
+                                OutlinedTextField(formState.color, { formState = formState.copy(color = it) }, label = { Text("Color") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                LabeledInfo("Current Mileage (km)", infoIcon)
+                                OutlinedTextField(
+                                    formState.mileage, { formState = formState.copy(mileage = it) },
+                                    label = { Text("Odometer (km)") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                )
+                            }
+                        }
+                    }
+
+                    // Right Column: Maintenance & Actions
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        Text("Maintenance Schedule", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = colors.primary)
+                        HorizontalDivider(color = colors.primary.copy(alpha = 0.2f))
+                        
+                        LabeledTextField("Last Service Mileage", formState.lastServiceMileage, { formState = formState.copy(lastServiceMileage = it) }, serviceIcon, "Odometer reading at last oil change.", isNumber = true)
+                        LabeledTextField("Next Service Mileage", formState.nextServiceMileage, { formState = formState.copy(nextServiceMileage = it) }, serviceIcon, "Odometer reading when next service is due.", isNumber = true)
                     }
                 }
 
@@ -263,33 +304,10 @@ fun AddVehicleSheet(
                     ) {
                         DatePicker(
                             state = datePickerState,
-                            showModeToggle = true // Allow user to switch to year only easily if header icon is clicked
+                            showModeToggle = true
                         )
                     }
                 }
-
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Exterior Color of the Vehicle", infoIcon)
-                        OutlinedTextField(formState.color, { formState = formState.copy(color = it) }, label = { Text("Color") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                    }
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LabeledInfo("Starting Mileage (km)", infoIcon)
-                        OutlinedTextField(
-                            formState.mileage, { formState = formState.copy(mileage = it) },
-                            label = { Text("Initial Odometer (km)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                        )
-                    }
-                }
-            
-            Spacer(Modifier.height(16.dp))
-            Text("Maintenance Info", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = colors.primary)
-            HorizontalDivider(color = colors.primary.copy(alpha = 0.2f))
-            
-            LabeledTextField("Last Service Mileage", formState.lastServiceMileage, { formState = formState.copy(lastServiceMileage = it) }, serviceIcon, "Odometer reading at last oil change.", isNumber = true)
-            LabeledTextField("Next Service Mileage", formState.nextServiceMileage, { formState = formState.copy(nextServiceMileage = it) }, serviceIcon, "Odometer reading when next service is due.", isNumber = true)
             
             Spacer(Modifier.height(24.dp))
 

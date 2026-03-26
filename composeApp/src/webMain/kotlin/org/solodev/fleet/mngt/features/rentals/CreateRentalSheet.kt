@@ -204,9 +204,9 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
                     modifier =
-                            Modifier.widthIn(max = 1000.dp)
+                            Modifier.widthIn(max = 800.dp)
                                     .fillMaxWidth()
-                                    .padding(horizontal = 24.dp)
+                                    .padding(horizontal = 48.dp)
                                     .padding(bottom = 40.dp)
                                     .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(24.dp),

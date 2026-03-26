@@ -7,6 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
@@ -31,6 +35,7 @@ class MaintenanceViewModel(
     private val completeMaintenanceUseCase: CompleteMaintenanceUseCase,
     private val cancelMaintenanceUseCase: CancelMaintenanceUseCase,
     private val getVehiclesUseCase: GetVehiclesUseCase,
+    private val authState: AuthState,
 ) : ViewModel() {
 
     // ── List state ────────────────────────────────────────────────────────────
@@ -68,8 +73,11 @@ class MaintenanceViewModel(
     val vehicles: StateFlow<List<VehicleDto>> = _vehicles.asStateFlow()
 
     init {
-        loadList()
-        loadVehicles()
+        viewModelScope.launch {
+            authState.status.filterIsInstance<AuthStatus.Authenticated>().first()
+            loadList()
+            loadVehicles()
+        }
     }
 
     // ── List actions ──────────────────────────────────────────────────────────

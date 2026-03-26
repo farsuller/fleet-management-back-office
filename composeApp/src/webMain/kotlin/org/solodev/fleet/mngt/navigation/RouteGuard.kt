@@ -22,7 +22,6 @@ import org.solodev.fleet.mngt.features.maintenance.MaintenanceListScreen
 import org.solodev.fleet.mngt.features.customers.CustomerDetailScreen
 import org.solodev.fleet.mngt.features.customers.CustomersListScreen
 import org.solodev.fleet.mngt.features.dashboard.DashboardScreen
-import org.solodev.fleet.mngt.features.rentals.RentalDetailScreen
 import org.solodev.fleet.mngt.features.rentals.RentalsListScreen
 import org.solodev.fleet.mngt.features.settings.SettingsScreen
 import org.solodev.fleet.mngt.features.tracking.LiveTrackingScreen
@@ -75,7 +74,7 @@ fun AppNavHost(router: AppRouter) {
         is Screen.VehicleCreate  -> AppShell(router = router) { VehiclesListScreen(router = router) }
 
         is Screen.Rentals        -> AppShell(router = router) { RentalsListScreen(router = router) }
-        is Screen.RentalDetail   -> AppShell(router = router) { RentalDetailScreen(screen.rentalId, router = router) }
+        is Screen.RentalDetail   -> AppShell(router = router) { RentalsListScreen(router = router) }
         is Screen.RentalCreate   -> AppShell(router = router) { RentalsListScreen(router = router) }
 
         is Screen.Customers      -> AppShell(router = router) { CustomersListScreen(router = router) }

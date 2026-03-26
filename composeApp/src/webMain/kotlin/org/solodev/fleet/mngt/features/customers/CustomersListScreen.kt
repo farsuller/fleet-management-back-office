@@ -49,6 +49,8 @@ import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import androidx.compose.runtime.LaunchedEffect
 
 private fun formatExpiryDate(epochMs: Long): String {
     val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
@@ -66,6 +68,25 @@ fun CustomersListScreen(router: AppRouter) {
     val colors = fleetColors
     val nowMs = Clock.System.now().toEpochMilliseconds()
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+
+    // Auto-show dialog on error
+    LaunchedEffect(state) {
+        if (state is UiState.Error) {
+            showErrorDialog = true
+        }
+    }
+
+    if (showErrorDialog && state is UiState.Error) {
+        ServerErrorDialog(
+            message = (state as UiState.Error).message,
+            onRetry = {
+                vm.refresh()
+                showErrorDialog = false
+            },
+            onDismiss = { showErrorDialog = false }
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -97,13 +118,9 @@ fun CustomersListScreen(router: AppRouter) {
 
         when (val s = state) {
             is UiState.Loading -> TableSkeleton(rows = 8)
-            is UiState.Error -> Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(s.message, color = MaterialTheme.colorScheme.error)
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = vm::refresh) { Text("Retry") }
+            is UiState.Error -> {
+                // Inline error removed in favor of modal
+                TableSkeleton(rows = 8)
             }
             is UiState.Success -> PaginatedTable(
                 headers = listOf("Name", "Email", "Phone", "License #", "License Expiry", "Active"),

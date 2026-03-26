@@ -24,6 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +42,7 @@ import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 
 @Composable
 fun UsersListScreen(router: AppRouter) {
@@ -59,6 +63,25 @@ fun UsersListScreen(router: AppRouter) {
     val vm = koinViewModel<UsersViewModel>()
     val state by vm.listState.collectAsState()
     val isRefreshing by vm.isRefreshing.collectAsState()
+    var showErrorDialog by remember { mutableStateOf<Boolean>(false) }
+
+    // Auto-show dialog on error
+    LaunchedEffect(state) {
+        if (state is UiState.Error) {
+            showErrorDialog = true
+        }
+    }
+
+    if (showErrorDialog && state is UiState.Error) {
+        ServerErrorDialog(
+            message = (state as UiState.Error).message,
+            onRetry = {
+                vm.refresh()
+                showErrorDialog = false
+            },
+            onDismiss = { showErrorDialog = false }
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -82,14 +105,10 @@ fun UsersListScreen(router: AppRouter) {
         }
 
         when (val s = state) {
-            is UiState.Loading -> org.solodev.fleet.mngt.components.common.TableSkeleton(rows = 8)
-            is UiState.Error -> Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(s.message, color = MaterialTheme.colorScheme.error)
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = vm::refresh) { Text("Retry") }
+            is UiState.Loading -> org.solodev.fleet.mngt.components.common.TableSkeleton(rows = 8, columnCount = 5)
+            is UiState.Error -> {
+                // Inline error removed in favor of modal
+                org.solodev.fleet.mngt.components.common.TableSkeleton(rows = 8, columnCount = 5)
             }
             is UiState.Success -> PaginatedTable(
                 headers = listOf("Name", "Email", "Roles", "Verified", "Active"),

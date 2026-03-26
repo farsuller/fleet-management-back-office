@@ -22,6 +22,13 @@ import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.serializer
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import org.solodev.fleet.mngt.api.dto.accounting.AccountDto
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.DriverCollectionRequest
@@ -49,6 +56,7 @@ import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.rental.CompleteRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionRequest
 import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionStatus
@@ -70,6 +78,8 @@ private data class ApiWrapper<T>(
     val success: Boolean,
     val data: T? = null,
     val error: ApiWrapperError? = null,
+    val metadata: Map<String, JsonElement>? = null,
+    val requestId: String? = null,
 )
 
 @Serializable
@@ -137,12 +147,12 @@ class FleetApiClient(
     // ── Vehicles ──────────────────────────────────────────────────────────────
 
     suspend fun getVehicles(
-        cursor: String? = null,
+        page: Int = 1,
         limit: Int = 20,
         state: String? = null,
     ): Result<PagedResponse<VehicleDto>> =
-        get("/v1/vehicles") {
-            cursor?.let { append("cursor", it) }
+        getAsPaged("/v1/vehicles") {
+            append("page", page.toString())
             append("limit", limit.toString())
             state?.let { append("state", it) }
         }
@@ -168,12 +178,12 @@ class FleetApiClient(
     // ── Rentals ───────────────────────────────────────────────────────────────
 
     suspend fun getRentals(
-        cursor: String? = null,
+        page: Int = 1,
         limit: Int = 20,
         status: String? = null,
     ): Result<PagedResponse<RentalDto>> =
         getAsPaged("/v1/rentals") {
-            cursor?.let { append("cursor", it) }
+            append("page", page.toString())
             append("limit", limit.toString())
             status?.let { append("status", it) }
         }
@@ -192,6 +202,12 @@ class FleetApiClient(
 
     suspend fun completeRental(id: String, request: CompleteRentalRequest): Result<RentalDto> =
         post("/v1/rentals/$id/complete", request)
+
+    suspend fun updateRental(id: String, request: UpdateRentalRequest): Result<RentalDto> =
+        patch("/v1/rentals/$id", request)
+
+    suspend fun deleteRental(id: String): Result<Unit> =
+        delete("/v1/rentals/$id")
 
     // ── Customers ─────────────────────────────────────────────────────────────
 
@@ -389,12 +405,26 @@ class FleetApiClient(
             val text = runCatching { response.bodyAsText() }.getOrDefault(response.status.description)
             throw ApiException(response.status.value, text)
         }
-        val wrapper = response.body<ApiWrapper<List<R>>>()
-        if (!wrapper.success || wrapper.data == null) {
-            val msg = wrapper.error?.message ?: "Empty response data"
+        val responseText = response.bodyAsText()
+        val jsonElement = FleetJson.decodeFromString<JsonElement>(responseText)
+        val success = jsonElement.jsonObject["success"]?.jsonPrimitive?.content == "true"
+        
+        if (!success) {
+            val errorElement = jsonElement.jsonObject["error"]
+            val msg = if (errorElement != null) {
+                FleetJson.decodeFromJsonElement<ApiWrapperError>(errorElement).message
+            } else "Request failed"
             throw ApiException(response.status.value, msg)
         }
-        PagedResponse(items = wrapper.data)
+
+        val data = jsonElement.jsonObject["data"] ?: throw ApiException(response.status.value, "Empty response data")
+        
+        if (data is JsonArray) {
+            val items = FleetJson.decodeFromJsonElement<List<R>>(data)
+            PagedResponse(items = items)
+        } else {
+            FleetJson.decodeFromJsonElement<PagedResponse<R>>(data)
+        }
     }
 
     private suspend inline fun <reified R> get(

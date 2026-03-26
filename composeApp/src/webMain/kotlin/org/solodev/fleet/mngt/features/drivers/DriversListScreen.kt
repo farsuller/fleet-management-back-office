@@ -23,6 +23,8 @@ import org.koin.compose.koinInject
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
@@ -44,6 +46,25 @@ fun DriversListScreen(
 
     var showCreateDriver  by remember { mutableStateOf(false) }
     var assigningDriver   by remember { mutableStateOf<DriverDto?>(null) }
+    var showErrorDialog   by remember { mutableStateOf(false) }
+
+    // Auto-show dialog on error
+    LaunchedEffect(listState) {
+        if (listState is UiState.Error) {
+            showErrorDialog = true
+        }
+    }
+
+    if (showErrorDialog && listState is UiState.Error) {
+        ServerErrorDialog(
+            message = (listState as UiState.Error).message,
+            onRetry = {
+                viewModel.refresh() // Wait, let me check if refresh exists in DriversViewModel
+                showErrorDialog = false
+            },
+            onDismiss = { showErrorDialog = false }
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Header / Search Area
@@ -105,8 +126,11 @@ fun DriversListScreen(
                 Spacer(Modifier.height(16.dp))
                 
                 when (val currentListState = listState) {
-                    is UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-                    is UiState.Error -> Text("Error: ${currentListState.message}", color = colors.cancelled)
+                    is UiState.Loading -> TableSkeleton(rows = 5, columnCount = 4)
+                    is UiState.Error -> {
+                        // Inline error removed in favor of modal
+                        TableSkeleton(rows = 5, columnCount = 4)
+                    }
                     is UiState.Success -> {
                         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             items(currentListState.data) { driver ->

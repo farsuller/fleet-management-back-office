@@ -2,6 +2,7 @@ package org.solodev.fleet.mngt.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.domain.usecase.accounting.CreateInvoiceUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetAccountsUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetAllDriverPaymentsUseCase
@@ -25,6 +26,8 @@ import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CompleteRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CreateRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.UpdateRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.DeleteRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetPaymentMethodsUseCase as RentalGetPaymentMethodsUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalsUseCase
@@ -70,7 +73,7 @@ import org.solodev.fleet.mngt.features.vehicles.VehiclesViewModel
 
 val viewModelModule = module {
     factory { LoginViewModel(loginUseCase = get()) }
-    factory { DashboardViewModel(getDashboardUseCase = get()) }
+    factory { DashboardViewModel(getDashboardUseCase = get(), authState = get()) }
     factory {
         VehiclesViewModel(
             getVehiclesUseCase = get(),
@@ -82,18 +85,40 @@ val viewModelModule = module {
             deleteVehicleUseCase = get(),
             getVehicleMaintenanceUseCase = get(),
             getVehicleLocationHistoryUseCase = get(),
+            authState = get(),
         )
     }
+    factory { GetRentalsUseCase(get()) }
+    factory { GetRentalUseCase(get()) }
+    factory { CreateRentalUseCase(get()) }
+    factory { UpdateRentalUseCase(get()) }
+    factory { ActivateRentalUseCase(get()) }
+    factory { CancelRentalUseCase(get()) }
+    factory { CompleteRentalUseCase(get()) }
+    factory { DeleteRentalUseCase(get()) }
+    factory { GetVehiclesUseCase(get()) }
+    factory { GetVehicleUseCase(get()) }
+    factory { GetCustomersUseCase(get()) }
+    factory { GetCustomerUseCase(get()) }
+
     factory {
         RentalsViewModel(
-            getRentalsUseCase = get(),
-            getRentalUseCase = get(),
-            createRentalUseCase = get(),
-            activateRentalUseCase = get(),
-            cancelRentalUseCase = get(),
-            completeRentalUseCase = get(),
-            getPaymentMethodsUseCase = get(named("rentalPaymentMethods")),
-            payInvoiceUseCase = get(),
+            getRentalsUseCase = get<GetRentalsUseCase>(),
+            getRentalUseCase = get<GetRentalUseCase>(),
+            createRentalUseCase = get<CreateRentalUseCase>(),
+            updateRentalUseCase = get<UpdateRentalUseCase>(),
+            activateRentalUseCase = get<ActivateRentalUseCase>(),
+            cancelRentalUseCase = get<CancelRentalUseCase>(),
+            completeRentalUseCase = get<CompleteRentalUseCase>(),
+            getPaymentMethodsUseCase = get<RentalGetPaymentMethodsUseCase>(org.koin.core.qualifier.named("rentalPaymentMethods")),
+            payInvoiceUseCase = get<PayInvoiceUseCase>(),
+            getVehiclesUseCase = get<GetVehiclesUseCase>(),
+            getVehicleUseCase = get<GetVehicleUseCase>(),
+            getCustomersUseCase = get<GetCustomersUseCase>(),
+            getCustomerUseCase = get<GetCustomerUseCase>(),
+            createCustomerUseCase = get<CreateCustomerUseCase>(),
+            deleteRentalUseCase = get<DeleteRentalUseCase>(),
+            authState = get<AuthState>(),
         )
     }
     factory {
@@ -104,6 +129,7 @@ val viewModelModule = module {
             deactivateCustomerUseCase = get(),
             getCustomerRentalsUseCase = get(),
             getCustomerPaymentsUseCase = get(),
+            authState = get(),
         )
     }
     factory {
@@ -142,6 +168,7 @@ val viewModelModule = module {
             completeMaintenanceUseCase = get(),
             cancelMaintenanceUseCase = get(),
             getVehiclesUseCase = get(),
+            authState = get(),
         )
     }
     factory {
@@ -168,6 +195,7 @@ val viewModelModule = module {
             assignDriverUseCase = get(),
             releaseDriverUseCase = get(),
             driverRepository = get(),
+            authState = get(),
         )
     }
 }

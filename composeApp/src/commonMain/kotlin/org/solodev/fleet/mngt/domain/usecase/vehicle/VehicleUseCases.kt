@@ -9,11 +9,11 @@ import org.solodev.fleet.mngt.repository.VehicleRepository
 
 class GetVehiclesUseCase(private val repository: VehicleRepository) {
     suspend operator fun invoke(
-        cursor: String? = null,
+        page: Int = 1,
         limit: Int = 20,
         state: VehicleState? = null,
         forceRefresh: Boolean = false,
-    ) = repository.getVehicles(cursor, limit, state, forceRefresh)
+    ) = repository.getVehicles(page, limit, state, forceRefresh)
 }
 
 class GetVehicleUseCase(private val repository: VehicleRepository) {

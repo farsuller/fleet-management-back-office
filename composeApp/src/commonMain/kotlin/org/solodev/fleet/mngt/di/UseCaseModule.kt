@@ -24,6 +24,7 @@ import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
+import org.solodev.fleet.mngt.domain.usecase.customer.UpdateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.ActivateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
@@ -88,6 +89,7 @@ val useCaseModule = module {
     factory { GetCustomersUseCase(get()) }
     factory { GetCustomerUseCase(get()) }
     factory { CreateCustomerUseCase(get()) }
+    factory { UpdateCustomerUseCase(get()) }
     factory { DeactivateCustomerUseCase(get()) }
     factory { GetCustomerRentalsUseCase(get()) }
     factory { GetCustomerPaymentsUseCase(get()) }

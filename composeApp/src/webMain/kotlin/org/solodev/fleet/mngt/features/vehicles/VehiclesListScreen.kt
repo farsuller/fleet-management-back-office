@@ -5,7 +5,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -146,12 +148,26 @@ fun VehiclesListScreen(router: AppRouter) {
                         TableSkeleton(rows = 8)
                     }
 
-                    is UiState.Success -> PaginatedTable(
-                        headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),
-                        items = s.data.items,
-                        onRowClick = { idx -> vm.loadVehicle(s.data.items[idx].id ?: "") },
-                        emptyMessage = "No vehicles found",
-                        rowContent = { vehicle, _ ->
+                    is UiState.Success -> {
+                        val items = (s as UiState.Success<org.solodev.fleet.mngt.api.PagedResponse<VehicleDto>>).data.items
+                        PaginatedTable(
+                            headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),
+                            items = items,
+                            onRowClick = { idx -> vm.loadVehicle(items[idx].id ?: "") },
+                            emptyContent = {
+                                EmptyState(
+                                    title = "No vehicles found",
+                                    description = "Your fleet is empty. Add your first vehicle to start tracking.",
+                                    icon = Icons.Default.DirectionsCar,
+                                    actionLabel = "Add Vehicle",
+                                    onAction = {
+                                        vm.clearActionResult()
+                                        vehicleToEdit = null
+                                        showAddSheet = true
+                                    }
+                                )
+                            },
+                            rowContent = { vehicle, _ ->
                             Text(
                                 vehicle.licensePlate ?: "",
                                 modifier = Modifier.weight(1f),
@@ -214,6 +230,7 @@ fun VehiclesListScreen(router: AppRouter) {
                     )
                 }
             }
+            }
         }
 
         // Overlay Side Panel
@@ -226,7 +243,7 @@ fun VehiclesListScreen(router: AppRouter) {
     }
 
     if (showAddSheet || vehicleToEdit != null) {
-        AddVehicleSheet(
+        VehicleSheet(
             onDismiss = {
                 showAddSheet = false
                 vehicleToEdit = null

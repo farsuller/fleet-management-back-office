@@ -48,11 +48,9 @@ fun <T> PaginatedTable(
     rowContent:    @Composable RowScope.(item: T, index: Int) -> Unit,
     modifier:      Modifier = Modifier,
     onRowClick:    ((index: Int) -> Unit)? = null,
-    hasMore:       Boolean = false,
-    isLoadingMore: Boolean = false,
-    onLoadMore:    () -> Unit = {},
     isLoading:     Boolean = false,
     emptyMessage:  String = "No records found.",
+    emptyContent:  (@Composable () -> Unit)? = null,
     filterSlot:    (@Composable () -> Unit)? = null,
     pageSize:      Int = 20,
 ) {
@@ -102,15 +100,15 @@ fun <T> PaginatedTable(
             when {
                 isLoading -> TableSkeleton(rows = 5, columnCount = headers.size)
 
-                items.isEmpty() -> Box(
-                    modifier         = Modifier.fillMaxWidth().height(120.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text  = emptyMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.text2,
-                    )
+                items.isEmpty() -> {
+                    if (emptyContent != null) {
+                        emptyContent()
+                    } else {
+                        EmptyState(
+                            title = "No results found",
+                            description = emptyMessage
+                        )
+                    }
                 }
 
                 else -> pageItems.forEachIndexed { pageIdx, item ->

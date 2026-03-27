@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TrendingUp
@@ -195,7 +196,18 @@ fun DriversListScreen(
                             headers = listOf("Name", "Email", "License", "Status", "Actions"),
                             items = currentListState.data,
                             onRowClick = { idx -> viewModel.loadDriver(currentListState.data[idx].id ?: "") },
-                            emptyMessage = "No drivers found",
+                            emptyContent = {
+                                EmptyState(
+                                    title = "No drivers found",
+                                    description = "Start building your fleet team by adding your first driver.",
+                                    icon = Icons.Default.Group,
+                                    actionLabel = "Add Driver",
+                                    onAction = {
+                                        driverToEdit = null
+                                        showCreateSheet = true
+                                    }
+                                )
+                            },
                             rowContent = { driver, _ ->
                                 Row(
                                     modifier = Modifier.weight(1f),

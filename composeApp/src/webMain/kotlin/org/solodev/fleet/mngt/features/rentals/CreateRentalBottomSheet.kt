@@ -22,9 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fleetmanagementbackoffice.composeapp.generated.resources.*
-import kotlin.time.Clock
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
+import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
+import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import kotlin.time.Duration.Companion.days
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
@@ -41,10 +44,12 @@ import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 import org.solodev.fleet.mngt.components.common.VehicleSelectionCard
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Clock
+import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: RentalDto? = null) {
+fun RentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: RentalDto? = null) {
     val vm = koinViewModel<RentalsViewModel>()
     val colors = fleetColors
     val infoIcon = painterResource(Res.drawable.info_icon)
@@ -457,7 +462,7 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("New Customer", fontSize = 13.sp, color = colors.text2)
                                 Spacer(Modifier.width(8.dp))
-                                Switch(
+                                RentalSwitch(
                                     checked = isNewCustomer,
                                     onCheckedChange = {
                                         isNewCustomer = it
@@ -722,7 +727,7 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
 }
 
 @Composable
-fun Switch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, small: Boolean = false) {
+private fun RentalSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, small: Boolean = false) {
     androidx.compose.material3.Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,

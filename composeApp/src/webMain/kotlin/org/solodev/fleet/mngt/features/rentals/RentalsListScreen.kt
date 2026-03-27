@@ -5,7 +5,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +30,8 @@ import org.solodev.fleet.mngt.components.common.*
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
-import kotlin.time.Instant
+import kotlinx.datetime.Instant
+import kotlinx.datetime.Clock
 import org.solodev.fleet.mngt.api.dto.rental.RentalStatus as RentalStatusDto
 
 private fun RentalStatusDto.toUiBadge() = when (this) {
@@ -142,21 +145,34 @@ fun RentalsListScreen(router: AppRouter) {
                         TableSkeleton(rows = 8, columnCount = 7)
                     }
 
-                    is UiState.Success -> PaginatedTable(
-                        headers = listOf(
-                            "Rental #",
-                            "Customer",
-                            "Vehicle",
-                            "Status",
-                            "Start Date",
-                            "End Date",
-                            "Total",
-                            "Actions"
-                        ),
-                        items = s.data.items,
-                        onRowClick = { idx -> vm.loadRental(s.data.items[idx].id ?: "") },
-                        emptyMessage = "No rentals found",
-                        rowContent = { rental, _ ->
+                    is UiState.Success -> {
+                        val items = (s as UiState.Success<org.solodev.fleet.mngt.api.PagedResponse<RentalDto>>).data.items
+                        PaginatedTable(
+                            headers = listOf(
+                                "Rental #",
+                                "Customer",
+                                "Vehicle",
+                                "Status",
+                                "Start Date",
+                                "End Date",
+                                "Total",
+                                "Actions"
+                            ),
+                            items = items,
+                            onRowClick = { idx -> vm.loadRental(items[idx].id ?: "") },
+                            emptyContent = {
+                                EmptyState(
+                                    title = "No active rentals",
+                                    description = "Manage your vehicle rentals and track active contracts here.",
+                                    icon = Icons.Default.Receipt,
+                                    actionLabel = "New Rental",
+                                    onAction = {
+                                        rentalToEdit = null
+                                        showCreateSheet = true
+                                    }
+                                )
+                            },
+                            rowContent = { rental, _ ->
                             Text(
                                 rental.rentalNumber ?: rental.id?.take(8) ?: "",
                                 modifier = Modifier.weight(1f),
@@ -240,6 +256,7 @@ fun RentalsListScreen(router: AppRouter) {
                     )
                 }
             }
+            }
 
             Spacer(Modifier.height(32.dp))
         }
@@ -254,7 +271,7 @@ fun RentalsListScreen(router: AppRouter) {
     }
 
     if (showCreateSheet) {
-        CreateRentalSheet(
+        RentalSheet(
             onDismiss = {
                 showCreateSheet = false
                 rentalToEdit = null
@@ -281,6 +298,6 @@ fun RentalsListScreen(router: AppRouter) {
 
 private fun formatDate(epochMs: Long): String {
     if (epochMs == 0L) return "—"
-    val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
-    return "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
+    val dt = kotlinx.datetime.Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+    return "${dt.year}-${(dt.monthNumber).toString().padStart(2, '0')}-${dt.dayOfMonth.toString().padStart(2, '0')}"
 }

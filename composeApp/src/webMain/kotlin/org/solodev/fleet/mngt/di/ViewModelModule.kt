@@ -128,6 +128,7 @@ val viewModelModule = module {
             getCustomersUseCase = get(),
             getCustomerUseCase = get(),
             createCustomerUseCase = get(),
+            updateCustomerUseCase = get(),
             deactivateCustomerUseCase = get(),
             getCustomerRentalsUseCase = get(),
             getCustomerPaymentsUseCase = get(),

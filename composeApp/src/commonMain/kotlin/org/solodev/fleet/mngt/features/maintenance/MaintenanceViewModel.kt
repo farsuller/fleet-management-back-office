@@ -58,6 +58,9 @@ class MaintenanceViewModel(
     val typeFilter: StateFlow<MaintenanceType?> = _typeFilter.asStateFlow()
 
     // ── Detail state ──────────────────────────────────────────────────────────
+    
+    private val _selectedJobId = MutableStateFlow<String?>(null)
+    val selectedJobId: StateFlow<String?> = _selectedJobId.asStateFlow()
 
     private val _detailState = MutableStateFlow<UiState<MaintenanceJobDto>?>(null)
     val detailState: StateFlow<UiState<MaintenanceJobDto>?> = _detailState.asStateFlow()
@@ -119,6 +122,15 @@ class MaintenanceViewModel(
     }
 
     // ── Detail actions ────────────────────────────────────────────────────────
+
+    fun selectJob(id: String?) {
+        _selectedJobId.value = id
+        if (id != null) {
+            loadJob(id)
+        } else {
+            _detailState.value = null
+        }
+    }
 
     fun loadJob(id: String) {
         _detailState.value = UiState.Loading

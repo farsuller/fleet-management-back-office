@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.coil.network.ktor)
             // Koin
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             // kotlinx
             implementation(libs.kotlinx.coroutines.core)

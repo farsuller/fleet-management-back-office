@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import eu.anifantakis.lib.ksafe.KSafe
+import org.koin.compose.KoinContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.logger.PrintLogger
@@ -37,24 +38,26 @@ fun main() {
     }.koin
 
     ComposeViewport {
-        var appReady by remember { mutableStateOf(false) }
-        var themeState by remember { mutableStateOf(ThemeState(initialDark = true)) }
+        KoinContext {
+            var appReady by remember { mutableStateOf(false) }
+            var themeState by remember { mutableStateOf(ThemeState(initialDark = true)) }
 
-        // Wait for KSafe's WebCrypto cache to decrypt on WASM, then load saved theme
-        LaunchedEffect(Unit) {
-            koin.get<KSafe>().awaitCacheReady()
-            val savedDark = koin.get<SecureStorage>().loadTheme() ?: true
-            themeState = ThemeState(initialDark = savedDark)
-            appReady = true
-        }
-
-        if (appReady) {
-            // Persist theme preference whenever the user toggles it
-            LaunchedEffect(themeState.isDark) {
-                koin.get<SecureStorage>().saveTheme(themeState.isDark)
+            // Wait for KSafe's WebCrypto cache to decrypt on WASM, then load saved theme
+            LaunchedEffect(Unit) {
+                koin.get<KSafe>().awaitCacheReady()
+                val savedDark = koin.get<SecureStorage>().loadTheme() ?: true
+                themeState = ThemeState(initialDark = savedDark)
+                appReady = true
             }
-            FleetTheme(themeState = themeState) {
-                RouteGuard()
+
+            if (appReady) {
+                // Persist theme preference whenever the user toggles it
+                LaunchedEffect(themeState.isDark) {
+                    koin.get<SecureStorage>().saveTheme(themeState.isDark)
+                }
+                FleetTheme(themeState = themeState) {
+                    RouteGuard()
+                }
             }
         }
     }

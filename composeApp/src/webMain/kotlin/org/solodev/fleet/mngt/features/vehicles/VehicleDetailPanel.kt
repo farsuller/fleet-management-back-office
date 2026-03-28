@@ -23,8 +23,7 @@ import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
-import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
+import org.solodev.fleet.mngt.api.dto.maintenance.*
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
@@ -184,6 +183,7 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                                     MaintenanceContent(snapshot.maintenanceJobs)
 
                                 VehicleTab.HISTORY -> HistoryContent(snapshot.locationHistory)
+                                VehicleTab.INCIDENTS -> IncidentsContent(snapshot.incidents)
                             }
                         }
                     }
@@ -465,4 +465,101 @@ private fun Double.formatCoord(): String {
         val decimals = str.length - dotIdx - 1
         if (decimals < 5) str + "0".repeat(5 - decimals) else str.take(dotIdx + 6)
     }
+}
+
+@Composable
+private fun IncidentsContent(incidents: List<VehicleIncidentDto>) {
+    if (incidents.isEmpty()) {
+        Text(
+            "No incidents reported.",
+            fontSize = 13.sp,
+            color = fleetColors.onBackground.copy(alpha = 0.5f)
+        )
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            incidents.forEach { incident ->
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = fleetColors.surfaceVariant),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(Modifier.padding(12.dp).fillMaxWidth()) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                incident.title,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                color = fleetColors.onSurface
+                            )
+                            Surface(
+                                color = when (incident.severity) {
+                                    IncidentSeverity.CRITICAL -> fleetColors.cancelled.copy(alpha = 0.1f)
+                                    IncidentSeverity.HIGH -> fleetColors.maintenance.copy(alpha = 0.1f)
+                                    else -> fleetColors.primary.copy(alpha = 0.1f)
+                                },
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    incident.severity.name,
+                                    color = when (incident.severity) {
+                                        IncidentSeverity.CRITICAL -> fleetColors.cancelled
+                                        IncidentSeverity.HIGH -> fleetColors.maintenance
+                                        else -> fleetColors.primary
+                                    },
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Text(
+                            incident.description,
+                            fontSize = 13.sp,
+                            color = fleetColors.onSurface.copy(alpha = 0.8f)
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                incident.reportedAt?.let {
+                                    // Basic mock formatting for now as actual Date/Time formatters are platform specific
+                                    "Reported on ${it.toSnapshotDate()}"
+                                } ?: "Unknown date",
+                                fontSize = 11.sp,
+                                color = fleetColors.onSurface.copy(alpha = 0.5f)
+                            )
+
+                            Surface(
+                                color = fleetColors.border.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    incident.status.name,
+                                    fontSize = 10.sp,
+                                    color = fleetColors.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun Long.toSnapshotDate(): String {
+    // Very basic placeholder for Wasm/JS compatibility until proper library is used
+    return "snapshot-date"
 }

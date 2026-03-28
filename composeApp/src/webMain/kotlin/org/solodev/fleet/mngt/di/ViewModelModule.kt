@@ -1,82 +1,32 @@
 package org.solodev.fleet.mngt.di
 
-import org.koin.core.qualifier.named
+
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.solodev.fleet.mngt.auth.AuthState
-import org.solodev.fleet.mngt.domain.usecase.accounting.CreateInvoiceUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetAccountsUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetAllDriverPaymentsUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetDriverPendingPaymentsUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoiceUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetInvoicesUseCase
 import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentMethodsUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentsUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.GetRemittancesByDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.RecordDriverCollectionUseCase
-import org.solodev.fleet.mngt.domain.usecase.accounting.SubmitRemittanceUseCase
-import org.solodev.fleet.mngt.domain.usecase.auth.LoginUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
-import org.solodev.fleet.mngt.domain.usecase.customer.DeactivateCustomerUseCase
-import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerPaymentsUseCase
-import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
-import org.solodev.fleet.mngt.domain.usecase.dashboard.GetDashboardUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.CompleteRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.CreateRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.UpdateRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.DeleteRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.GetPaymentMethodsUseCase as RentalGetPaymentMethodsUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalsUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.PayInvoiceUseCase
-import org.solodev.fleet.mngt.domain.usecase.user.AssignRolesUseCase
-import org.solodev.fleet.mngt.domain.usecase.user.DeleteUserUseCase
-import org.solodev.fleet.mngt.domain.usecase.user.GetUserUseCase
-import org.solodev.fleet.mngt.domain.usecase.user.GetUsersUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.CreateVehicleUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.DeleteVehicleUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleLocationHistoryUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleMaintenanceUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.*
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateOdometerUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
-import org.solodev.fleet.mngt.features.accounting.AccountsViewModel
-import org.solodev.fleet.mngt.features.accounting.DriverPaymentsViewModel
-import org.solodev.fleet.mngt.features.accounting.InvoicesViewModel
-import org.solodev.fleet.mngt.features.accounting.PaymentsViewModel
-import org.solodev.fleet.mngt.features.accounting.RemittancesViewModel
+import org.solodev.fleet.mngt.features.accounting.*
 import org.solodev.fleet.mngt.features.auth.LoginViewModel
 import org.solodev.fleet.mngt.features.customers.CustomersViewModel
 import org.solodev.fleet.mngt.features.dashboard.DashboardViewModel
-import org.solodev.fleet.mngt.features.rentals.RentalsViewModel
-import org.solodev.fleet.mngt.domain.usecase.maintenance.CancelMaintenanceUseCase
-import org.solodev.fleet.mngt.domain.usecase.maintenance.CompleteMaintenanceUseCase
-import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobUseCase
-import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobsUseCase
-import org.solodev.fleet.mngt.domain.usecase.maintenance.ScheduleMaintenanceUseCase
-import org.solodev.fleet.mngt.domain.usecase.maintenance.StartMaintenanceUseCase
-import org.solodev.fleet.mngt.features.maintenance.MaintenanceViewModel
-import org.solodev.fleet.mngt.domain.usecase.driver.ActivateDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
-import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.driver.UpdateDriverUseCase
 import org.solodev.fleet.mngt.features.drivers.DriversViewModel
+import org.solodev.fleet.mngt.features.maintenance.MaintenanceViewModel
+import org.solodev.fleet.mngt.features.rentals.RentalsViewModel
 import org.solodev.fleet.mngt.features.tracking.FleetTrackingViewModel
 import org.solodev.fleet.mngt.features.users.UsersViewModel
 import org.solodev.fleet.mngt.features.vehicles.VehiclesViewModel
+import org.solodev.fleet.mngt.domain.usecase.rental.GetPaymentMethodsUseCase as RentalGetPaymentMethodsUseCase
 
 val viewModelModule = module {
-    factory { LoginViewModel(loginUseCase = get()) }
-    factory { DashboardViewModel(getDashboardUseCase = get(), authState = get()) }
-    factory {
+    viewModel { LoginViewModel(loginUseCase = get()) }
+    viewModel { DashboardViewModel(getDashboardUseCase = get(), authState = get()) }
+    viewModel {
         VehiclesViewModel(
             getVehiclesUseCase = get(),
             getVehicleUseCase = get(),
@@ -87,23 +37,12 @@ val viewModelModule = module {
             deleteVehicleUseCase = get(),
             getVehicleMaintenanceUseCase = get(),
             getVehicleLocationHistoryUseCase = get(),
+            getVehicleIncidentsUseCase = get(),
             authState = get(),
         )
     }
-    factory { GetRentalsUseCase(get()) }
-    factory { GetRentalUseCase(get()) }
-    factory { CreateRentalUseCase(get()) }
-    factory { UpdateRentalUseCase(get()) }
-    factory { ActivateRentalUseCase(get()) }
-    factory { CancelRentalUseCase(get()) }
-    factory { CompleteRentalUseCase(get()) }
-    factory { DeleteRentalUseCase(get()) }
-    factory { GetVehiclesUseCase(get()) }
-    factory { GetVehicleUseCase(get()) }
-    factory { GetCustomersUseCase(get()) }
-    factory { GetCustomerUseCase(get()) }
 
-    factory {
+    viewModel {
         RentalsViewModel(
             getRentalsUseCase = get<GetRentalsUseCase>(),
             getRentalUseCase = get<GetRentalUseCase>(),
@@ -123,7 +62,7 @@ val viewModelModule = module {
             authState = get<AuthState>(),
         )
     }
-    factory {
+    viewModel {
         CustomersViewModel(
             getCustomersUseCase = get(),
             getCustomerUseCase = get(),
@@ -135,7 +74,7 @@ val viewModelModule = module {
             authState = get(),
         )
     }
-    factory {
+    viewModel {
         InvoicesViewModel(
             getInvoicesUseCase = get(),
             getInvoiceUseCase = get(),
@@ -144,9 +83,9 @@ val viewModelModule = module {
             createInvoiceUseCase = get(),
         )
     }
-    factory { PaymentsViewModel(getPaymentsUseCase = get()) }
-    factory { AccountsViewModel(getAccountsUseCase = get()) }
-    factory {
+    viewModel { PaymentsViewModel(getPaymentsUseCase = get()) }
+    viewModel { AccountsViewModel(getAccountsUseCase = get()) }
+    viewModel {
         DriverPaymentsViewModel(
             getDriversUseCase = get(),
             getDriverPendingPaymentsUseCase = get(),
@@ -154,7 +93,7 @@ val viewModelModule = module {
             recordDriverCollectionUseCase = get(),
         )
     }
-    factory {
+    viewModel {
         RemittancesViewModel(
             getDriversUseCase = get(),
             getDriverPendingPaymentsUseCase = get(),
@@ -162,7 +101,7 @@ val viewModelModule = module {
             submitRemittanceUseCase = get(),
         )
     }
-    factory {
+    viewModel {
         MaintenanceViewModel(
             getMaintenanceJobsUseCase = get(),
             getMaintenanceJobUseCase = get(),
@@ -174,7 +113,7 @@ val viewModelModule = module {
             authState = get(),
         )
     }
-    factory {
+    viewModel {
         UsersViewModel(
             getUsersUseCase = get(),
             getUserUseCase = get(),
@@ -182,7 +121,7 @@ val viewModelModule = module {
             deleteUserUseCase = get(),
         )
     }
-    factory {
+    viewModel {
         FleetTrackingViewModel(
             getActiveRoutesUseCase = get(),
             getFleetStatusUseCase = get(),
@@ -190,7 +129,7 @@ val viewModelModule = module {
             trackingRepository = get(),
         )
     }
-    factory {
+    viewModel {
         DriversViewModel(
             getDriversUseCase = get(),
             createDriverUseCase = get(),

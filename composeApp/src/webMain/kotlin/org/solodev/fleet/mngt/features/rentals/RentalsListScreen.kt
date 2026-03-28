@@ -206,9 +206,10 @@ fun RentalsListScreen(router: AppRouter) {
                                         textAlign = TextAlign.Center
                                     )
                                 }
-                                Box(Modifier.weight(1f)) {
-                                    RentalStatusBadge((rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge())
-                                }
+                                RentalStatusBadge(
+                                    status = (rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge(),
+                                    modifier = Modifier.weight(1f)
+                                )
                                 Text(
                                     formatDate(rental.startDate ?: 0L),
                                     modifier = Modifier.weight(1f),

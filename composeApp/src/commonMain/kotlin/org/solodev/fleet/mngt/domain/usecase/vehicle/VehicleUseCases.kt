@@ -50,3 +50,7 @@ class GetVehicleMaintenanceUseCase(private val repository: MaintenanceRepository
 class GetVehicleLocationHistoryUseCase(private val repository: TrackingRepository) {
     suspend operator fun invoke(vehicleId: String) = repository.getLocationHistory(vehicleId)
 }
+
+class GetVehicleIncidentsUseCase(private val repository: MaintenanceRepository) {
+    suspend operator fun invoke(vehicleId: String) = repository.getIncidentsByVehicle(vehicleId)
+}

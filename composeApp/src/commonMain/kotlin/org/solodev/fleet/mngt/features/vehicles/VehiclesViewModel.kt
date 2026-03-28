@@ -12,11 +12,13 @@ import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
+import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
 import org.solodev.fleet.mngt.api.dto.vehicle.CreateVehicleRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.UpdateVehicleRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
+import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleIncidentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.CreateVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.DeleteVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleLocationHistoryUseCase
@@ -28,12 +30,13 @@ import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
 import org.solodev.fleet.mngt.ui.UiState
 
-enum class VehicleTab { INFO, STATE, ODOMETER, MAINTENANCE, HISTORY }
+enum class VehicleTab { INFO, STATE, ODOMETER, MAINTENANCE, HISTORY, INCIDENTS }
 
 data class VehicleDetailSnapshot(
     val vehicle: VehicleDto,
     val maintenanceJobs: List<MaintenanceJobDto> = emptyList(),
     val locationHistory: List<LocationHistoryEntry> = emptyList(),
+    val incidents: List<VehicleIncidentDto> = emptyList(),
 )
 
 data class VehicleStats(
@@ -62,6 +65,7 @@ class VehiclesViewModel(
     private val deleteVehicleUseCase: DeleteVehicleUseCase,
     private val getVehicleMaintenanceUseCase: GetVehicleMaintenanceUseCase,
     private val getVehicleLocationHistoryUseCase: GetVehicleLocationHistoryUseCase,
+    private val getVehicleIncidentsUseCase: GetVehicleIncidentsUseCase,
     private val authState: AuthState,
 ) : ViewModel() {
 
@@ -186,8 +190,16 @@ class VehiclesViewModel(
                     launch {
                         getVehicleMaintenanceUseCase(vehicleId)
                             .onSuccess { jobs ->
-                                val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
+                                 val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
                                 _detailState.value = UiState.Success(current.copy(maintenanceJobs = jobs))
+                            }
+                    }
+                    // Eagerly load incidents in background
+                    launch {
+                        getVehicleIncidentsUseCase(vehicleId)
+                            .onSuccess { incidents ->
+                                val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
+                                _detailState.value = UiState.Success(current.copy(incidents = incidents))
                             }
                     }
                 }
@@ -202,15 +214,37 @@ class VehiclesViewModel(
 
     fun setActiveTab(tab: VehicleTab) {
         _activeTab.value = tab
-        if (tab == VehicleTab.HISTORY) {
-            val vehicleId = (_detailState.value as? UiState.Success)?.data?.vehicle?.id ?: return
-            viewModelScope.launch {
-                getVehicleLocationHistoryUseCase(vehicleId)
-                    .onSuccess { history ->
-                        val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
-                        _detailState.value = UiState.Success(current.copy(locationHistory = history))
-                    }
+        val vehicleId = (_detailState.value as? UiState.Success)?.data?.vehicle?.id ?: return
+        
+        when (tab) {
+            VehicleTab.HISTORY -> {
+                viewModelScope.launch {
+                    getVehicleLocationHistoryUseCase(vehicleId)
+                        .onSuccess { history ->
+                            val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
+                            _detailState.value = UiState.Success(current.copy(locationHistory = history))
+                        }
+                }
             }
+            VehicleTab.MAINTENANCE -> {
+                viewModelScope.launch {
+                    getVehicleMaintenanceUseCase(vehicleId)
+                        .onSuccess { jobs ->
+                            val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
+                            _detailState.value = UiState.Success(current.copy(maintenanceJobs = jobs))
+                        }
+                }
+            }
+            VehicleTab.INCIDENTS -> {
+                viewModelScope.launch {
+                    getVehicleIncidentsUseCase(vehicleId)
+                        .onSuccess { incidents ->
+                            val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
+                            _detailState.value = UiState.Success(current.copy(incidents = incidents))
+                        }
+                }
+            }
+            else -> {}
         }
     }
 

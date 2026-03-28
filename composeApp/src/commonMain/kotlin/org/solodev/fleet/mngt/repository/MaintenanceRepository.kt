@@ -6,6 +6,7 @@ import org.solodev.fleet.mngt.api.dto.maintenance.CompleteMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
+import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface MaintenanceRepository {
@@ -16,6 +17,8 @@ interface MaintenanceRepository {
     suspend fun startJob(id: String): Result<MaintenanceJobDto>
     suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long): Result<MaintenanceJobDto>
     suspend fun cancelJob(id: String): Result<MaintenanceJobDto>
+    suspend fun getIncidents(cursor: String? = null, limit: Int = 20, status: String? = null): Result<PagedResponse<VehicleIncidentDto>>
+    suspend fun getIncidentsByVehicle(vehicleId: String): Result<List<VehicleIncidentDto>>
 }
 
 class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRepository {
@@ -51,4 +54,10 @@ class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRe
 
     override suspend fun cancelJob(id: String) =
         api.cancelMaintenanceJob(id).onSuccess { listCache.clear() }
+
+    override suspend fun getIncidents(cursor: String?, limit: Int, status: String?) =
+        api.getIncidents(cursor, limit, status)
+
+    override suspend fun getIncidentsByVehicle(vehicleId: String) =
+        api.getVehicleIncidents(vehicleId)
 }

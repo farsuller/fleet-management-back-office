@@ -1,164 +1,278 @@
 package org.solodev.fleet.mngt.features.customers
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.time.Clock
-import kotlin.time.Instant
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
+import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
-import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
-import org.solodev.fleet.mngt.auth.AuthStatus
-import org.solodev.fleet.mngt.auth.UserRole
+import org.solodev.fleet.mngt.api.PagedResponse
+import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
+import org.solodev.fleet.mngt.components.common.CustomerHealthCard
+import org.solodev.fleet.mngt.components.common.EmptyState
 import org.solodev.fleet.mngt.components.common.PaginatedTable
 import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.navigation.AppRouter
-import org.solodev.fleet.mngt.navigation.Screen
-import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
-import org.solodev.fleet.mngt.components.common.ServerErrorDialog
-import androidx.compose.runtime.LaunchedEffect
+import kotlin.time.Clock
+import kotlin.time.Instant
 
-private fun formatExpiryDate(epochMs: Long): String {
-    val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
-    return "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomersListScreen(router: AppRouter) {
+fun CustomersListScreen(router: AppRouter? = null) {
     val vm = koinViewModel<CustomersViewModel>()
-    val state by vm.listState.collectAsState()
-    val isRefreshing by vm.isRefreshing.collectAsState()
-    val dispatcher = koinInject<AppDependencyDispatcher>()
-    val authStatus by dispatcher.status.collectAsState()
-    val roles = (authStatus as? AuthStatus.Authenticated)?.session?.roles ?: emptySet()
+
+    val listState by vm.listState.collectAsState()
+    val selectedId by vm.selectedCustomerId.collectAsState()
     val colors = fleetColors
-    val nowMs = Clock.System.now().toEpochMilliseconds()
-    var showCreateDialog by remember { mutableStateOf(false) }
-    var showErrorDialog by remember { mutableStateOf(false) }
 
-    // Auto-show dialog on error
-    LaunchedEffect(state) {
-        if (state is UiState.Error) {
-            showErrorDialog = true
-        }
-    }
+    var showSheet by remember { mutableStateOf(false) }
+    var editingCustomer by remember { mutableStateOf<CustomerDto?>(null) }
 
-    if (showErrorDialog && state is UiState.Error) {
-        ServerErrorDialog(
-            message = (state as UiState.Error).message,
-            onRetry = {
-                vm.refresh()
-                showErrorDialog = false
-            },
-            onDismiss = { showErrorDialog = false }
-        )
-    }
 
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+    LaunchedEffect(Unit) { vm.refresh() }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text("Customers", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = colors.onBackground)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (isRefreshing) CircularProgressIndicator(
-                    modifier = Modifier.width(20.dp).height(20.dp),
-                    strokeWidth = 2.dp,
-                )
-                IconButton(onClick = vm::refresh) {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = colors.primary)
+            // Header
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "Customer Management",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onBackground
+                    )
+                    Text(
+                        "Manage your clientele and rental contracts",
+                        color = colors.onBackground.copy(alpha = 0.6f)
+                    )
                 }
-                if (roles.any { it == UserRole.ADMIN || it == UserRole.FLEET_MANAGER }) {
-                    Button(onClick = { showCreateDialog = true }) {
-                        Icon(Icons.Filled.Add, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Add Customer")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(
+                        onClick = {
+                            editingCustomer = null
+                            showSheet = true
+                        },
+                        colors =
+                            ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    ) {
+                        Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("New Customer")
                     }
                 }
             }
+
+            // KPIs
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                val items = (listState as? UiState.Success<PagedResponse<CustomerDto>>)?.data?.items ?: emptyList()
+                val total = (listState as? UiState.Success<PagedResponse<CustomerDto>>)?.data?.total ?: items.size
+
+                val activeRentals = items.count { it.activeVehicle != null }
+
+                val nowMs = Clock.System.now().toEpochMilliseconds()
+                val thirtyDaysMs = 30L * 24 * 60 * 60 * 1000
+                val licenseAlerts =
+                    items.count {
+                        val expiry = it.licenseExpiryMs ?: 0L
+                        expiry > 0L && (expiry - nowMs) < thirtyDaysMs
+                    }
+
+                CustomerHealthCard(
+                    text = "Total Customers",
+                    value = total.toString(),
+                    icon = Icons.Default.Group,
+                    modifier = Modifier.weight(1f)
+                )
+                CustomerHealthCard(
+                    text = "Active Rentals",
+                    value = activeRentals.toString(),
+                    icon = Icons.Default.Key,
+                    modifier = Modifier.weight(1f)
+                )
+                CustomerHealthCard(
+                    text = "License Alerts",
+                    value = licenseAlerts.toString(),
+                    icon = Icons.Default.Warning,
+                    iconTint = colors.cancelled,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                when (val uiState = listState) {
+                    is UiState.Loading -> TableSkeleton(rows = 8, columnCount = 7)
+                    is UiState.Error -> {
+                        // Inline error removed in favor of modal
+                        TableSkeleton(rows = 8, columnCount = 7)
+                    }
+
+                    is UiState.Success -> {
+                        val items = uiState.data.items
+                        PaginatedTable(
+                            headers =
+                                listOf(
+                                    "Name",
+                                    "Email",
+                                    "Phone",
+                                    "License Expiry",
+                                    "License Health",
+                                    "Status",
+                                    "Actions"
+                                ),
+                            items = items,
+                            onRowClick = { index -> vm.loadCustomer(items[index].id!!) },
+                            emptyContent = {
+                                EmptyState(
+                                    title = "No customers found",
+                                    description =
+                                        "You haven't added any customers yet. Start by creating your first client profile to manage their rentals.",
+                                    icon = Icons.Default.PersonSearch,
+                                    actionLabel = "New Customer",
+                                    onAction = {
+                                        editingCustomer = null
+                                        showSheet = true
+                                    }
+                                )
+                            },
+                            rowContent = { customer, _ ->
+                                val expiry = (customer.licenseExpiryMs ?: 0L)
+                                val nowMs =
+                                    try {
+                                        Clock.System.now().toEpochMilliseconds()
+                                    } catch (e: Exception) {
+                                        0L
+                                    }
+                                val remaining =
+                                    if (expiry > nowMs)
+                                        (expiry - nowMs) / (1000L * 60 * 60 * 24)
+                                    else 0L
+
+                                val progress =
+                                    if (remaining >= 30) 1.0f else (remaining.toFloat() / 30f).coerceIn(0f, 1f)
+                                val statusColor = when {
+                                    remaining >= 30 -> colors.active
+                                    remaining > 7 -> colors.maintenance
+                                    else -> colors.cancelled
+                                }
+                                Text(
+                                    text = "${customer.firstName} ${customer.lastName}",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = customer.email ?: "-",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    customer.phone ?: "-",
+                                    Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = if (customer.licenseExpiryMs != null &&
+                                        customer.licenseExpiryMs != 0L
+                                    ) {
+                                        val dt = Instant.fromEpochMilliseconds(customer.licenseExpiryMs).toLocalDateTime(TimeZone.UTC)
+                                        "${dt.year}-${(dt.month.number).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
+                                    } else "N/A",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Box(
+                                    Modifier.weight(1f).padding(end = 24.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    LinearProgressIndicator(
+                                        progress = { progress },
+                                        modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                                        color = statusColor,
+                                        trackColor = colors.border.copy(alpha = 0.3f)
+                                    )
+                                }
+
+                                Text(
+                                    text = if (customer.isActive == true) "Active" else "Inactive",
+                                    Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = if (customer.isActive == true) colors.active else colors.retired,
+                                    textAlign = TextAlign.Center
+                                )
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically) {
+                                    IconButton(
+                                        onClick = {
+                                            editingCustomer = customer
+                                            showSheet = true
+                                        }
+                                    ) {
+                                        Icon(
+                                            painterResource(Res.drawable.edit_icon),
+                                            "Edit",
+                                            tint = colors.primary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    IconButton(onClick = { vm.deactivateCustomer(customer.id!!) }) {
+                                        Icon(
+                                            painterResource(Res.drawable.delete_icon),
+                                            "Deactivate",
+                                            tint = colors.cancelled,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
         }
 
-        when (val s = state) {
-            is UiState.Loading -> TableSkeleton(rows = 8)
-            is UiState.Error -> {
-                // Inline error removed in favor of modal
-                TableSkeleton(rows = 8)
-            }
-            is UiState.Success -> PaginatedTable(
-                headers = listOf("Name", "Email", "Phone", "License #", "License Expiry", "Active"),
-                items = s.data.items,
-                onRowClick = { idx -> router.navigate(Screen.CustomerDetail(s.data.items[idx].id ?: "")) },
-                emptyMessage = "No customers found",
-                rowContent = { customer, _ ->
-                    Text(
-                        "${customer.firstName} ${customer.lastName}",
-                        modifier = Modifier.weight(1f),
-                        fontSize = 13.sp,
-                        color = colors.text1,
-                    )
-                    Text(customer.email ?: "", modifier = Modifier.weight(1f), fontSize = 13.sp, color = colors.text1)
-                    Text(customer.phone ?: "", modifier = Modifier.weight(1f), fontSize = 13.sp, color = colors.text1)
-                    Text(customer.driverLicenseNumber ?: "", modifier = Modifier.weight(1f), fontSize = 13.sp, color = colors.text1)
-                    val isExpired = (customer.licenseExpiryMs ?: 0L) < nowMs
-                    Text(
-                        formatExpiryDate(customer.licenseExpiryMs ?: 0L),
-                        modifier = Modifier.weight(1f),
-                        fontSize = 13.sp,
-                        color = if (isExpired) MaterialTheme.colorScheme.error else colors.text1,
-                    )
-                    val canToggle = roles.any { it == UserRole.ADMIN || it == UserRole.FLEET_MANAGER }
-                    Switch(
-                        checked = customer.isActive ?: false,
-                        onCheckedChange = if (canToggle) { _ -> vm.deactivateCustomer(customer.id ?: "") } else null,
-                        modifier = Modifier.weight(1f),
-                    )
-                },
-            )
+        // Detail Panel
+        Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
+            CustomerDetailPanel(customerId = selectedId, onClose = { vm.closeDetail() })
         }
     }
-
-    if (showCreateDialog) {
-        CreateCustomerDialog(
-            onDismiss = { showCreateDialog = false },
-            router = router,
-        )
+    if (showSheet) {
+        CustomerBottomSheet(onDismiss = { showSheet = false }, customer = editingCustomer)
     }
 }

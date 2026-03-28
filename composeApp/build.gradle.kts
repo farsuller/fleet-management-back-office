@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -26,7 +25,7 @@ kotlin {
         browser()
         binaries.executable()
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -68,15 +67,11 @@ kotlin {
         // is compiled into both outputs without duplication.
         val webMain by creating {
             dependsOn(commonMain.get())
-            dependencies {
-                implementation(libs.ksafe)
-            }
+            dependencies { implementation(libs.ksafe) }
         }
         val wasmJsMain by getting {
             dependsOn(webMain)
-            dependencies {
-                implementation(libs.ktor.client.js)
-            }
+            dependencies { implementation(libs.ktor.client.js) }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

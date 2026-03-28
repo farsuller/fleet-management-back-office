@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.solodev.fleet.mngt.theme.FleetSpacing
@@ -48,11 +51,9 @@ fun <T> PaginatedTable(
     rowContent:    @Composable RowScope.(item: T, index: Int) -> Unit,
     modifier:      Modifier = Modifier,
     onRowClick:    ((index: Int) -> Unit)? = null,
-    hasMore:       Boolean = false,
-    isLoadingMore: Boolean = false,
-    onLoadMore:    () -> Unit = {},
     isLoading:     Boolean = false,
     emptyMessage:  String = "No records found.",
+    emptyContent:  (@Composable () -> Unit)? = null,
     filterSlot:    (@Composable () -> Unit)? = null,
     pageSize:      Int = 20,
 ) {
@@ -70,9 +71,9 @@ fun <T> PaginatedTable(
         color    = colors.background,
         border   = BorderStroke(1.dp, colors.border),
         shape    = RoundedCornerShape(12.dp),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
-        Column {
+        Column(Modifier.fillMaxSize()) {
             // Filter slot
             filterSlot?.let { slot ->
                 Box(Modifier.padding(horizontal = FleetSpacing.md, vertical = 12.dp)) { slot() }
@@ -90,9 +91,11 @@ fun <T> PaginatedTable(
                     Text(
                         text       = header,
                         modifier   = Modifier.weight(1f),
+                        fontSize   = 13.sp,
                         style      = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         color      = colors.text2,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -102,15 +105,15 @@ fun <T> PaginatedTable(
             when {
                 isLoading -> TableSkeleton(rows = 5, columnCount = headers.size)
 
-                items.isEmpty() -> Box(
-                    modifier         = Modifier.fillMaxWidth().height(120.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text  = emptyMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.text2,
-                    )
+                items.isEmpty() -> {
+                    if (emptyContent != null) {
+                        emptyContent()
+                    } else {
+                        EmptyState(
+                            title = "No results found",
+                            description = emptyMessage
+                        )
+                    }
                 }
 
                 else -> pageItems.forEachIndexed { pageIdx, item ->

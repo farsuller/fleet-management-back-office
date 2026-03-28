@@ -19,12 +19,14 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.DriverDto
 import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
+import org.solodev.fleet.mngt.components.common.EmailOutlinedTextField
 import org.solodev.fleet.mngt.components.common.LabeledInfo
+import org.solodev.fleet.mngt.components.common.PhoneNumberOutlinedTextField
 import org.solodev.fleet.mngt.theme.fleetColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DriverSheet(
+fun AddEditDriverBottomSheet(
     onDismiss: () -> Unit,
     sheetState: SheetState,
     driver: DriverDto? = null
@@ -44,6 +46,16 @@ fun DriverSheet(
 
     var errors by remember { mutableStateOf<String?>(null) }
     var isSubmitting by remember { mutableStateOf(false) }
+
+    var showYearPicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState(
+        selectableDates = object : SelectableDates {
+            override fun isSelectableYear(year: Int): Boolean {
+                return year in 1900..2100
+            }
+        }
+    )
 
     LaunchedEffect(actionResult) {
         actionResult?.onFailure {
@@ -100,7 +112,7 @@ fun DriverSheet(
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
                 modifier = Modifier
-                    .widthIn(max = 800.dp)
+                    .widthIn(max = 1800.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 48.dp)
                     .padding(bottom = 40.dp)
@@ -160,26 +172,29 @@ fun DriverSheet(
                             value = firstName,
                             onValueChange = { firstName = it },
                             label = { Text("First Name") },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
                         )
                         OutlinedTextField(
                             value = lastName,
                             onValueChange = { lastName = it },
                             label = { Text("Last Name") },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
+                        EmailOutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
-                            label = { Text("Email") },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
-                        OutlinedTextField(
+                        PhoneNumberOutlinedTextField(
                             value = phone,
-                            onValueChange = { phone = it },
-                            label = { Text("Phone Number") },
+                            onValueChange = { input ->
+                                phone = input
+                            },
+                            label = "Phone Number",
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -195,14 +210,16 @@ fun DriverSheet(
                             value = licenseNumber,
                             onValueChange = { licenseNumber = it.uppercase() },
                             label = { Text("License Number") },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
                         )
                         OutlinedTextField(
                             value = licenseExpiry,
                             onValueChange = { licenseExpiry = it },
                             label = { Text("License Expiry (YYYY-MM-DD)") },
                             modifier = Modifier.weight(1f),
-                            placeholder = { Text("2028-12-31") }
+                            placeholder = { Text("2028-12-31") },
+                            singleLine = true
                         )
                     }
                 }

@@ -1,22 +1,26 @@
 package org.solodev.fleet.mngt.features.vehicles
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
 import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.skia.Color
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
@@ -139,36 +143,53 @@ fun VehiclesListScreen(router: AppRouter) {
             }
 
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                when (val s = state) {
+                when (val uiState = state) {
                     is UiState.Loading ->TableSkeleton(rows = 8)
                     is UiState.Error -> {
                         // Inline error removed in favor of modal
                         TableSkeleton(rows = 8)
                     }
 
-                    is UiState.Success -> PaginatedTable(
-                        headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),
-                        items = s.data.items,
-                        onRowClick = { idx -> vm.loadVehicle(s.data.items[idx].id ?: "") },
-                        emptyMessage = "No vehicles found",
-                        rowContent = { vehicle, _ ->
+                    is UiState.Success -> {
+                        val items = uiState.data.items
+                        PaginatedTable(
+                            headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),
+                            items = items,
+                            onRowClick = { idx -> vm.loadVehicle(items[idx].id ?: "") },
+                            emptyContent = {
+                                EmptyState(
+                                    title = "No vehicles found",
+                                    description = "Your fleet is empty. Add your first vehicle to start tracking.",
+                                    icon = Icons.Default.DirectionsCar,
+                                    actionLabel = "Add Vehicle",
+                                    onAction = {
+                                        vm.clearActionResult()
+                                        vehicleToEdit = null
+                                        showAddSheet = true
+                                    }
+                                )
+                            },
+                            rowContent = { vehicle, _ ->
                             Text(
                                 vehicle.licensePlate ?: "",
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Text(
                                 "${vehicle.make} ${vehicle.model}",
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Text(
                                 vehicle.year.toString(),
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Box(Modifier.weight(1f)) {
                                 VehicleStatusBadge((vehicle.state ?: VehicleState.UNKNOWN).toUiBadge())
@@ -177,11 +198,12 @@ fun VehiclesListScreen(router: AppRouter) {
                                 vehicle.mileageKm.toString(),
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Row(
                                 modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(
@@ -214,6 +236,7 @@ fun VehiclesListScreen(router: AppRouter) {
                     )
                 }
             }
+            }
         }
 
         // Overlay Side Panel
@@ -226,7 +249,7 @@ fun VehiclesListScreen(router: AppRouter) {
     }
 
     if (showAddSheet || vehicleToEdit != null) {
-        AddVehicleSheet(
+        VehicleSheet(
             onDismiss = {
                 showAddSheet = false
                 vehicleToEdit = null

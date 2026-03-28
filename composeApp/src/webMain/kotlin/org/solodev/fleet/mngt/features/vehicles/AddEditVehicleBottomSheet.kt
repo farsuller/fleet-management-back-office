@@ -31,7 +31,7 @@ import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddVehicleSheet(
+fun VehicleSheet(
     onDismiss: () -> Unit,
     sheetState: SheetState,
     vehicle: VehicleDto? = null,

@@ -44,6 +44,7 @@ import org.solodev.fleet.mngt.api.dto.auth.LoginResponse
 import org.solodev.fleet.mngt.api.dto.auth.UserDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
+import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.AssignmentDto
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
@@ -223,6 +224,9 @@ class FleetApiClient(
 
     suspend fun createCustomer(request: CreateCustomerRequest): Result<CustomerDto> =
         post("/v1/customers", request)
+
+    suspend fun updateCustomer(id: String, request: UpdateCustomerRequest): Result<CustomerDto> =
+        patch("/v1/customers/$id", request)
 
     suspend fun deactivateCustomer(id: String): Result<CustomerDto> = safeCall {
         client.patch("/v1/customers/$id/deactivate") {

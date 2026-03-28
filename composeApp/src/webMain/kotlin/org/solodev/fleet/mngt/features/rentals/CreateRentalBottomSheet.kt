@@ -1,19 +1,19 @@
 package org.solodev.fleet.mngt.features.rentals
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,9 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fleetmanagementbackoffice.composeapp.generated.resources.*
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
@@ -32,19 +31,20 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
-import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
-import org.solodev.fleet.mngt.components.common.ActionErrorDialog
-import org.solodev.fleet.mngt.components.common.LabeledInfo
-import org.solodev.fleet.mngt.components.common.ServerErrorDialog
-import org.solodev.fleet.mngt.components.common.VehicleSelectionCard
+import org.solodev.fleet.mngt.components.common.*
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: RentalDto? = null) {
+fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: RentalDto? = null) {
     val vm = koinViewModel<RentalsViewModel>()
     val colors = fleetColors
     val infoIcon = painterResource(Res.drawable.info_icon)
@@ -68,31 +68,31 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
     // Rental Details
     var startDate by remember(rental) {
         mutableStateOf(
-                rental?.startDate?.let {
-                    Instant.fromEpochMilliseconds(it)
-                            .toLocalDateTime(TimeZone.UTC)
-                            .date
-                            .toString()
-                }
-                        ?: Clock.System.now()
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                                .date
-                                .toString()
+            rental?.startDate?.let {
+                Instant.fromEpochMilliseconds(it)
+                    .toLocalDateTime(TimeZone.UTC)
+                    .date
+                    .toString()
+            }
+                ?: Clock.System.now()
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+                    .toString()
         )
     }
     var endDate by remember(rental) {
         mutableStateOf(
-                rental?.endDate?.let {
-                    Instant.fromEpochMilliseconds(it)
-                            .toLocalDateTime(TimeZone.UTC)
-                            .date
-                            .toString()
-                }
-                        ?: Clock.System.now()
-                                .plus(7.days)
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                                .date
-                                .toString()
+            rental?.endDate?.let {
+                Instant.fromEpochMilliseconds(it)
+                    .toLocalDateTime(TimeZone.UTC)
+                    .date
+                    .toString()
+            }
+                ?: Clock.System.now()
+                    .plus(7.days)
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+                    .toString()
         )
     }
     var dailyRate by remember(rental) { mutableStateOf(rental?.dailyRate?.toString() ?: "1500") }
@@ -100,6 +100,10 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
     var errors by remember { mutableStateOf<String?>(null) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
+
+    val todayMillis = remember {
+        Clock.System.now().toLocalDateTime(TimeZone.UTC).date.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+    }
 
     LaunchedEffect(rental) { vm.loadCreationResources(rental?.vehicleId, rental?.customerId) }
 
@@ -146,46 +150,46 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
         if (rental != null) {
             // Edit Flow
             val updateReq =
-                    UpdateRentalRequest(
-                            startDate = startIso,
-                            endDate = endIso,
-                            dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L,
-                            vehicleId = selectedVehicle?.id,
-                            customerId = selectedCustomer?.id
-                    )
+                UpdateRentalRequest(
+                    startDate = startIso,
+                    endDate = endIso,
+                    dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L,
+                    vehicleId = selectedVehicle?.id,
+                    customerId = selectedCustomer?.id
+                )
             vm.updateRental(rental.id!!, updateReq) { onDismiss() }
         } else if (isNewCustomer) {
             // Create Flow with New Customer
             val customerReq =
-                    CreateCustomerRequest(
-                            email = email,
-                            firstName = firstName,
-                            lastName = lastName,
-                            phone = phone,
-                            driversLicense = licenseNumber,
-                            driverLicenseExpiry = licenseExpiry
-                    )
+                CreateCustomerRequest(
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
+                    phone = phone,
+                    driversLicense = licenseNumber,
+                    driverLicenseExpiry = licenseExpiry
+                )
             vm.quickCreateCustomer(customerReq) { customerId ->
                 val rentalReq =
-                        CreateRentalRequest(
-                                customerId = customerId,
-                                vehicleId = selectedVehicle!!.id!!,
-                                startDate = startIso,
-                                endDate = endIso,
-                                dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L
-                        )
+                    CreateRentalRequest(
+                        customerId = customerId,
+                        vehicleId = selectedVehicle!!.id!!,
+                        startDate = startIso,
+                        endDate = endIso,
+                        dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L
+                    )
                 vm.createRental(rentalReq) { onDismiss() }
             }
         } else {
             // Create Flow with Existing Customer
             val rentalReq =
-                    CreateRentalRequest(
-                            customerId = selectedCustomer!!.id!!,
-                            vehicleId = selectedVehicle!!.id!!,
-                            startDate = startIso,
-                            endDate = endIso,
-                            dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L
-                    )
+                CreateRentalRequest(
+                    customerId = selectedCustomer!!.id!!,
+                    vehicleId = selectedVehicle!!.id!!,
+                    startDate = startIso,
+                    endDate = endIso,
+                    dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L
+                )
             vm.createRental(rentalReq) { onDismiss() }
         }
     }
@@ -194,22 +198,22 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
     val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            sheetState = sheetState,
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = colors.surface,
-            contentColor = colors.onBackground,
-            dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = colors.surface,
+        contentColor = colors.onBackground,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
     ) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
-                    modifier =
-                            Modifier.widthIn(max = 1800.dp)
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 24.dp)
-                                    .padding(bottom = 40.dp)
-                                    .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                modifier =
+                    Modifier.widthIn(max = 1800.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 40.dp)
+                        .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 // Handle Success/Error from ActionResult
                 actionResult?.let { result ->
@@ -227,55 +231,55 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
 
                 // Header
                 Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                                if (rental != null) "Edit Rental #${rental.rentalNumber ?: ""}"
-                                else "Create New Rental",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.onBackground
+                            if (rental != null) "Edit Rental #${rental.rentalNumber ?: ""}"
+                            else "Create New Rental",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onBackground
                         )
                         Text(
-                                if (rental != null) "Update rental terms or details."
-                                else "Set up a new rental agreement with an available vehicle.",
-                                fontSize = 14.sp,
-                                color = colors.onBackground.copy(alpha = 0.6f)
+                            if (rental != null) "Update rental terms or details."
+                            else "Set up a new rental agreement with an available vehicle.",
+                            fontSize = 14.sp,
+                            color = colors.onBackground.copy(alpha = 0.6f)
                         )
                     }
- 
-                     Button(
-                             onClick = ::handleSubmit,
-                             enabled = !isSubmitting,
-                             shape = RoundedCornerShape(12.dp)
-                     ) {
-                         if (isSubmitting)
-                                 CircularProgressIndicator(
-                                         Modifier.size(20.dp),
-                                         color = Color.White,
-                                         strokeWidth = 2.dp
-                                 )
+
+                    Button(
+                        onClick = ::handleSubmit,
+                        enabled = !isSubmitting,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        if (isSubmitting)
+                            CircularProgressIndicator(
+                                Modifier.size(20.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
                         else Text(
-                                if (rental != null) "Save Changes" else "Confirm Rental",
-                                fontWeight = FontWeight.SemiBold
+                            if (rental != null) "Save Changes" else "Confirm Rental",
+                            fontWeight = FontWeight.SemiBold
                         )
-                     }
+                    }
                 }
 
                 errors?.let {
                     Surface(
-                            color = colors.cancelled.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                        color = colors.cancelled.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                                it,
-                                color = colors.cancelled,
-                                modifier = Modifier.padding(12.dp),
-                                fontSize = 13.sp
+                            it,
+                            color = colors.cancelled,
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 13.sp
                         )
                     }
                 }
@@ -285,41 +289,42 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                     LabeledInfo("Select Available Vehicle", infoIcon)
                     when (val s = availableVehiclesState) {
                         is UiState.Loading ->
-                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    repeat(3) {
-                                        Box(
-                                                Modifier.width(200.dp)
-                                                        .height(120.dp)
-                                                        .background(
-                                                                colors.border.copy(alpha = 0.2f),
-                                                                RoundedCornerShape(16.dp)
-                                                        )
-                                        )
-                                    }
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                repeat(3) {
+                                    Box(
+                                        Modifier.width(200.dp)
+                                            .height(120.dp)
+                                            .background(
+                                                colors.border.copy(alpha = 0.2f),
+                                                RoundedCornerShape(16.dp)
+                                            )
+                                    )
                                 }
+                            }
+
                         is UiState.Error -> Text(s.message, color = colors.cancelled)
                         is UiState.Success -> {
                             if (s.data.isEmpty()) {
                                 Text(
-                                        "No available vehicles found.",
-                                        color = colors.text2,
-                                        fontSize = 14.sp
+                                    "No available vehicles found.",
+                                    color = colors.text2,
+                                    fontSize = 14.sp
                                 )
                             } else {
                                 Box(modifier = Modifier.fillMaxWidth()) {
                                     LazyRow(
-                                            state = listState,
-                                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                            contentPadding = PaddingValues(horizontal = 16.dp)
+                                        state = listState,
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        contentPadding = PaddingValues(horizontal = 16.dp)
                                     ) {
                                         items(s.data) { vehicle ->
                                             VehicleSelectionCard(
-                                                    vehicle = vehicle,
-                                                    selected = selectedVehicle?.id == vehicle.id,
-                                                    onClick = {
-                                                        selectedVehicle = vehicle
-                                                        errors = null
-                                                    }
+                                                vehicle = vehicle,
+                                                selected = selectedVehicle?.id == vehicle.id,
+                                                onClick = {
+                                                    selectedVehicle = vehicle
+                                                    errors = null
+                                                }
                                             )
                                         }
                                     }
@@ -327,27 +332,27 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                                     // Scroll Buttons
                                     if (listState.canScrollBackward) {
                                         Surface(
-                                                modifier =
-                                                        Modifier.align(Alignment.CenterStart)
-                                                                .padding(start = 4.dp)
-                                                                .size(32.dp),
-                                                shape = RoundedCornerShape(16.dp),
-                                                tonalElevation = 2.dp,
-                                                shadowElevation = 4.dp
+                                            modifier =
+                                                Modifier.align(Alignment.CenterStart)
+                                                    .padding(start = 4.dp)
+                                                    .size(32.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                            tonalElevation = 2.dp,
+                                            shadowElevation = 4.dp
                                         ) {
                                             IconButton(
-                                                    onClick = {
-                                                        scope.launch {
-                                                            listState.animateScrollBy(-400f)
-                                                        }
-                                                    },
-                                                    modifier = Modifier.fillMaxSize()
+                                                onClick = {
+                                                    scope.launch {
+                                                        listState.animateScrollBy(-400f)
+                                                    }
+                                                },
+                                                modifier = Modifier.fillMaxSize()
                                             ) {
                                                 Icon(
-                                                        Icons.Default.KeyboardArrowLeft,
-                                                        null,
-                                                        modifier = Modifier.size(20.dp),
-                                                        tint = colors.primary
+                                                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                                    null,
+                                                    modifier = Modifier.size(20.dp),
+                                                    tint = colors.primary
                                                 )
                                             }
                                         }
@@ -355,27 +360,27 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
 
                                     if (listState.canScrollForward) {
                                         Surface(
-                                                modifier =
-                                                        Modifier.align(Alignment.CenterEnd)
-                                                                .padding(end = 4.dp)
-                                                                .size(32.dp),
-                                                shape = RoundedCornerShape(16.dp),
-                                                tonalElevation = 2.dp,
-                                                shadowElevation = 4.dp
+                                            modifier =
+                                                Modifier.align(Alignment.CenterEnd)
+                                                    .padding(end = 4.dp)
+                                                    .size(32.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                            tonalElevation = 2.dp,
+                                            shadowElevation = 4.dp
                                         ) {
                                             IconButton(
-                                                    onClick = {
-                                                        scope.launch {
-                                                            listState.animateScrollBy(400f)
-                                                        }
-                                                    },
-                                                    modifier = Modifier.fillMaxSize()
+                                                onClick = {
+                                                    scope.launch {
+                                                        listState.animateScrollBy(400f)
+                                                    }
+                                                },
+                                                modifier = Modifier.fillMaxSize()
                                             ) {
                                                 Icon(
-                                                        Icons.Default.KeyboardArrowRight,
-                                                        null,
-                                                        modifier = Modifier.size(20.dp),
-                                                        tint = colors.primary
+                                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                                    null,
+                                                    modifier = Modifier.size(20.dp),
+                                                    tint = colors.primary
                                                 )
                                             }
                                         }
@@ -397,7 +402,7 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         LabeledInfo("Rental Terms", infoIcon)
-                        
+
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             LabeledInfo("Start Date", infoIcon)
                             Box {
@@ -457,7 +462,7 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("New Customer", fontSize = 13.sp, color = colors.text2)
                                 Spacer(Modifier.width(8.dp))
-                                Switch(
+                                RentalSwitch(
                                     checked = isNewCustomer,
                                     onCheckedChange = {
                                         isNewCustomer = it
@@ -493,16 +498,18 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                                         )
                                     }
                                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                        OutlinedTextField(
-                                            email,
-                                            { email = it },
-                                            label = { Text("Email") },
-                                            modifier = Modifier.weight(1.5f)
+                                        EmailOutlinedTextField(
+                                            value = email,
+                                            onValueChange = { email = it },
+                                            modifier = Modifier.weight(1f),
                                         )
-                                        OutlinedTextField(
-                                            phone,
-                                            { phone = it },
-                                            label = { Text("Phone") },
+
+                                        PhoneNumberOutlinedTextField(
+                                            value = phone,
+                                            onValueChange = { input ->
+                                                phone = input
+                                            },
+                                            label = "Phone Number",
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -511,14 +518,16 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                                             licenseNumber,
                                             { licenseNumber = it.uppercase() },
                                             label = { Text("Driver License #") },
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
+                                            singleLine = true
                                         )
                                         OutlinedTextField(
                                             licenseExpiry,
                                             { licenseExpiry = it },
                                             label = { Text("Expiry (YYYY-MM-DD)") },
                                             modifier = Modifier.weight(1f),
-                                            placeholder = { Text("2028-12-31") }
+                                            placeholder = { Text("2028-12-31") },
+                                            singleLine = true
                                         )
                                     }
                                     Text(
@@ -544,7 +553,8 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
 
                                     Box {
                                         OutlinedTextField(
-                                            value = selectedCustomer?.let { "${it.firstName} ${it.lastName}" } ?: filterText,
+                                            value = selectedCustomer?.let { "${it.firstName} ${it.lastName}" }
+                                                ?: filterText,
                                             onValueChange = {
                                                 filterText = it
                                                 if (selectedCustomer != null) {
@@ -573,8 +583,15 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                                                 DropdownMenuItem(
                                                     text = {
                                                         Column {
-                                                            Text("${customer.firstName} ${customer.lastName}", fontWeight = FontWeight.Medium)
-                                                            Text(customer.email ?: "", fontSize = 11.sp, color = colors.text2)
+                                                            Text(
+                                                                "${customer.firstName} ${customer.lastName}",
+                                                                fontWeight = FontWeight.Medium
+                                                            )
+                                                            Text(
+                                                                customer.email ?: "",
+                                                                fontSize = 11.sp,
+                                                                color = colors.text2
+                                                            )
                                                         }
                                                     },
                                                     onClick = {
@@ -597,49 +614,49 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
                 // Summary Card
                 selectedVehicle?.let { vehicle ->
                     Surface(
-                            color = colors.primary.copy(alpha = 0.05f),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.fillMaxWidth()
+                        color = colors.primary.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                                Modifier.padding(20.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Modifier.padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                        "Selected Vehicle",
-                                        fontSize = 12.sp,
-                                        color = colors.primary,
-                                        fontWeight = FontWeight.Bold
+                                    "Selected Vehicle",
+                                    fontSize = 12.sp,
+                                    color = colors.primary,
+                                    fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                        "${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold
+                                    "${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 val totalDays =
-                                        try {
-                                            val start = LocalDate.parse(startDate)
-                                            val end = LocalDate.parse(endDate)
-                                            val daysBetween = start.daysUntil(end)
-                                            if (daysBetween <= 0) 1 else daysBetween
-                                        } catch (e: Exception) {
-                                            1
-                                        }
+                                    try {
+                                        val start = LocalDate.parse(startDate)
+                                        val end = LocalDate.parse(endDate)
+                                        val daysBetween = start.daysUntil(end)
+                                        if (daysBetween <= 0) 1 else daysBetween
+                                    } catch (e: Exception) {
+                                        1
+                                    }
 
                                 val total = (dailyRate.toLongOrNull() ?: 1500L) * totalDays
                                 Text(
-                                        "Estimated Total ($totalDays days)",
-                                        fontSize = 12.sp,
-                                        color = colors.text2
+                                    "Estimated Total ($totalDays days)",
+                                    fontSize = 12.sp,
+                                    color = colors.text2
                                 )
                                 Text(
-                                        "PHP ${total}",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = colors.primary
+                                    "PHP ${total}",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.primary
                                 )
                             }
                         }
@@ -649,83 +666,100 @@ fun CreateRentalSheet(onDismiss: () -> Unit, sheetState: SheetState, rental: Ren
         }
 
         if (showStartDatePicker) {
-            val startPickerState =
-                    rememberDatePickerState(
-                            initialSelectedDateMillis =
-                                    LocalDate.parse(startDate)
-                                            .atStartOfDayIn(TimeZone.UTC)
-                                            .toEpochMilliseconds()
-                    )
-            DatePickerDialog(
-                    onDismissRequest = { showStartDatePicker = false },
-                    confirmButton = {
-                        TextButton(
-                                onClick = {
-                                    startPickerState.selectedDateMillis?.let {
-                                        startDate =
-                                                Instant.fromEpochMilliseconds(it)
-                                                        .toLocalDateTime(TimeZone.UTC)
-                                                        .date
-                                                        .toString()
-                                    }
-                                    showStartDatePicker = false
-                                }
-                        ) { Text("OK") }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showStartDatePicker = false }) { Text("Cancel") }
+            RentalDatePickerDialog(
+                initialDate = startDate,
+                minDateMillis = todayMillis,
+                onDateSelected = {
+                    startDate = it
+                    // Optional: If Start Date moves past End Date, push End Date forward
+                    if (LocalDate.parse(endDate) < LocalDate.parse(it)) {
+                        endDate = it
                     }
-            ) { DatePicker(state = startPickerState) }
+                },
+                onDismiss = { showStartDatePicker = false }
+            )
         }
 
         if (showEndDatePicker) {
-            val endPickerState =
-                    rememberDatePickerState(
-                            initialSelectedDateMillis =
-                                    LocalDate.parse(endDate)
-                                            .atStartOfDayIn(TimeZone.UTC)
-                                            .toEpochMilliseconds()
-                    )
-            DatePickerDialog(
-                    onDismissRequest = { showEndDatePicker = false },
-                    confirmButton = {
-                        TextButton(
-                                onClick = {
-                                    endPickerState.selectedDateMillis?.let {
-                                        endDate =
-                                                Instant.fromEpochMilliseconds(it)
-                                                        .toLocalDateTime(TimeZone.UTC)
-                                                        .date
-                                                        .toString()
-                                    }
-                                    showEndDatePicker = false
-                                }
-                        ) { Text("OK") }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showEndDatePicker = false }) { Text("Cancel") }
-                    }
-            ) { DatePicker(state = endPickerState) }
+            val minEndDateMillis = remember(startDate) {
+                LocalDate.parse(startDate).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+            }
+
+            RentalDatePickerDialog(
+                initialDate = endDate,
+                minDateMillis = minEndDateMillis,
+                onDateSelected = { endDate = it },
+                onDismiss = { showEndDatePicker = false }
+            )
         }
 
         if (showErrorDialog && errors != null) {
             ServerErrorDialog(
-                    message = errors!!,
-                    onRetry = {
-                        showErrorDialog = false
-                        handleSubmit()
-                    },
-                    onDismiss = { showErrorDialog = false }
+                message = errors!!,
+                onRetry = {
+                    showErrorDialog = false
+                    handleSubmit()
+                },
+                onDismiss = { showErrorDialog = false }
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Switch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, small: Boolean = false) {
+fun RentalDatePickerDialog(
+    initialDate: String,
+    minDateMillis: Long? = null,
+    onDateSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = try {
+            LocalDate.parse(initialDate)
+                .atStartOfDayIn(TimeZone.UTC)
+                .toEpochMilliseconds()
+        } catch (e: Exception) {
+            Clock.System.now().toEpochMilliseconds()
+        },
+        // This is the key to disabling dates
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return if (minDateMillis != null) {
+                    utcTimeMillis >= minDateMillis
+                } else {
+                    // Default for Start Date: Don't allow dates before today
+                    val today = Clock.System.now().toEpochMilliseconds()
+                    // We subtract a small buffer or normalize to start of day to ensure 'today' is clickable
+                    utcTimeMillis >= today - (24 * 60 * 60 * 1000)
+                }
+            }
+        }
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                datePickerState.selectedDateMillis?.let {
+                    onDateSelected(Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString())
+                }
+                onDismiss()
+            }) { Text("OK") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
+@Composable
+private fun RentalSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, small: Boolean = false) {
     androidx.compose.material3.Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            modifier = if (small) Modifier.scale(0.8f) else Modifier
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = if (small) Modifier.scale(0.8f) else Modifier
     )
 }

@@ -5,18 +5,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
 import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
@@ -135,109 +138,133 @@ fun RentalsListScreen(router: AppRouter) {
 
             // Table Section
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                when (val s = state) {
+                when (val uiState = state) {
                     is UiState.Loading -> TableSkeleton(rows = 8, columnCount = 7)
                     is UiState.Error -> {
                         // Inline error removed in favor of modal
                         TableSkeleton(rows = 8, columnCount = 7)
                     }
 
-                    is UiState.Success -> PaginatedTable(
-                        headers = listOf(
-                            "Rental #",
-                            "Customer",
-                            "Vehicle",
-                            "Status",
-                            "Start Date",
-                            "End Date",
-                            "Total",
-                            "Actions"
-                        ),
-                        items = s.data.items,
-                        onRowClick = { idx -> vm.loadRental(s.data.items[idx].id ?: "") },
-                        emptyMessage = "No rentals found",
-                        rowContent = { rental, _ ->
-                            Text(
-                                rental.rentalNumber ?: rental.id?.take(8) ?: "",
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = colors.primary
-                            )
-                            Text(
-                                rental.customerName ?: "—",
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1
-                            )
-                            Column(Modifier.weight(1f)) {
+                    is UiState.Success -> {
+                        val items = uiState.data.items
+                        PaginatedTable(
+                            headers = listOf(
+                                "Rental #",
+                                "Customer",
+                                "Vehicle",
+                                "Status",
+                                "Start Date",
+                                "End Date",
+                                "Total",
+                                "Actions"
+                            ),
+                            items = items,
+                            onRowClick = { idx -> vm.loadRental(items[idx].id ?: "") },
+                            emptyContent = {
+                                EmptyState(
+                                    title = "No active rentals",
+                                    description = "Manage your vehicle rentals and track active contracts here.",
+                                    icon = Icons.Default.Receipt,
+                                    actionLabel = "New Rental",
+                                    onAction = {
+                                        rentalToEdit = null
+                                        showCreateSheet = true
+                                    }
+                                )
+                            },
+                            rowContent = { rental, _ ->
                                 Text(
-                                    rental.vehiclePlateNumber ?: "—",
+                                    rental.rentalNumber ?: rental.id?.take(8) ?: "",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = colors.primary,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    rental.customerName ?: "—",
+                                    modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    fontWeight = FontWeight.Medium
+                                    textAlign = TextAlign.Center
+                                )
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        rental.vehiclePlateNumber ?: "—",
+                                        fontSize = 13.sp,
+                                        color = colors.text1,
+                                        fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Text(
+                                        "${rental.vehicleMake} ${rental.vehicleModel}",
+                                        fontSize = 11.sp,
+                                        color = colors.text2,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                Box(Modifier.weight(1f)) {
+                                    RentalStatusBadge((rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge())
+                                }
+                                Text(
+                                    formatDate(rental.startDate ?: 0L),
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    "${rental.vehicleMake} ${rental.vehicleModel}",
-                                    fontSize = 11.sp,
-                                    color = colors.text2
+                                    formatDate(rental.endDate ?: 0L),
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
                                 )
-                            }
-                            Box(Modifier.weight(1f)) {
-                                RentalStatusBadge((rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge())
-                            }
-                            Text(
-                                formatDate(rental.startDate ?: 0L),
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1
-                            )
-                            Text(
-                                formatDate(rental.endDate ?: 0L),
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1
-                            )
-                            Text(
-                                "PHP ${rental.totalCost}",
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        rentalToEdit = rental
-                                        showCreateSheet = true
-                                    },
-                                    modifier = Modifier.size(28.dp)
+                                Text(
+                                    "PHP ${rental.totalCost}",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Center
+                                )
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        painterResource(Res.drawable.edit_icon),
-                                        contentDescription = "Edit",
-                                        tint = colors.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    IconButton(
+                                        onClick = {
+                                            rentalToEdit = rental
+                                            showCreateSheet = true
+                                        },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            painterResource(Res.drawable.edit_icon),
+                                            contentDescription = "Edit",
+                                            tint = colors.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { rentalToDelete = rental },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            painterResource(Res.drawable.delete_icon),
+                                            contentDescription = "Delete",
+                                            tint = colors.cancelled,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
-                                IconButton(
-                                    onClick = { rentalToDelete = rental },
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        painterResource(Res.drawable.delete_icon),
-                                        contentDescription = "Delete",
-                                        tint = colors.cancelled,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
             }
 
@@ -254,7 +281,7 @@ fun RentalsListScreen(router: AppRouter) {
     }
 
     if (showCreateSheet) {
-        CreateRentalSheet(
+        CreateRentalBottomSheet(
             onDismiss = {
                 showCreateSheet = false
                 rentalToEdit = null
@@ -282,5 +309,5 @@ fun RentalsListScreen(router: AppRouter) {
 private fun formatDate(epochMs: Long): String {
     if (epochMs == 0L) return "—"
     val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
-    return "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
+    return "${dt.year}-${(dt.month.number).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
 }

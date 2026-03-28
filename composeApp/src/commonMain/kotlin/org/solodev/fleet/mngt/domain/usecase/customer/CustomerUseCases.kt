@@ -1,6 +1,7 @@
 package org.solodev.fleet.mngt.domain.usecase.customer
 
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
+import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.repository.AccountingRepository
 import org.solodev.fleet.mngt.repository.CustomerRepository
@@ -20,6 +21,10 @@ class GetCustomerUseCase(private val repository: CustomerRepository) {
 
 class CreateCustomerUseCase(private val repository: CustomerRepository) {
     suspend operator fun invoke(request: CreateCustomerRequest) = repository.createCustomer(request)
+}
+
+class UpdateCustomerUseCase(private val repository: CustomerRepository) {
+    suspend operator fun invoke(id: String, request: UpdateCustomerRequest) = repository.updateCustomer(id, request)
 }
 
 class DeactivateCustomerUseCase(private val repository: CustomerRepository) {

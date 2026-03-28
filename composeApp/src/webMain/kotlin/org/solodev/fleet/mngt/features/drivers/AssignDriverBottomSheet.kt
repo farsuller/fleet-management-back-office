@@ -10,6 +10,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -33,7 +35,7 @@ import org.solodev.fleet.mngt.ui.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AssignDriverSheet(
+fun AssignDriverBottomSheet(
     driver: DriverDto,
     onDismiss: () -> Unit,
     sheetState: SheetState,
@@ -212,7 +214,7 @@ fun AssignDriverSheet(
                                                     scope.launch { listState.animateScrollBy(-500f) }
                                                 }
                                             ) {
-                                                Icon(Icons.Default.KeyboardArrowLeft, null, tint = colors.primary)
+                                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, tint = colors.primary)
                                             }
                                         }
                                     }
@@ -232,7 +234,7 @@ fun AssignDriverSheet(
                                                     scope.launch { listState.animateScrollBy(500f) }
                                                 }
                                             ) {
-                                                Icon(Icons.Default.KeyboardArrowRight, null, tint = colors.primary)
+                                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = colors.primary)
                                             }
                                         }
                                     }
@@ -251,7 +253,7 @@ fun AssignDriverSheet(
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Add any specific instructions or notes for this assignment...") },
                         minLines = 3,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     )
                 }
 

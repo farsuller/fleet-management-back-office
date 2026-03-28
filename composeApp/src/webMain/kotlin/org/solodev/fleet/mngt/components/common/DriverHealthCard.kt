@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
-import fleetmanagementbackoffice.composeapp.generated.resources.ic_car
+import fleetmanagementbackoffice.composeapp.generated.resources.ic_driver
 import org.jetbrains.compose.resources.painterResource
 import org.solodev.fleet.mngt.features.drivers.DriverStats
 import org.solodev.fleet.mngt.theme.fleetColors
@@ -53,7 +53,7 @@ fun DriverHealthCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_car), // Or a driver-specific icon if available
+                        painter = painterResource(Res.drawable.ic_driver), // Or a driver-specific icon if available
                         contentDescription = null,
                         modifier = Modifier.size(28.dp),
                         tint = colors.onSurface

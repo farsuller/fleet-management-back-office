@@ -35,6 +35,7 @@ import org.solodev.fleet.mngt.auth.UserRole
 import org.solodev.fleet.mngt.components.common.*
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.MaintenanceStatus as MaintenanceStatusCommon
 
 @Composable
 fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
@@ -219,7 +220,7 @@ private fun InfoContent(
         // Maintenance Health Section
         if (vehicle.nextServiceMileage != null) {
             val last = vehicle.lastServiceMileage ?: 0
-            val next = vehicle.nextServiceMileage ?: 0
+            val next = vehicle.nextServiceMileage
             val current = vehicle.mileageKm ?: 0L
 
             val totalDistance = (next - last).coerceAtLeast(1)
@@ -431,22 +432,17 @@ private fun VehicleState.toUiBadge() =
         VehicleState.UNKNOWN -> VehicleStatus.RETIRED
     }
 
-private fun org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.toUiBadge() =
+private fun MaintenanceStatus.toUiBadge() =
     when (this) {
-        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.SCHEDULED ->
-            org.solodev.fleet.mngt.components.common.MaintenanceStatus.SCHEDULED
+        MaintenanceStatus.SCHEDULED -> MaintenanceStatusCommon.SCHEDULED
 
-        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.IN_PROGRESS ->
-            org.solodev.fleet.mngt.components.common.MaintenanceStatus.IN_PROGRESS
+        MaintenanceStatus.IN_PROGRESS -> MaintenanceStatusCommon.IN_PROGRESS
 
-        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.COMPLETED ->
-            org.solodev.fleet.mngt.components.common.MaintenanceStatus.COMPLETED
+        MaintenanceStatus.COMPLETED -> MaintenanceStatusCommon.COMPLETED
 
-        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.CANCELLED ->
-            org.solodev.fleet.mngt.components.common.MaintenanceStatus.CANCELLED
+        MaintenanceStatus.CANCELLED -> MaintenanceStatusCommon.CANCELLED
 
-        org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus.UNKNOWN ->
-            org.solodev.fleet.mngt.components.common.MaintenanceStatus.CANCELLED
+        MaintenanceStatus.UNKNOWN -> MaintenanceStatusCommon.CANCELLED
     }
 
 private fun MaintenancePriority.toUiBadge() =

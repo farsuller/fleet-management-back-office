@@ -13,15 +13,19 @@ import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
+import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
+import org.solodev.fleet.mngt.domain.usecase.customer.UpdateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.DeactivateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
 import org.solodev.fleet.mngt.ui.UiState
+
+enum class CustomerTab { INFO, RENTALS, PAYMENTS }
 
 data class CustomerDetailSnapshot(
     val customer: CustomerDto,
@@ -33,6 +37,7 @@ class CustomersViewModel(
     private val getCustomersUseCase: GetCustomersUseCase,
     private val getCustomerUseCase: GetCustomerUseCase,
     private val createCustomerUseCase: CreateCustomerUseCase,
+    private val updateCustomerUseCase: UpdateCustomerUseCase,
     private val deactivateCustomerUseCase: DeactivateCustomerUseCase,
     private val getCustomerRentalsUseCase: GetCustomerRentalsUseCase,
     private val getCustomerPaymentsUseCase: GetCustomerPaymentsUseCase,
@@ -51,6 +56,12 @@ class CustomersViewModel(
 
     private val _detailState = MutableStateFlow<UiState<CustomerDetailSnapshot>?>(null)
     val detailState: StateFlow<UiState<CustomerDetailSnapshot>?> = _detailState.asStateFlow()
+
+    private val _selectedCustomerId = MutableStateFlow<String?>(null)
+    val selectedCustomerId: StateFlow<String?> = _selectedCustomerId.asStateFlow()
+
+    private val _activeTab = MutableStateFlow(CustomerTab.INFO)
+    val activeTab: StateFlow<CustomerTab> = _activeTab.asStateFlow()
 
     // ── Mutation feedback ─────────────────────────────────────────────────────
 
@@ -90,6 +101,7 @@ class CustomersViewModel(
     // ── Detail actions ────────────────────────────────────────────────────────
 
     fun loadCustomer(customerId: String) {
+        _selectedCustomerId.value = customerId
         _detailState.value = UiState.Loading
         viewModelScope.launch {
             getCustomerUseCase(customerId)
@@ -115,6 +127,15 @@ class CustomersViewModel(
         }
     }
 
+    fun setActiveTab(tab: CustomerTab) {
+        _activeTab.value = tab
+    }
+
+    fun closeDetail() {
+        _selectedCustomerId.value = null
+        _detailState.value = null
+    }
+
     fun deactivateCustomer(customerId: String) {
         viewModelScope.launch {
             deactivateCustomerUseCase(customerId)
@@ -138,6 +159,25 @@ class CustomersViewModel(
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     customer.id?.let { onCreated(it) }
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
+        }
+    }
+
+    fun updateCustomer(customerId: String, request: UpdateCustomerRequest, onUpdated: () -> Unit) {
+        viewModelScope.launch {
+            updateCustomerUseCase(customerId, request)
+                .onSuccess { customer ->
+                    _actionResult.value = Result.success(Unit)
+                    loadList(forceRefresh = true)
+                    
+                    // Refresh detail if currently viewing this customer
+                    val current = (_detailState.value as? UiState.Success)?.data
+                    if (current?.customer?.id == customerId) {
+                        _detailState.value = UiState.Success(current.copy(customer = customer))
+                    }
+                    
+                    onUpdated()
                 }
                 .onFailure { _actionResult.value = Result.failure(it) }
         }

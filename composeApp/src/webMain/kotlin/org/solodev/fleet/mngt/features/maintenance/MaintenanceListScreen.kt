@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -208,10 +209,24 @@ fun MaintenanceListScreen(router: AppRouter) {
                     headers = listOf("Job #", "Vehicle", "Type", "Priority", "Status", "Scheduled", "Est. Cost"),
                     items = filtered,
                     rowContent = { job, _ ->
-                        Text(job.id?.take(8) ?: "-", modifier = Modifier.weight(1f), fontSize = 13.sp)
-                        Text(job.vehiclePlate ?: "-", modifier = Modifier.weight(1f), fontSize = 13.sp)
-                        Text(job.type?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "-",
-                            modifier = Modifier.weight(1f), fontSize = 13.sp)
+                        Text(
+                            text = job.id?.take(8) ?: "-",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = job.vehiclePlate ?: "-",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = job.type?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "-",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                            )
                         PriorityBadge(
                             priority = (job.priority ?: MaintenancePriority.NORMAL).toUiBadge(),
                             modifier = Modifier.weight(1f),
@@ -224,11 +239,13 @@ fun MaintenanceListScreen(router: AppRouter) {
                             text = job.scheduledDate?.let { formatMaintenanceDate(it) } ?: "-",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             text = job.estimatedCostPhp?.let { "PHP ${it / 100}" } ?: "-",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
                         )
                     },
                     onRowClick = { idx ->

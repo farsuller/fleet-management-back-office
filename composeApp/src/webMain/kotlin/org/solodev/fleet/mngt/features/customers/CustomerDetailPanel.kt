@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
@@ -27,6 +27,7 @@ import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Instant
 
 private fun formatDate(epochMs: Long?): String {
     if (epochMs == null || epochMs == 0L) return "N/A"
@@ -45,14 +46,14 @@ fun CustomerDetailPanel(
 
     AnimatedVisibility(
         visible = customerId != null,
-        enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
-        exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
+        enter = slideInHorizontally(initialOffsetX = { it }),
+        exit = slideOutHorizontally(targetOffsetX = { it }),
+        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp)
     ) {
         Surface(
-            modifier = Modifier.fillMaxHeight().width(400.dp),
+            modifier = Modifier.fillMaxSize(),
             color = colors.surface,
-            tonalElevation = 8.dp,
-            shadowElevation = 16.dp
+            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp),
         ) {
             Column(Modifier.fillMaxSize()) {
                 // Header
@@ -67,12 +68,13 @@ fun CustomerDetailPanel(
                     }
                 }
 
-                Divider(color = colors.border)
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, color = colors.border)
 
                 when (val s = detailState) {
                     is UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
+
                     is UiState.Success -> {
                         val snapshot = s.data
                         CustomerContent(
@@ -81,11 +83,20 @@ fun CustomerDetailPanel(
                             payments = snapshot.payments
                         )
                     }
-                    is UiState.Error -> Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                        Text(s.message, color = colors.cancelled, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+
+                    is UiState.Error -> Box(
+                        Modifier.fillMaxSize().padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            s.message,
+                            color = colors.cancelled,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
+
                     else -> if (customerId != null) {
-                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                         }
                     }
@@ -116,7 +127,12 @@ private fun CustomerContent(
                 Modifier.size(64.dp).clip(RoundedCornerShape(32.dp)).background(colors.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Person, contentDescription = null, tint = colors.primary, modifier = Modifier.size(32.dp))
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(32.dp)
+                )
             }
             Column {
                 Text("${customer.firstName} ${customer.lastName}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -124,22 +140,25 @@ private fun CustomerContent(
             }
         }
 
-        TabRow(
+
+        PrimaryScrollableTabRow(
             selectedTabIndex = selectedTab,
             containerColor = colors.surface,
             contentColor = colors.primary,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                    color = colors.primary
-                )
-            }
+            edgePadding = 24.dp, // Matches the Profile Header padding
+            divider = {}         // Removes the default bottom line for a cleaner look
         ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTab == index,
                     onClick = { selectedTab = index },
-                    text = { Text(title, fontSize = 13.sp) }
+                    text = {
+                        Text(
+                            title.uppercase(),
+                            fontSize = 11.sp,
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
                 )
             }
         }
@@ -175,7 +194,7 @@ private fun InfoTab(customer: CustomerDto) {
             LabeledField("Phone Number", customer.phone ?: "N/A")
         }
 
-        Divider(color = colors.border.copy(alpha = 0.5f))
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, color = colors.border.copy(alpha = 0.5f))
 
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("License Details", fontWeight = FontWeight.Bold, fontSize = 15.sp)
@@ -221,16 +240,25 @@ private fun RentalHistoryItem(rental: RentalDto) {
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column {
-                val vehicleText = if (rental.vehicleMake != null) "${rental.vehicleMake} ${rental.vehicleModel}" else "Vehicle"
+                val vehicleText =
+                    if (rental.vehicleMake != null) "${rental.vehicleMake} ${rental.vehicleModel}" else "Vehicle"
                 Text(vehicleText, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text("${formatDate(rental.startDate)} - ${formatDate(rental.endDate)}", fontSize = 12.sp, color = colors.text2)
+                Text(
+                    "${formatDate(rental.startDate)} - ${formatDate(rental.endDate)}",
+                    fontSize = 12.sp,
+                    color = colors.text2
+                )
             }
             Text(
-                rental.status?.name ?: "PENDING", 
-                color = colors.primary, 
-                fontWeight = FontWeight.Bold, 
+                rental.status?.name ?: "PENDING",
+                color = colors.primary,
+                fontWeight = FontWeight.Bold,
                 fontSize = 12.sp
             )
         }
@@ -245,7 +273,11 @@ private fun PaymentHistoryItem(payment: PaymentDto) {
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column {
                 Text(payment.paymentMethod ?: "Payment", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text(formatDate(payment.paymentDate), fontSize = 12.sp)

@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.datetime.LocalDate
@@ -124,36 +125,42 @@ fun PaymentsTab() {
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text1,
+                            textAlign = TextAlign.Center
                         )
                         Text(
                             payment.invoiceId?.take(8)?.let { "$it..." } ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text1,
+                            textAlign = TextAlign.Center
                         )
                         Text(
                             formatPhp(payment.amount ?: 0L),
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text1,
+                            textAlign = TextAlign.Center
                         )
                         Text(
                             payment.paymentMethod ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text2,
+                            textAlign = TextAlign.Center
                         )
                         Text(
                             payment.collectionType?.name?.replace('_', ' ') ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text2,
+                            textAlign = TextAlign.Center
                         )
                         Text(
                             payment.paymentDate?.let { formatDate(it) } ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text2,
+                            textAlign = TextAlign.Center
                         )
                     },
                 )

@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
@@ -149,7 +150,7 @@ fun DriversListScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.TrendingUp,
+                                    Icons.AutoMirrored.Filled.TrendingUp,
                                     null,
                                     tint = colors.primary,
                                     modifier = Modifier.size(24.dp)
@@ -211,38 +212,51 @@ fun DriversListScreen(
                             rowContent = { driver, _ ->
                                 Row(
                                     modifier = Modifier.weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
                                 ) {
-                                    Box(
-                                        modifier = Modifier.size(32.dp).clip(CircleShape)
-                                            .background(colors.primary.copy(alpha = 0.1f)),
-                                        contentAlignment = Alignment.Center
+                                    Row(
+                                        modifier = Modifier.weight(0.8f).padding(vertical = 8.dp).fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.End
                                     ) {
-                                        Text(
-                                            (driver.firstName ?: " ").take(1).uppercase(),
-                                            color = colors.primary,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(CircleShape)
+                                                .background(colors.primary.copy(alpha = 0.1f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = (driver.firstName ?: " ").take(1).uppercase(),
+                                                color = colors.primary,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                        }
                                     }
-                                    Spacer(Modifier.width(12.dp))
+
                                     Text(
-                                        "${driver.firstName} ${driver.lastName}",
+                                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                        text = "${driver.firstName} ${driver.lastName}",
                                         fontSize = 13.sp,
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Start
                                     )
                                 }
                                 Text(
                                     driver.email ?: "—",
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
-                                    color = colors.text2
+                                    color = colors.text2,
+                                    textAlign = TextAlign.Center
                                 )
                                 Text(
                                     driver.licenseNumber ?: "—",
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
-                                    color = colors.text2
+                                    color = colors.text2,
+                                    textAlign = TextAlign.Center
                                 )
                                 Box(Modifier.weight(1f)) {
                                     val status = if (driver.currentAssignment?.isActive == true) DriverStatus.ACTIVE
@@ -252,7 +266,7 @@ fun DriversListScreen(
                                 }
                                 Row(
                                     modifier = Modifier.weight(1f),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     if (canManage) {
@@ -307,7 +321,7 @@ fun DriversListScreen(
     }
 
     if (showCreateSheet) {
-        DriverSheet(
+        AddEditDriverBottomSheet(
             onDismiss = {
                 showCreateSheet = false
                 driverToEdit = null
@@ -318,7 +332,7 @@ fun DriversListScreen(
     }
 
     assigningDriver?.let { driver ->
-        AssignDriverSheet(
+        AssignDriverBottomSheet(
             driver = driver,
             onDismiss = { assigningDriver = null },
             sheetState = rememberModalBottomSheetState(),

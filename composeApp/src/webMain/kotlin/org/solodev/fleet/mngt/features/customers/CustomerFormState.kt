@@ -1,9 +1,10 @@
 package org.solodev.fleet.mngt.features.customers
 
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
-import kotlinx.datetime.Instant
+
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 data class CustomerFormState(
     val firstName: String = "",

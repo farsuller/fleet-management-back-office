@@ -13,17 +13,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
+import org.solodev.fleet.mngt.components.common.PhoneNumberOutlinedTextField
+import org.solodev.fleet.mngt.components.common.EmailOutlinedTextField
 import org.solodev.fleet.mngt.theme.fleetColors
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerSheet(
+fun CustomerBottomSheet(
     onDismiss: () -> Unit,
     customer: CustomerDto? = null,
     sheetState: SheetState = rememberModalBottomSheetState()
@@ -35,12 +41,20 @@ fun CustomerSheet(
     var firstName by remember { mutableStateOf(customer?.firstName ?: "") }
     var lastName by remember { mutableStateOf(customer?.lastName ?: "") }
     var email by remember { mutableStateOf(customer?.email ?: "") }
-    var phone by remember { mutableStateOf(customer?.phone ?: "") }
+    var phone by remember(customer) {
+        mutableStateOf(
+            customer?.phone
+                ?.replace("+63", "")      // Remove prefix if it exists
+                ?.filter { it.isDigit() } // Remove spaces or dashes
+                ?.takeLast(10)            // Take only the last 10 digits
+                ?: ""
+        )
+    }
     var licenseNumber by remember { mutableStateOf(customer?.driverLicenseNumber ?: "") }
-    var licenseExpiry by remember { 
+    var licenseExpiry by remember {
         mutableStateOf(
             if (customer?.licenseExpiryMs != null && customer.licenseExpiryMs != 0L) {
-                val dt = kotlinx.datetime.Instant.fromEpochMilliseconds(customer.licenseExpiryMs).toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+                val dt = Instant.fromEpochMilliseconds(customer.licenseExpiryMs).toLocalDateTime(TimeZone.UTC)
                 dt.date.toString()
             } else ""
         )
@@ -49,6 +63,7 @@ fun CustomerSheet(
     var showDatePicker by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
+        modifier = Modifier.fillMaxWidth(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
@@ -56,6 +71,7 @@ fun CustomerSheet(
     ) {
         Column(
             modifier = Modifier
+                .widthIn(max = 1800.dp)
                 .fillMaxWidth()
                 .padding(bottom = 48.dp)
                 .verticalScroll(rememberScrollState()),
@@ -67,108 +83,23 @@ fun CustomerSheet(
                     .padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Text(
-                    text = if (isEdit) "Edit Customer" else "Add New Customer",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onBackground
-                )
-
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedTextField(
-                        value = firstName,
-                        onValueChange = { firstName = it },
-                        label = { Text("First Name") },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("e.g. John") }
-                    )
-                    OutlinedTextField(
-                        value = lastName,
-                        onValueChange = { lastName = it },
-                        label = { Text("Last Name") },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("e.g. Doe") }
-                    )
-                }
-
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email Address") },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("john.doe@example.com") }
-                    )
-                    OutlinedTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = { Text("Phone Number") },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("+63 9xx xxx xxxx") }
-                    )
-                }
-
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedTextField(
-                        value = licenseNumber,
-                        onValueChange = { licenseNumber = it.uppercase() },
-                        label = { Text("Driver's License #") },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Nxx-xx-xxxxxx") }
-                    )
-                    Box(modifier = Modifier.weight(1f)) {
-                        OutlinedTextField(
-                            value = licenseExpiry,
-                            onValueChange = {},
-                            label = { Text("License Expiry") },
-                            readOnly = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = { Icon(Icons.Default.DateRange, null) },
-                            placeholder = { Text("YYYY-MM-DD") }
-                        )
-                        Box(Modifier.matchParentSize().clickable { showDatePicker = true })
-                    }
-                }
-
-                if (isEdit) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text("Account Status", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colors.onBackground)
-                            Text(
-                                if (isActive) "Customer is active and can rent vehicles" 
-                                else "Customer is deactivated",
-                                fontSize = 12.sp,
-                                color = colors.onBackground.copy(alpha = 0.6f)
-                            )
-                        }
-                        Switch(
-                            checked = isActive,
-                            onCheckedChange = { isActive = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = colors.active,
-                                uncheckedThumbColor = colors.retired
-                            )
-                        )
-                    }
-                }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel", color = colors.onBackground.copy(alpha = 0.6f))
-                    }
-                    Spacer(Modifier.width(16.dp))
+                    Text(
+                        text = if (isEdit) "Edit Customer" else "Add New Customer",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onBackground
+                    )
+
                     Button(
                         onClick = {
                             if (isEdit) {
-                                customer?.id?.let { id ->
+                                customer.id?.let { id ->
                                     vm.updateCustomer(
                                         id,
                                         UpdateCustomerRequest(
@@ -199,7 +130,99 @@ fun CustomerSheet(
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                     ) {
-                        Text(if (isEdit) "Save Changes" else "Create Customer", modifier = Modifier.padding(horizontal = 16.dp))
+                        Text(
+                            if (isEdit) "Save Changes" else "Create Customer",
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedTextField(
+                        value = firstName,
+                        onValueChange = { firstName = it },
+                        label = { Text("First Name") },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("e.g. John") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = lastName,
+                        onValueChange = { lastName = it },
+                        label = { Text("Last Name") },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("e.g. Doe") },
+                        singleLine = true
+                    )
+                }
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    EmailOutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        modifier = Modifier.weight(1f),
+                    )
+                    PhoneNumberOutlinedTextField(
+                        value = phone,
+                        onValueChange = { input ->
+                            phone = input
+                        },
+                        label = "Phone Number",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedTextField(
+                        value = licenseNumber,
+                        onValueChange = { licenseNumber = it.uppercase() },
+                        label = { Text("Driver's License #") },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Nxx-xx-xxxxxx") },
+                        singleLine = true
+                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = licenseExpiry,
+                            onValueChange = {},
+                            label = { Text("License Expiry") },
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            trailingIcon = { Icon(Icons.Default.DateRange, null) },
+                            placeholder = { Text("YYYY-MM-DD") }
+                        )
+                        Box(Modifier.matchParentSize().clickable { showDatePicker = true })
+                    }
+                }
+
+                if (isEdit) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                "Account Status",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = colors.onBackground
+                            )
+                            Text(
+                                if (isActive) "Customer is active and can rent vehicles"
+                                else "Customer is deactivated",
+                                fontSize = 12.sp,
+                                color = colors.onBackground.copy(alpha = 0.6f)
+                            )
+                        }
+                        Switch(
+                            checked = isActive,
+                            onCheckedChange = { isActive = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = colors.active,
+                                uncheckedThumbColor = colors.retired
+                            )
+                        )
                     }
                 }
             }
@@ -209,16 +232,15 @@ fun CustomerSheet(
             val datePickerState = rememberDatePickerState(
                 initialSelectedDateMillis = if (licenseExpiry.isNotEmpty()) {
                     try {
-                        Clock.System.now().toEpochMilliseconds()
+                        // Attempt to parse the existing date string back to millis
+                        LocalDate.parse(licenseExpiry)
+                            .atStartOfDayIn(TimeZone.UTC)
+                            .toEpochMilliseconds()
                     } catch (e: Exception) {
-                        0L
+                        Clock.System.now().toEpochMilliseconds()
                     }
                 } else {
-                    try {
-                        Clock.System.now().toEpochMilliseconds()
-                    } catch (e: Exception) {
-                        0L
-                    }
+                    Clock.System.now().toEpochMilliseconds()
                 }
             )
             DatePickerDialog(
@@ -226,8 +248,8 @@ fun CustomerSheet(
                 confirmButton = {
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let {
-                            licenseExpiry = kotlinx.datetime.Instant.fromEpochMilliseconds(it)
-                                .toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+                            licenseExpiry = Instant.fromEpochMilliseconds(it)
+                                .toLocalDateTime(TimeZone.UTC)
                                 .date.toString()
                         }
                         showDatePicker = false

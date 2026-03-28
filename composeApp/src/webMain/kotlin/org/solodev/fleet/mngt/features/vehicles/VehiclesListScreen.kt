@@ -1,5 +1,6 @@
 package org.solodev.fleet.mngt.features.vehicles
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -7,18 +8,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
 import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.skia.Color
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
@@ -141,7 +143,7 @@ fun VehiclesListScreen(router: AppRouter) {
             }
 
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                when (val s = state) {
+                when (val uiState = state) {
                     is UiState.Loading ->TableSkeleton(rows = 8)
                     is UiState.Error -> {
                         // Inline error removed in favor of modal
@@ -149,7 +151,7 @@ fun VehiclesListScreen(router: AppRouter) {
                     }
 
                     is UiState.Success -> {
-                        val items = (s as UiState.Success<org.solodev.fleet.mngt.api.PagedResponse<VehicleDto>>).data.items
+                        val items = uiState.data.items
                         PaginatedTable(
                             headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),
                             items = items,
@@ -172,19 +174,22 @@ fun VehiclesListScreen(router: AppRouter) {
                                 vehicle.licensePlate ?: "",
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Text(
                                 "${vehicle.make} ${vehicle.model}",
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Text(
                                 vehicle.year.toString(),
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Box(Modifier.weight(1f)) {
                                 VehicleStatusBadge((vehicle.state ?: VehicleState.UNKNOWN).toUiBadge())
@@ -193,11 +198,12 @@ fun VehiclesListScreen(router: AppRouter) {
                                 vehicle.mileageKm.toString(),
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.sp,
-                                color = colors.text1
+                                color = colors.text1,
+                                textAlign = TextAlign.Center
                             )
                             Row(
                                 modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(

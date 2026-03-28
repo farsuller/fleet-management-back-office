@@ -1,7 +1,10 @@
 package org.solodev.fleet.mngt.components.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -91,23 +94,29 @@ private fun priorityStyle(priority: Priority): BadgeStyle {
 @Composable
 private fun BadgePill(style: BadgeStyle, modifier: Modifier = Modifier) {
     val bg = style.background()
-    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(9999.dp))
-                .background(bg.copy(alpha = 0.20f))
-                .padding(horizontal = 14.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text       = style.label,
-                color      = bg,
-                fontSize   = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 12.sp,
-            )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(9999.dp))
+                    .background(bg.copy(alpha = 0.20f))
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text       = style.label,
+                    color      = bg,
+                    fontSize   = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = 12.sp,
+                )
+            }
         }
     }
+
 }
 
 // ─── Public composables ───────────────────────────────────────────────────────

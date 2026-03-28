@@ -56,7 +56,6 @@ fun DriverDetailPanel(
             modifier = Modifier.fillMaxSize(),
             color = colors.surface,
             shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp),
-            shadowElevation = 8.dp
         ) {
             Column(Modifier.fillMaxSize()) {
                 // Header

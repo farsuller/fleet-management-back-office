@@ -99,10 +99,6 @@ fun RentalsListScreen(router: AppRouter) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isRefreshing) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    IconButton(onClick = vm::refresh) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = colors.primary)
-                    }
                     if (authStatus is AuthStatus.Authenticated) {
                         Button(onClick = {
                             vm.loadCreationResources()
@@ -206,9 +202,10 @@ fun RentalsListScreen(router: AppRouter) {
                                         textAlign = TextAlign.Center
                                     )
                                 }
-                                Box(Modifier.weight(1f)) {
-                                    RentalStatusBadge((rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge())
-                                }
+                                RentalStatusBadge(
+                                    status = (rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge(),
+                                    modifier = Modifier.weight(1f)
+                                )
                                 Text(
                                     formatDate(rental.startDate ?: 0L),
                                     modifier = Modifier.weight(1f),

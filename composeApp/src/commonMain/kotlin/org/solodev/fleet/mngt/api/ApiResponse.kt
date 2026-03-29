@@ -1,6 +1,6 @@
 package org.solodev.fleet.mngt.api
 
-import kotlinx.serialization.SerialName
+
 import kotlinx.serialization.Serializable
 
 @Serializable

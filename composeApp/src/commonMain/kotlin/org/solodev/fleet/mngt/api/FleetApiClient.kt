@@ -56,6 +56,7 @@ import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CompleteMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
+import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
 import org.solodev.fleet.mngt.api.dto.rental.CompleteRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
@@ -177,6 +178,9 @@ class FleetApiClient(
     suspend fun deleteVehicle(id: String): Result<Unit> =
         delete("/v1/vehicles/$id")
 
+    suspend fun getVehicleIncidents(vehicleId: String): Result<List<VehicleIncidentDto>> =
+        getList("/v1/vehicles/$vehicleId/incidents")
+
     // ── Rentals ───────────────────────────────────────────────────────────────
 
     suspend fun getRentals(
@@ -241,29 +245,42 @@ class FleetApiClient(
         limit: Int = 20,
         status: String? = null,
     ): Result<PagedResponse<MaintenanceJobDto>> =
-        getAsPaged("/v1/maintenance") {
+        getAsPaged("/v1/maintenance/jobs") {
             cursor?.let { append("cursor", it) }
             append("limit", limit.toString())
             status?.let { append("status", it) }
         }
 
     suspend fun getMaintenanceJob(id: String): Result<MaintenanceJobDto> =
-        get("/v1/maintenance/$id")
+        get("/v1/maintenance/jobs/$id")
 
     suspend fun createMaintenanceJob(request: CreateMaintenanceRequest): Result<MaintenanceJobDto> =
-        post("/v1/maintenance", request)
+        post("/v1/maintenance/jobs", request)
 
     suspend fun completeMaintenanceJob(id: String, request: CompleteMaintenanceRequest): Result<MaintenanceJobDto> =
-        post("/v1/maintenance/$id/complete", request)
+        post("/v1/maintenance/jobs/$id/complete", request)
 
     suspend fun startMaintenanceJob(id: String): Result<MaintenanceJobDto> =
-        postEmpty("/v1/maintenance/$id/start")
+        postEmpty("/v1/maintenance/jobs/$id/start")
 
     suspend fun cancelMaintenanceJob(id: String): Result<MaintenanceJobDto> =
-        postEmpty("/v1/maintenance/$id/cancel")
+        postEmpty("/v1/maintenance/jobs/$id/cancel")
 
     suspend fun getMaintenanceJobsByVehicle(vehicleId: String): Result<List<MaintenanceJobDto>> =
-        getList("/v1/maintenance/vehicle/$vehicleId")
+        getList("/v1/maintenance/jobs/vehicle/$vehicleId")
+
+    // ── Incidents ─────────────────────────────────────────────────────────────
+
+    suspend fun getIncidents(
+        cursor: String? = null,
+        limit: Int = 20,
+        status: String? = null,
+    ): Result<PagedResponse<VehicleIncidentDto>> =
+        getAsPaged("/v1/incidents") {
+            cursor?.let { append("cursor", it) }
+            append("limit", limit.toString())
+            status?.let { append("status", it) }
+        }
 
     // ── Accounting ────────────────────────────────────────────────────────────
 

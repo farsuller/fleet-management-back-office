@@ -20,29 +20,58 @@ import org.solodev.fleet.mngt.theme.fleetColors
 
 // ─── Domain enums that map to badge variants ─────────────────────────────────
 
-enum class VehicleStatus { AVAILABLE, RENTED, MAINTENANCE, RETIRED, RESERVED }
-enum class RentalStatus  { RESERVED, ACTIVE, COMPLETED, CANCELLED }
-enum class MaintenanceStatus { SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED }
-enum class DriverStatus { ACTIVE, AVAILABLE, DISABLED }
-enum class Priority { LOW, NORMAL, HIGH, URGENT }
+enum class VehicleStatus {
+    AVAILABLE,
+    RENTED,
+    MAINTENANCE,
+    RETIRED,
+    RESERVED
+}
+
+enum class RentalStatus {
+    RESERVED,
+    ACTIVE,
+    COMPLETED,
+    CANCELLED
+}
+
+enum class MaintenanceStatus {
+    SCHEDULED,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELLED
+}
+
+enum class DriverStatus {
+    ACTIVE,
+    AVAILABLE,
+    DISABLED
+}
+
+enum class Priority {
+    LOW,
+    NORMAL,
+    HIGH,
+    URGENT
+}
 
 // ─── Resolved appearance ──────────────────────────────────────────────────────
 
 private data class BadgeStyle(
-    val label: String,
-    val background: @Composable () -> Color,
-    val foreground: @Composable () -> Color = { Color.White },
+        val label: String,
+        val background: @Composable () -> Color,
+        val foreground: @Composable () -> Color = { Color.White },
 )
 
 @Composable
 private fun vehicleStyle(status: VehicleStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        VehicleStatus.AVAILABLE   -> BadgeStyle("Available",    { c.available })
-        VehicleStatus.RENTED      -> BadgeStyle("Rented",       { c.rented })
-        VehicleStatus.MAINTENANCE -> BadgeStyle("Maintenance",  { c.maintenance })
-        VehicleStatus.RETIRED     -> BadgeStyle("Retired",      { c.retired })
-        VehicleStatus.RESERVED    -> BadgeStyle("Reserved",     { c.reserved })
+        VehicleStatus.AVAILABLE -> BadgeStyle("Available", { c.available })
+        VehicleStatus.RENTED -> BadgeStyle("Rented", { c.rented })
+        VehicleStatus.MAINTENANCE -> BadgeStyle("Maintenance", { c.maintenance })
+        VehicleStatus.RETIRED -> BadgeStyle("Retired", { c.retired })
+        VehicleStatus.RESERVED -> BadgeStyle("Reserved", { c.reserved })
     }
 }
 
@@ -50,8 +79,8 @@ private fun vehicleStyle(status: VehicleStatus): BadgeStyle {
 private fun rentalStyle(status: RentalStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        RentalStatus.RESERVED  -> BadgeStyle("Reserved",  { c.reserved })
-        RentalStatus.ACTIVE    -> BadgeStyle("Active",    { c.active })
+        RentalStatus.RESERVED -> BadgeStyle("Reserved", { c.reserved })
+        RentalStatus.ACTIVE -> BadgeStyle("Active", { c.active })
         RentalStatus.COMPLETED -> BadgeStyle("Completed", { c.completed })
         RentalStatus.CANCELLED -> BadgeStyle("Cancelled", { c.cancelled })
     }
@@ -61,10 +90,10 @@ private fun rentalStyle(status: RentalStatus): BadgeStyle {
 private fun maintenanceStyle(status: MaintenanceStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        MaintenanceStatus.SCHEDULED   -> BadgeStyle("Scheduled",   { c.reserved })
-        MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", { c.maintenance })
-        MaintenanceStatus.COMPLETED   -> BadgeStyle("Completed",   { c.completed })
-        MaintenanceStatus.CANCELLED   -> BadgeStyle("Cancelled",   { c.cancelled })
+        MaintenanceStatus.SCHEDULED -> BadgeStyle("Scheduled", { c.reserved })
+        MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", { c.inProgress })
+        MaintenanceStatus.COMPLETED -> BadgeStyle("Completed", { c.completed })
+        MaintenanceStatus.CANCELLED -> BadgeStyle("Cancelled", { c.cancelled })
     }
 }
 
@@ -72,9 +101,9 @@ private fun maintenanceStyle(status: MaintenanceStatus): BadgeStyle {
 private fun driverStyle(status: DriverStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
-        DriverStatus.ACTIVE    -> BadgeStyle("Active",    { c.active })
+        DriverStatus.ACTIVE -> BadgeStyle("Active", { c.active })
         DriverStatus.AVAILABLE -> BadgeStyle("Available", { c.available })
-        DriverStatus.DISABLED  -> BadgeStyle("Disabled",  { c.cancelled })
+        DriverStatus.DISABLED -> BadgeStyle("Disabled", { c.cancelled })
     }
 }
 
@@ -82,9 +111,9 @@ private fun driverStyle(status: DriverStatus): BadgeStyle {
 private fun priorityStyle(priority: Priority): BadgeStyle {
     val c = fleetColors
     return when (priority) {
-        Priority.LOW    -> BadgeStyle("Low",    { c.priorityLow })
+        Priority.LOW -> BadgeStyle("Low", { c.priorityLow })
         Priority.NORMAL -> BadgeStyle("Normal", { c.priorityNormal })
-        Priority.HIGH   -> BadgeStyle("High",   { c.priorityHigh })
+        Priority.HIGH -> BadgeStyle("High", { c.priorityHigh })
         Priority.URGENT -> BadgeStyle("Urgent", { c.priorityUrgent })
     }
 }
@@ -94,49 +123,46 @@ private fun priorityStyle(priority: Priority): BadgeStyle {
 @Composable
 private fun BadgePill(style: BadgeStyle, modifier: Modifier = Modifier) {
     val bg = style.background()
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
     ) {
-        Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(9999.dp))
+        Box(
+            modifier =
+                Modifier.clip(RoundedCornerShape(9999.dp))
                     .background(bg.copy(alpha = 0.20f))
                     .padding(horizontal = 14.dp, vertical = 6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text       = style.label,
-                    color      = bg,
-                    fontSize   = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 12.sp,
-                )
-            }
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = style.label,
+                color = bg,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 12.sp,
+            )
         }
     }
-
 }
 
 // ─── Public composables ───────────────────────────────────────────────────────
 
 @Composable
 fun VehicleStatusBadge(status: VehicleStatus, modifier: Modifier = Modifier) =
-    BadgePill(vehicleStyle(status), modifier)
+        BadgePill(vehicleStyle(status), modifier)
 
 @Composable
 fun RentalStatusBadge(status: RentalStatus, modifier: Modifier = Modifier) =
-    BadgePill(rentalStyle(status), modifier)
+        BadgePill(rentalStyle(status), modifier)
 
 @Composable
 fun MaintenanceStatusBadge(status: MaintenanceStatus, modifier: Modifier = Modifier) =
-    BadgePill(maintenanceStyle(status), modifier)
+        BadgePill(maintenanceStyle(status), modifier)
 
 @Composable
 fun DriverStatusBadge(status: DriverStatus, modifier: Modifier = Modifier) =
-    BadgePill(driverStyle(status), modifier)
+        BadgePill(driverStyle(status), modifier)
 
 @Composable
 fun PriorityBadge(priority: Priority, modifier: Modifier = Modifier) =
-    BadgePill(priorityStyle(priority), modifier)
+        BadgePill(priorityStyle(priority), modifier)

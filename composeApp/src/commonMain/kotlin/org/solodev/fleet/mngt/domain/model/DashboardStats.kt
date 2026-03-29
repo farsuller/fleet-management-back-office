@@ -14,4 +14,5 @@ data class DashboardStats(
     val paidInvoices: Int,
     val pendingInvoices: Int,
     val cancelledInvoices: Int,
+    val activeIncidents: Int,
 )

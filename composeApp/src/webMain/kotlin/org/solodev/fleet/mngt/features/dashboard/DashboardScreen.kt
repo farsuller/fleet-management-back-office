@@ -137,6 +137,7 @@ fun DashboardScreen(router: AppRouter) {
                 item { FleetChartsRowSkeleton(snapshot = s.data) }
                 item { RecentRentalsSection(snapshot = s.data, router = router) }
                 item { UrgentMaintenanceSection(snapshot = s.data, router = router) }
+                item { RecentIncidentsSection(snapshot = s.data, router = router) }
             }
 
             is UiState.Error -> {
@@ -204,7 +205,7 @@ private fun KpiGrid(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         if (error != null) {
-            repeat(5) { KpiCardError(modifier = Modifier.weight(1f).fillMaxHeight()) }
+            repeat(6) { KpiCardError(modifier = Modifier.weight(1f).fillMaxHeight()) }
         } else {
             // 1. Total Vehicles
             KpiCard(
@@ -305,12 +306,30 @@ private fun KpiGrid(
                 iconTint = colors.paid,
                 trend = "+12%",
                 isLoading = isLoading,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxHeight(),
                 segments = stats?.let {
                     listOf(KpiSegment(1f, colors.paid))
                 } ?: emptyList(),
                 legend = listOf(
                     KpiLegendItem("Target ₱ 500k", colors.text2)
+                )
+            )
+
+            // 6. Active Incidents
+            KpiCard(
+                label = "Active Incidents",
+                value = stats?.activeIncidents?.toString() ?: "—",
+                icon = Icons.Filled.Warning,
+                iconTint = colors.overdue,
+                trend = stats?.activeIncidents?.let { if (it > 0) "+$it" else "0" } ?: "—",
+                trendColor = if ((stats?.activeIncidents ?: 0) > 0) colors.cancelled else colors.available,
+                isLoading = isLoading,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+                segments = stats?.let {
+                    listOf(KpiSegment(1f, colors.cancelled))
+                } ?: emptyList(),
+                legend = listOf(
+                    KpiLegendItem("Requires Action", colors.cancelled)
                 )
             )
         }
@@ -339,6 +358,67 @@ private fun RecentRentalsSection(snapshot: DashboardSnapshot, router: AppRouter)
         } else {
             snapshot.recentRentals.forEach { rental ->
                 RentalSummaryRow(rental = rental)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentIncidentsSection(snapshot: DashboardSnapshot, router: AppRouter) {
+    val colors = fleetColors
+    if (snapshot.recentIncidents.isEmpty()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Recent Incidents",
+                style = MaterialTheme.typography.headlineSmall,
+                color = colors.onBackground,
+            )
+            Button(onClick = { router.navigate(Screen.Maintenance) }) { Text("View All") }
+        }
+
+        snapshot.recentIncidents.forEach { incident ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(colors.cancelled.copy(alpha = 0.1f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "!",
+                        color = colors.cancelled,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        incident.vehiclePlate ?: "—",
+                        fontWeight = FontWeight.Medium,
+                        color = colors.onBackground
+                    )
+                    Text(
+                        incident.description,
+                        color = colors.onBackground.copy(0.75f),
+                        fontSize = 12.sp
+                    )
+                }
+                Text(
+                    incident.status.name,
+                    color = colors.cancelled,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

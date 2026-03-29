@@ -88,7 +88,7 @@ fun DriverDetailPanel(
                         }
                     }
                 }
-
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, color = colors.border)
                 if (driverId == null) return@Column
 
                 when (val state = detailState) {

@@ -61,10 +61,12 @@ import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobUseCas
 import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobsUseCase
 import org.solodev.fleet.mngt.domain.usecase.maintenance.ScheduleMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.maintenance.StartMaintenanceUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.UpdateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
 import org.solodev.fleet.mngt.domain.usecase.tracking.GetActiveRoutesUseCase
 import org.solodev.fleet.mngt.domain.usecase.tracking.GetFleetStatusUseCase
 import org.solodev.fleet.mngt.domain.usecase.tracking.GetVehicleStateUseCase
+import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleIncidentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateOdometerUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
@@ -111,6 +113,7 @@ val useCaseModule = module {
     factory { GetRentalsUseCase(get()) }
     factory { GetRentalUseCase(get()) }
     factory { CreateRentalUseCase(get()) }
+    factory { UpdateRentalUseCase(get()) }
     factory { ActivateRentalUseCase(get()) }
     factory { CancelRentalUseCase(get()) }
     factory { CompleteRentalUseCase(get()) }
@@ -155,4 +158,7 @@ val useCaseModule = module {
     factory { GetFleetStatusUseCase(get()) }
     factory { GetActiveRoutesUseCase(get()) }
     factory { GetVehicleStateUseCase(get()) }
+
+    //Incident
+    factory { GetVehicleIncidentsUseCase(get()) }
 }

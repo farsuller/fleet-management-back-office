@@ -41,12 +41,19 @@ class GetDashboardUseCase(
                     forceRefresh = forceRefresh
                 )
             }
+            val incidentsDeferred = async {
+                maintenanceRepository.getIncidents(
+                    limit = 50,
+                    status = "REPORTED"
+                )
+            }
             val invoicesDeferred = async { accountingRepository.getInvoices(limit = 200, forceRefresh = forceRefresh) }
             val accountsDeferred = async { accountingRepository.getAccounts() }
 
             val vehiclesResult = vehiclesDeferred.await()
             val rentalsResult = rentalsDeferred.await()
             val maintenanceResult = maintenanceDeferred.await()
+            val incidentsResult = incidentsDeferred.await()
             val invoicesResult = invoicesDeferred.await()
             val accountsResult = accountsDeferred.await()
 
@@ -54,6 +61,7 @@ class GetDashboardUseCase(
             vehiclesResult.mapCatching { vehicles ->
                 val rentals = rentalsResult.getOrDefault(PagedResponse(emptyList()))
                 val maintenance = maintenanceResult.getOrDefault(PagedResponse(emptyList()))
+                val incidents = incidentsResult.getOrDefault(PagedResponse(emptyList()))
                 val invoices = invoicesResult.getOrDefault(PagedResponse(emptyList()))
                 val accounts = accountsResult.getOrNull() ?: emptyList()
 
@@ -88,11 +96,13 @@ class GetDashboardUseCase(
                             it.status == InvoiceStatus.PENDING || it.status == InvoiceStatus.DRAFT
                         },
                         cancelledInvoices = invoices.items.count { it.status == InvoiceStatus.CANCELLED },
+                        activeIncidents = incidents.items.size,
                     ),
                     recentRentals = rentals.items.take(5),
                     urgentMaintenance = maintenance.items
                         .sortedByDescending { it.priority?.ordinal ?: -1 }
                         .take(5),
+                    recentIncidents = incidents.items.take(5),
                     financialSummary = financialSummary,
                 )
             }

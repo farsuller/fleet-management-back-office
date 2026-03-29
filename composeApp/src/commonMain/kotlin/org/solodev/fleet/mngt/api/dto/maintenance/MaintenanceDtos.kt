@@ -32,10 +32,58 @@ enum class MaintenanceType {
 }
 
 @Serializable
+enum class IncidentSeverity {
+    @SerialName("LOW")      LOW,
+    @SerialName("MEDIUM")   MEDIUM,
+    @SerialName("HIGH")     HIGH,
+    @SerialName("CRITICAL") CRITICAL,
+    @SerialName("UNKNOWN")  UNKNOWN,
+}
+
+@Serializable
+enum class IncidentStatus {
+    @SerialName("REPORTED")       REPORTED,
+    @SerialName("IN_MAINTENANCE") IN_MAINTENANCE,
+    @SerialName("RESOLVED")       RESOLVED,
+    @SerialName("DISMISSED")      DISMISSED,
+    @SerialName("UNKNOWN")        UNKNOWN,
+}
+
+@Serializable
+data class VehicleUsageHistoryDto(
+    val rentalNumber: String,
+    val customerName: String,
+    val startDate: Long,
+    val endDate: Long,
+    val startOdometer: Int? = null,
+    val endOdometer: Int? = null,
+    val status: String
+)
+
+@Serializable
+data class VehicleIncidentDto(
+    val id: String,
+    val vehicleId: String,
+    val vehiclePlate: String? = null,
+    val title: String,
+    val description: String,
+    val severity: IncidentSeverity,
+    val status: IncidentStatus,
+    @Serializable(with = FlexibleEpochMsSerializer::class) val reportedAt: Long? = null,
+    val reportedByUserId: String? = null,
+    val maintenanceJobId: String? = null,
+    val odometerKm: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+)
+
+@Serializable
 data class MaintenanceJobDto(
     val id: String? = null,
     val vehicleId: String? = null,
     val vehiclePlate: String? = null,
+    val vehicleMake: String? = null,
+    val vehicleModel: String? = null,
     val type: MaintenanceType? = null,
     val priority: MaintenancePriority? = null,
     val status: MaintenanceStatus? = null,
@@ -46,6 +94,8 @@ data class MaintenanceJobDto(
     val description: String? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val createdAt: Long? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val updatedAt: Long? = null,
+    val incidents: List<VehicleIncidentDto> = emptyList(),
+    val usageHistory: List<VehicleUsageHistoryDto> = emptyList(),
 )
 
 @Serializable

@@ -258,12 +258,15 @@ fun DriversListScreen(
                                     color = colors.text2,
                                     textAlign = TextAlign.Center
                                 )
-                                Box(Modifier.weight(1f)) {
-                                    val status = if (driver.currentAssignment?.isActive == true) DriverStatus.ACTIVE
+
+
+                                DriverStatusBadge(
+                                    status = if (driver.currentAssignment?.isActive == true) DriverStatus.ACTIVE
                                     else if (driver.isActive == true) DriverStatus.AVAILABLE
-                                    else DriverStatus.DISABLED
-                                    DriverStatusBadge(status)
-                                }
+                                    else DriverStatus.DISABLED,
+                                    modifier = Modifier.weight(1f)
+                                )
+
                                 Row(
                                     modifier = Modifier.weight(1f),
                                     horizontalArrangement = Arrangement.Center,

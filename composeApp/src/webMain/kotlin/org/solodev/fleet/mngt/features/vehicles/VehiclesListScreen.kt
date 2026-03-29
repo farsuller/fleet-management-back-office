@@ -1,6 +1,5 @@
 package org.solodev.fleet.mngt.features.vehicles
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,7 +19,6 @@ import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
 import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.skia.Color
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
@@ -79,8 +77,7 @@ fun VehiclesListScreen(router: AppRouter) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
+        Column(modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -98,10 +95,6 @@ fun VehiclesListScreen(router: AppRouter) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isRefreshing) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    IconButton(onClick = vm::refresh) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = colors.primary)
-                    }
                     if (roles.any { it == UserRole.ADMIN || it == UserRole.FLEET_MANAGER }) {
                         Button(
                             onClick = {
@@ -144,7 +137,7 @@ fun VehiclesListScreen(router: AppRouter) {
 
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 when (val uiState = state) {
-                    is UiState.Loading ->TableSkeleton(rows = 8)
+                    is UiState.Loading -> TableSkeleton(rows = 8)
                     is UiState.Error -> {
                         // Inline error removed in favor of modal
                         TableSkeleton(rows = 8)
@@ -153,7 +146,14 @@ fun VehiclesListScreen(router: AppRouter) {
                     is UiState.Success -> {
                         val items = uiState.data.items
                         PaginatedTable(
-                            headers = listOf("License Plate", "Make / Model", "Year", "State", "Mileage (km)", "Actions"),
+                            headers = listOf(
+                                "License Plate",
+                                "Make / Model",
+                                "Year",
+                                "State",
+                                "Mileage (km)",
+                                "Actions"
+                            ),
                             items = items,
                             onRowClick = { idx -> vm.loadVehicle(items[idx].id ?: "") },
                             emptyContent = {
@@ -170,72 +170,73 @@ fun VehiclesListScreen(router: AppRouter) {
                                 )
                             },
                             rowContent = { vehicle, _ ->
-                            Text(
-                                vehicle.licensePlate ?: "",
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                "${vehicle.make} ${vehicle.model}",
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                vehicle.year.toString(),
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1,
-                                textAlign = TextAlign.Center
-                            )
-                            Box(Modifier.weight(1f)) {
-                                VehicleStatusBadge((vehicle.state ?: VehicleState.UNKNOWN).toUiBadge())
-                            }
-                            Text(
-                                vehicle.mileageKm.toString(),
-                                modifier = Modifier.weight(1f),
-                                fontSize = 13.sp,
-                                color = colors.text1,
-                                textAlign = TextAlign.Center
-                            )
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        vm.clearActionResult()
-                                        vehicleToEdit = vehicle
-                                    },
-                                    modifier = Modifier.size(28.dp)
+                                Text(
+                                    vehicle.licensePlate ?: "",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    "${vehicle.make} ${vehicle.model}",
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    vehicle.year.toString(),
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                VehicleStatusBadge(
+                                    status = (vehicle.state ?: VehicleState.UNKNOWN).toUiBadge(),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    vehicle.mileageKm.toString(),
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 13.sp,
+                                    color = colors.text1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        painterResource(Res.drawable.edit_icon),
-                                        contentDescription = "Edit",
-                                        tint = colors.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    IconButton(
+                                        onClick = {
+                                            vm.clearActionResult()
+                                            vehicleToEdit = vehicle
+                                        },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            painterResource(Res.drawable.edit_icon),
+                                            contentDescription = "Edit",
+                                            tint = colors.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { vehicleToDelete = vehicle },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            painterResource(Res.drawable.delete_icon),
+                                            contentDescription = "Delete",
+                                            tint = colors.cancelled,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
-                                IconButton(
-                                    onClick = { vehicleToDelete = vehicle },
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        painterResource(Res.drawable.delete_icon),
-                                        contentDescription = "Delete",
-                                        tint = colors.cancelled,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
-            }
             }
         }
 

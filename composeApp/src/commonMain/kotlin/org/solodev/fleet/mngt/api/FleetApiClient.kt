@@ -245,7 +245,7 @@ class FleetApiClient(
         limit: Int = 20,
         status: String? = null,
     ): Result<PagedResponse<MaintenanceJobDto>> =
-        getAsPaged("/v1/maintenance") {
+        getAsPaged("/v1/maintenance/jobs") {
             cursor?.let { append("cursor", it) }
             append("limit", limit.toString())
             status?.let { append("status", it) }
@@ -255,7 +255,7 @@ class FleetApiClient(
         get("/v1/maintenance/jobs/$id")
 
     suspend fun createMaintenanceJob(request: CreateMaintenanceRequest): Result<MaintenanceJobDto> =
-        post("/v1/maintenance", request)
+        post("/v1/maintenance/jobs", request)
 
     suspend fun completeMaintenanceJob(id: String, request: CompleteMaintenanceRequest): Result<MaintenanceJobDto> =
         post("/v1/maintenance/jobs/$id/complete", request)
@@ -267,7 +267,7 @@ class FleetApiClient(
         postEmpty("/v1/maintenance/jobs/$id/cancel")
 
     suspend fun getMaintenanceJobsByVehicle(vehicleId: String): Result<List<MaintenanceJobDto>> =
-        getList("/v1/maintenance/vehicle/$vehicleId")
+        getList("/v1/maintenance/jobs/vehicle/$vehicleId")
 
     // ── Incidents ─────────────────────────────────────────────────────────────
 

@@ -30,7 +30,7 @@ import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
 import org.solodev.fleet.mngt.ui.UiState
 
-enum class VehicleTab { INFO, STATE, ODOMETER, MAINTENANCE, HISTORY, INCIDENTS }
+enum class VehicleTab { INFO, HISTORY }
 
 data class VehicleDetailSnapshot(
     val vehicle: VehicleDto,
@@ -225,8 +225,6 @@ class VehiclesViewModel(
                             _detailState.value = UiState.Success(current.copy(locationHistory = history))
                         }
                 }
-            }
-            VehicleTab.MAINTENANCE -> {
                 viewModelScope.launch {
                     getVehicleMaintenanceUseCase(vehicleId)
                         .onSuccess { jobs ->
@@ -234,8 +232,6 @@ class VehiclesViewModel(
                             _detailState.value = UiState.Success(current.copy(maintenanceJobs = jobs))
                         }
                 }
-            }
-            VehicleTab.INCIDENTS -> {
                 viewModelScope.launch {
                     getVehicleIncidentsUseCase(vehicleId)
                         .onSuccess { incidents ->
@@ -244,6 +240,7 @@ class VehiclesViewModel(
                         }
                 }
             }
+
             else -> {}
         }
     }

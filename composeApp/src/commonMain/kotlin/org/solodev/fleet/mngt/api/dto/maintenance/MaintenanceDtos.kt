@@ -50,6 +50,17 @@ enum class IncidentStatus {
 }
 
 @Serializable
+data class VehicleUsageHistoryDto(
+    val rentalNumber: String,
+    val customerName: String,
+    val startDate: Long,
+    val endDate: Long,
+    val startOdometer: Int? = null,
+    val endOdometer: Int? = null,
+    val status: String
+)
+
+@Serializable
 data class VehicleIncidentDto(
     val id: String,
     val vehicleId: String,
@@ -71,6 +82,8 @@ data class MaintenanceJobDto(
     val id: String? = null,
     val vehicleId: String? = null,
     val vehiclePlate: String? = null,
+    val vehicleMake: String? = null,
+    val vehicleModel: String? = null,
     val type: MaintenanceType? = null,
     val priority: MaintenancePriority? = null,
     val status: MaintenanceStatus? = null,
@@ -82,6 +95,7 @@ data class MaintenanceJobDto(
     @Serializable(with = FlexibleEpochMsSerializer::class) val createdAt: Long? = null,
     @Serializable(with = FlexibleEpochMsSerializer::class) val updatedAt: Long? = null,
     val incidents: List<VehicleIncidentDto> = emptyList(),
+    val usageHistory: List<VehicleUsageHistoryDto> = emptyList(),
 )
 
 @Serializable

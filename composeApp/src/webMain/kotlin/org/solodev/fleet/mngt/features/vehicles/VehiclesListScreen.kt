@@ -77,8 +77,7 @@ fun VehiclesListScreen(router: AppRouter) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
+        Column(modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -96,10 +95,6 @@ fun VehiclesListScreen(router: AppRouter) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isRefreshing) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    IconButton(onClick = vm::refresh) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = colors.primary)
-                    }
                     if (roles.any { it == UserRole.ADMIN || it == UserRole.FLEET_MANAGER }) {
                         Button(
                             onClick = {

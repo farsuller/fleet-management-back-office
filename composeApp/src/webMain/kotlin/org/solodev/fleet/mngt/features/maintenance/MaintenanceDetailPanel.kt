@@ -1,10 +1,15 @@
 package org.solodev.fleet.mngt.features.maintenance
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,13 +22,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.time.Instant
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.maintenance.*
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Instant
 
 @Composable
 fun MaintenanceDetailPanel(
@@ -43,15 +51,14 @@ fun MaintenanceDetailPanel(
 
     AnimatedVisibility(
         visible = jobId != null,
-        enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
-        exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut(),
+        enter = slideInHorizontally(initialOffsetX = { it }),
+        exit = slideOutHorizontally(targetOffsetX = { it }),
         modifier = Modifier.fillMaxHeight().width(450.dp)
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = colors.surface,
-            tonalElevation = 8.dp,
-            border = BorderStroke(1.dp, colors.border.copy(alpha = 0.5f))
+            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
         ) {
             when (val state = detailState) {
                 is UiState.Loading -> {
@@ -59,6 +66,7 @@ fun MaintenanceDetailPanel(
                         CircularProgressIndicator(color = colors.primary)
                     }
                 }
+
                 is UiState.Success -> {
                     val job = state.data
                     MaintenanceDetailContent(
@@ -68,6 +76,7 @@ fun MaintenanceDetailPanel(
                         vm = vm
                     )
                 }
+
                 is UiState.Error -> {
                     Column(
                         Modifier.fillMaxSize().padding(32.dp),
@@ -84,6 +93,7 @@ fun MaintenanceDetailPanel(
                         }
                     }
                 }
+
                 else -> {}
             }
         }
@@ -107,22 +117,39 @@ private fun MaintenanceDetailContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, "Close", tint = colors.onBackground.copy(alpha = 0.6f))
-            }
-            
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            StatusBadge(job.status ?: MaintenanceStatus.UNKNOWN)
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 if (job.status == MaintenanceStatus.SCHEDULED) {
-                    IconButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, "Edit", tint = colors.primary)
+                    IconButton(
+                        modifier = Modifier.size(24.dp),
+                        onClick = onEdit)
+                    {
+                        Icon(
+                            painter = painterResource(Res.drawable.edit_icon),
+                            contentDescription = "Edit",
+                            tint = colors.primary
+                        )
                     }
                 }
-                StatusBadge(job.status ?: MaintenanceStatus.UNKNOWN)
+                IconButton(
+                    onClick = onClose
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = colors.onBackground.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, color = colors.border)
 
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
+            modifier = Modifier.weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Vehicle Info Card
@@ -132,7 +159,7 @@ private fun MaintenanceDetailContent(
             Section("Maintenance Details") {
                 DetailItem(Icons.Default.Info, "Job Type", job.type?.name ?: "N/A")
                 DetailItem(Icons.Default.PriorityHigh, "Priority", job.priority?.name ?: "N/A")
-                DetailItem(Icons.Default.DateRange, "Scheduled Date", job.scheduledDate?.let { 
+                DetailItem(Icons.Default.DateRange, "Scheduled Date", job.scheduledDate?.let {
                     Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
                 } ?: "N/A")
                 DetailItem(Icons.Default.Description, "Description", job.description ?: "No description provided.")
@@ -152,10 +179,24 @@ private fun MaintenanceDetailContent(
                 Section("Costs & Summary") {
                     DetailItem(Icons.Default.Build, "Labor Cost", "₱${job.laborCostPhp ?: 0}")
                     DetailItem(Icons.Default.Settings, "Parts Cost", "₱${job.partsCostPhp ?: 0}")
-                    DetailItem(Icons.Default.ShoppingCart, "Total Cost", "₱${(job.laborCostPhp ?: 0) + (job.partsCostPhp ?: 0)}", isHighlight = true)
+                    DetailItem(
+                        Icons.Default.ShoppingCart,
+                        "Total Cost",
+                        "₱${(job.laborCostPhp ?: 0) + (job.partsCostPhp ?: 0)}",
+                        isHighlight = true
+                    )
                 }
             }
-            
+
+            // Usage History Section
+            if (job.usageHistory.isNotEmpty()) {
+                Section("Vehicle Usage History") {
+                    job.usageHistory.forEach { history ->
+                        UsageHistoryItem(history)
+                    }
+                }
+            }
+
             Spacer(Modifier.height(40.dp))
         }
 
@@ -187,6 +228,7 @@ private fun MaintenanceDetailContent(
                             Text("Cancel")
                         }
                     }
+
                     MaintenanceStatus.IN_PROGRESS -> {
                         Button(
                             onClick = { showCompleteDialog = true },
@@ -196,6 +238,7 @@ private fun MaintenanceDetailContent(
                             Text("Mark as Completed")
                         }
                     }
+
                     else -> {}
                 }
             }
@@ -231,7 +274,18 @@ private fun VehicleInfoCard(job: MaintenanceJobDto) {
             Spacer(Modifier.width(16.dp))
             Column {
                 Text(job.vehiclePlate ?: "Unknown Plate", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("V-ID: ${job.vehicleId?.take(8) ?: "N/A"}", color = colors.onBackground.copy(alpha = 0.6f), fontSize = 12.sp)
+                if (job.vehicleMake != null || job.vehicleModel != null) {
+                    Text(
+                        "${job.vehicleMake ?: ""} ${job.vehicleModel ?: ""}".trim(),
+                        color = colors.onBackground.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
+                }
+                Text(
+                    "V-ID: ${job.vehicleId?.take(8) ?: "N/A"}",
+                    color = colors.onBackground.copy(alpha = 0.4f),
+                    fontSize = 11.sp
+                )
             }
         }
     }
@@ -255,13 +309,14 @@ private fun DetailItem(icon: ImageVector, label: String, value: String, isHighli
         Icon(
             imageVector = icon, null,
             tint = colors.onBackground.copy(alpha = 0.4f),
-            modifier = Modifier.padding(top = 2.dp).size(16.dp))
+            modifier = Modifier.padding(top = 2.dp).size(16.dp)
+        )
         Spacer(Modifier.width(12.dp))
         Column {
             Text(label, fontSize = 12.sp, color = colors.onBackground.copy(alpha = 0.5f))
             Text(
-                value, 
-                fontSize = 14.sp, 
+                value,
+                fontSize = 14.sp,
                 fontWeight = if (isHighlight) FontWeight.Bold else FontWeight.Medium,
                 color = if (isHighlight) colors.primary else colors.onBackground
             )
@@ -286,8 +341,12 @@ private fun IncidentItem(incident: VehicleIncidentDto) {
             Text(incident.description, fontSize = 12.sp, color = colors.onBackground.copy(alpha = 0.7f))
             Spacer(Modifier.height(4.dp))
             Text(
-                "Reported: ${incident.reportedAt?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()) } ?: "N/A"}",
-                fontSize = 10.sp, 
+                "Reported: ${
+                    incident.reportedAt?.let {
+                        Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault())
+                    } ?: "N/A"
+                }",
+                fontSize = 10.sp,
                 color = colors.onBackground.copy(alpha = 0.5f)
             )
         }
@@ -305,7 +364,13 @@ private fun StatusBadge(status: MaintenanceStatus) {
         else -> colors.border to colors.onBackground
     }
     Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
-        Text(status.name, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+        Text(
+            status.name,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            color = textColor,
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp
+        )
     }
 }
 
@@ -319,7 +384,13 @@ private fun SeverityBadge(severity: IncidentSeverity) {
         else -> Color.Gray
     }
     Surface(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
-        Text(severity.name, color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+        Text(
+            severity.name,
+            color = color,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        )
     }
 }
 
@@ -332,8 +403,18 @@ private fun CompleteMaintenanceDialog(onDismiss: () -> Unit, onConfirm: (Long, L
         title = { Text("Complete Maintenance") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                OutlinedTextField(labor, { labor = it }, label = { Text("Labor Cost (PHP)") }, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(parts, { parts = it }, label = { Text("Parts Cost (PHP)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(
+                    labor,
+                    { labor = it },
+                    label = { Text("Labor Cost (PHP)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    parts,
+                    { parts = it },
+                    label = { Text("Parts Cost (PHP)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
@@ -343,6 +424,73 @@ private fun CompleteMaintenanceDialog(onDismiss: () -> Unit, onConfirm: (Long, L
             TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
+}
+
+@Composable
+private fun UsageHistoryItem(history: VehicleUsageHistoryDto) {
+    val colors = fleetColors
+    Surface(
+        color = colors.surfaceVariant.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        border = BorderStroke(1.dp, colors.border.copy(alpha = 0.1f))
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text(history.customerName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Surface(
+                    color = colors.primary.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        history.status,
+                        color = colors.primary,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.DateRange,
+                    null,
+                    tint = colors.onBackground.copy(alpha = 0.4f),
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                val start = Instant.fromEpochMilliseconds(history.startDate)
+                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                val end =
+                    Instant.fromEpochMilliseconds(history.endDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+                Text("$start - $end", fontSize = 12.sp, color = colors.onBackground.copy(alpha = 0.6f))
+            }
+
+            if (history.startOdometer != null || history.endOdometer != null) {
+                Spacer(Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Speed,
+                        null,
+                        tint = colors.onBackground.copy(alpha = 0.4f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Odometer: ${history.startOdometer ?: "?"} km → ${history.endOdometer ?: "?"} km",
+                        fontSize = 12.sp,
+                        color = colors.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+            Text("Rental: ${history.rentalNumber}", fontSize = 10.sp, color = colors.onBackground.copy(alpha = 0.4f))
+        }
+    }
 }
 
 private fun Modifier.size(size: androidx.compose.ui.unit.Dp) = this.width(size).height(size)

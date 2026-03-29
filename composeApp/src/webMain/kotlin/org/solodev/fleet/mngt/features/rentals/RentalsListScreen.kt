@@ -99,10 +99,6 @@ fun RentalsListScreen(router: AppRouter) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isRefreshing) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    IconButton(onClick = vm::refresh) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = colors.primary)
-                    }
                     if (authStatus is AuthStatus.Authenticated) {
                         Button(onClick = {
                             vm.loadCreationResources()

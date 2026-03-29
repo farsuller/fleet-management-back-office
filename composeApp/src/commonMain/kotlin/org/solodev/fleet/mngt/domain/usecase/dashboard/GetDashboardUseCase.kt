@@ -44,7 +44,7 @@ class GetDashboardUseCase(
             val incidentsDeferred = async {
                 maintenanceRepository.getIncidents(
                     limit = 50,
-                    status = "OPEN"
+                    status = "REPORTED"
                 )
             }
             val invoicesDeferred = async { accountingRepository.getInvoices(limit = 200, forceRefresh = forceRefresh) }

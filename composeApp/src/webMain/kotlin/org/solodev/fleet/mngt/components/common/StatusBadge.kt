@@ -91,7 +91,7 @@ private fun maintenanceStyle(status: MaintenanceStatus): BadgeStyle {
     val c = fleetColors
     return when (status) {
         MaintenanceStatus.SCHEDULED -> BadgeStyle("Scheduled", { c.reserved })
-        MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", { c.maintenance })
+        MaintenanceStatus.IN_PROGRESS -> BadgeStyle("In Progress", { c.inProgress })
         MaintenanceStatus.COMPLETED -> BadgeStyle("Completed", { c.completed })
         MaintenanceStatus.CANCELLED -> BadgeStyle("Cancelled", { c.cancelled })
     }

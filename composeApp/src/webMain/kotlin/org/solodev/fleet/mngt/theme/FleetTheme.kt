@@ -55,6 +55,8 @@ object FleetColors {
     val Available   = Color(0xFF22C55E)
     val Rented      = Color(0xFF3B82F6)
     val Maintenance = Color(0xFFF59E0B)
+
+    val InProgress   = Color(0xFF22C55E)
     val Retired     = Color(0xFF94A3B8)
     val Reserved    = Color(0xFFEAB308)
     val Active      = Color(0xFF22C55E)
@@ -220,6 +222,7 @@ data class FleetExtendedColors(
     val retired:        Color,
     val reserved:       Color,
     val active:         Color,
+    val inProgress:    Color,
     val completed:      Color,
     val cancelled:      Color,
     val priorityLow:    Color,
@@ -255,6 +258,7 @@ val LocalFleetColors = staticCompositionLocalOf {
         active         = FleetColors.Active,
         completed      = FleetColors.Completed,
         cancelled      = FleetColors.Cancelled,
+        inProgress     = FleetColors.InProgress,
         priorityLow    = FleetColors.PriorityLow,
         priorityNormal = FleetColors.PriorityNormal,
         priorityHigh   = FleetColors.PriorityHigh,
@@ -289,6 +293,7 @@ private fun buildExtendedColors(dark: Boolean) = if (dark) {
         active         = FleetColors.Active,
         completed      = FleetColors.Completed,
         cancelled      = FleetColors.Cancelled,
+        inProgress     = FleetColors.InProgress,
         priorityLow    = FleetColors.PriorityLow,
         priorityNormal = FleetColors.PriorityNormal,
         priorityHigh   = FleetColors.PriorityHigh,
@@ -321,6 +326,7 @@ private fun buildExtendedColors(dark: Boolean) = if (dark) {
         active         = FleetColors.Active,
         completed      = FleetColors.Completed,
         cancelled      = FleetColors.Cancelled,
+        inProgress     = FleetColors.InProgress,
         priorityLow    = FleetColors.PriorityLow,
         priorityNormal = FleetColors.PriorityNormal,
         priorityHigh   = FleetColors.PriorityHigh,

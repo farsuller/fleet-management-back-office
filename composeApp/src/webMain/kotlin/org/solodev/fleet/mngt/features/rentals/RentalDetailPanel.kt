@@ -77,6 +77,8 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                     }
                 }
 
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, color = colors.border)
+
                 if (rentalId == null) return@Column
 
                 lastError?.let {

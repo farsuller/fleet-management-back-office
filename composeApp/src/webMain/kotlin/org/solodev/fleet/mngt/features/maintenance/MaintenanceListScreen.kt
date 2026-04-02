@@ -1,16 +1,37 @@
 package org.solodev.fleet.mngt.features.maintenance
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +46,11 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
-import org.solodev.fleet.mngt.components.common.*
+import org.solodev.fleet.mngt.components.common.MaintenanceStatusBadge
+import org.solodev.fleet.mngt.components.common.PaginatedTable
+import org.solodev.fleet.mngt.components.common.PriorityBadge
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
@@ -33,23 +58,21 @@ import kotlin.time.Instant
 import org.solodev.fleet.mngt.components.common.MaintenanceStatus as UiMaintenanceStatus
 import org.solodev.fleet.mngt.components.common.Priority as UiPriority
 
-private fun MaintenanceStatus.toUiBadge() =
-    when (this) {
-        MaintenanceStatus.SCHEDULED -> UiMaintenanceStatus.SCHEDULED
-        MaintenanceStatus.IN_PROGRESS -> UiMaintenanceStatus.IN_PROGRESS
-        MaintenanceStatus.COMPLETED -> UiMaintenanceStatus.COMPLETED
-        MaintenanceStatus.CANCELLED -> UiMaintenanceStatus.CANCELLED
-        MaintenanceStatus.UNKNOWN -> UiMaintenanceStatus.CANCELLED
-    }
+private fun MaintenanceStatus.toUiBadge() = when (this) {
+    MaintenanceStatus.SCHEDULED -> UiMaintenanceStatus.SCHEDULED
+    MaintenanceStatus.IN_PROGRESS -> UiMaintenanceStatus.IN_PROGRESS
+    MaintenanceStatus.COMPLETED -> UiMaintenanceStatus.COMPLETED
+    MaintenanceStatus.CANCELLED -> UiMaintenanceStatus.CANCELLED
+    MaintenanceStatus.UNKNOWN -> UiMaintenanceStatus.CANCELLED
+}
 
-private fun MaintenancePriority.toUiBadge() =
-    when (this) {
-        MaintenancePriority.LOW -> UiPriority.LOW
-        MaintenancePriority.NORMAL -> UiPriority.NORMAL
-        MaintenancePriority.HIGH -> UiPriority.HIGH
-        MaintenancePriority.URGENT -> UiPriority.URGENT
-        MaintenancePriority.UNKNOWN -> UiPriority.NORMAL
-    }
+private fun MaintenancePriority.toUiBadge() = when (this) {
+    MaintenancePriority.LOW -> UiPriority.LOW
+    MaintenancePriority.NORMAL -> UiPriority.NORMAL
+    MaintenancePriority.HIGH -> UiPriority.HIGH
+    MaintenancePriority.URGENT -> UiPriority.URGENT
+    MaintenancePriority.UNKNOWN -> UiPriority.NORMAL
+}
 
 internal fun formatMaintenanceDate(epochMs: Long): String {
     val dt = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC)
@@ -86,7 +109,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                 vm.refresh()
                 showErrorDialog = false
             },
-            onDismiss = { showErrorDialog = false }
+            onDismiss = { showErrorDialog = false },
         )
     }
 
@@ -108,17 +131,17 @@ fun MaintenanceListScreen(router: AppRouter) {
                         "Maintenance Management",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colors.onBackground
+                        color = colors.onBackground,
                     )
                     Text(
                         "Track and schedule vehicle maintenance tasks and repairs.",
                         fontSize = 14.sp,
-                        color = colors.onBackground.copy(alpha = 0.6f)
+                        color = colors.onBackground.copy(alpha = 0.6f),
                     )
                 }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Button(
                         onClick = {
@@ -126,7 +149,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                             showSheet = true
                         },
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.height(44.dp)
+                        modifier = Modifier.height(44.dp),
                     ) {
                         Icon(Icons.Filled.Add, null)
                         Spacer(Modifier.width(8.dp))
@@ -139,17 +162,17 @@ fun MaintenanceListScreen(router: AppRouter) {
             Surface(
                 color = colors.surfaceVariant.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         Icons.Default.FilterList,
                         null,
-                        tint = colors.onBackground.copy(alpha = 0.4f)
+                        tint = colors.onBackground.copy(alpha = 0.4f),
                     )
 
                     // Status Filters
@@ -159,7 +182,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                                 null,
                                 MaintenanceStatus.SCHEDULED,
                                 MaintenanceStatus.IN_PROGRESS,
-                                MaintenanceStatus.COMPLETED
+                                MaintenanceStatus.COMPLETED,
                             )
                         statuses.forEach { s ->
                             FilterChip(
@@ -168,7 +191,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                                 label = {
                                     Text(s?.name?.lowercase()?.capitalize() ?: "All Status")
                                 },
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(8.dp),
                             )
                         }
                     }
@@ -182,7 +205,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                                 null,
                                 MaintenancePriority.NORMAL,
                                 MaintenancePriority.HIGH,
-                                MaintenancePriority.URGENT
+                                MaintenancePriority.URGENT,
                             )
                         priorities.forEach { p ->
                             FilterChip(
@@ -191,10 +214,10 @@ fun MaintenanceListScreen(router: AppRouter) {
                                 label = {
                                     Text(
                                         p?.name?.lowercase()?.capitalize()
-                                            ?: "All Priority"
+                                            ?: "All Priority",
                                     )
                                 },
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(8.dp),
                             )
                         }
                     }
@@ -208,22 +231,22 @@ fun MaintenanceListScreen(router: AppRouter) {
                     val filtered =
                         s.data.items.filter { job ->
                             (priorityFilter == null || job.priority == priorityFilter) &&
-                                    (typeFilter == null || job.type == typeFilter)
+                                (typeFilter == null || job.type == typeFilter)
                         }
 
                     PaginatedTable(
                         headers =
-                            listOf(
-                                "Job ID",
-                                "Vehicle Plate",
-                                "Make / Model",
-                                "Type",
-                                "Priority",
-                                "Status",
-                                "Scheduled Date",
-                                "Estimated Cost",
-                                "Description"
-                            ),
+                        listOf(
+                            "Job ID",
+                            "Vehicle Plate",
+                            "Make / Model",
+                            "Type",
+                            "Priority",
+                            "Status",
+                            "Scheduled Date",
+                            "Estimated Cost",
+                            "Description",
+                        ),
                         items = filtered,
                         modifier = Modifier.weight(1f),
                         rowContent = { job, _ ->
@@ -254,11 +277,11 @@ fun MaintenanceListScreen(router: AppRouter) {
                             )
                             PriorityBadge(
                                 priority = (job.priority ?: MaintenancePriority.NORMAL).toUiBadge(),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                             MaintenanceStatusBadge(
                                 status = (job.status ?: MaintenanceStatus.UNKNOWN).toUiBadge(),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                             Text(
                                 text = job.scheduledDate?.let { formatMaintenanceDate(it) } ?: "-",
@@ -267,7 +290,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                                 textAlign = TextAlign.Center,
                             )
                             Text(
-                                job.estimatedCostPhp?.let { "₱${it}" } ?: "-",
+                                job.estimatedCostPhp?.let { "₱$it" } ?: "-",
                                 modifier = Modifier.weight(1f),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -284,7 +307,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                             )
                         },
                         onRowClick = { idx -> vm.selectJob(filtered[idx].id) },
-                        emptyMessage = "No maintenance jobs matching your filters."
+                        emptyMessage = "No maintenance jobs matching your filters.",
                     )
                 }
 
@@ -294,7 +317,6 @@ fun MaintenanceListScreen(router: AppRouter) {
 
         // Detail Panel
 
-
         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
             MaintenanceDetailPanel(
                 jobId = selectedJobId,
@@ -302,7 +324,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                 onEdit = {
                     editingJob = it
                     showSheet = true
-                }
+                },
             )
         }
         if (showSheet) {
@@ -312,7 +334,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                     editingJob = null
                 },
                 sheetState = sheetState,
-                job = editingJob
+                job = editingJob,
             )
         }
     }
@@ -325,13 +347,13 @@ private fun String.capitalize() = replaceFirstChar {
 @Composable
 private fun VerticalDivider(
     modifier: Modifier = Modifier,
-    color: Color
+    color: Color,
 ) {
     Canvas(modifier.width(1.dp).fillMaxHeight()) {
         drawLine(
             color = color,
             start = androidx.compose.ui.geometry.Offset(0f, 0f),
-            end = androidx.compose.ui.geometry.Offset(0f, size.height)
+            end = androidx.compose.ui.geometry.Offset(0f, size.height),
         )
     }
 }

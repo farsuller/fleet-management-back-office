@@ -68,8 +68,12 @@ fun DriverPaymentsTab() {
         val r = collectionResult ?: return@LaunchedEffect
         r.onSuccess {
             showRecordForm = false
-            recordCustomerId = ""; recordInvoiceId = ""; recordAmount = ""
-            recordMethod = ""; recordRef = ""; recordError = null
+            recordCustomerId = ""
+            recordInvoiceId = ""
+            recordAmount = ""
+            recordMethod = ""
+            recordRef = ""
+            recordError = null
         }.onFailure { e -> recordError = e.message }
         vm.clearCollectionResult()
     }
@@ -138,7 +142,10 @@ fun DriverPaymentsTab() {
                         fontWeight = FontWeight.SemiBold,
                         color = colors.text1,
                     )
-                    Button(onClick = { showRecordForm = !showRecordForm; recordError = null }) {
+                    Button(onClick = {
+                        showRecordForm = !showRecordForm
+                        recordError = null
+                    }) {
                         Text(if (showRecordForm) "Cancel" else "Record Collection")
                     }
                 }
@@ -209,10 +216,22 @@ fun DriverPaymentsTab() {
                                 onClick = {
                                     val driverId = selectedDriverId ?: return@Button
                                     val amt = recordAmount.trim().toLongOrNull()
-                                    if (recordCustomerId.isBlank()) { recordError = "Customer ID is required"; return@Button }
-                                    if (recordInvoiceId.isBlank()) { recordError = "Invoice ID is required"; return@Button }
-                                    if (amt == null || amt <= 0L) { recordError = "Enter a valid amount"; return@Button }
-                                    if (recordMethod.isBlank()) { recordError = "Payment method is required"; return@Button }
+                                    if (recordCustomerId.isBlank()) {
+                                        recordError = "Customer ID is required"
+                                        return@Button
+                                    }
+                                    if (recordInvoiceId.isBlank()) {
+                                        recordError = "Invoice ID is required"
+                                        return@Button
+                                    }
+                                    if (amt == null || amt <= 0L) {
+                                        recordError = "Enter a valid amount"
+                                        return@Button
+                                    }
+                                    if (recordMethod.isBlank()) {
+                                        recordError = "Payment method is required"
+                                        return@Button
+                                    }
                                     recordError = null
                                     vm.recordCollection(
                                         DriverCollectionRequest(
@@ -222,7 +241,7 @@ fun DriverPaymentsTab() {
                                             amount = amt,
                                             paymentMethod = recordMethod.trim(),
                                             transactionReference = recordRef.trim().ifBlank { null },
-                                        )
+                                        ),
                                     )
                                 },
                                 modifier = Modifier.align(Alignment.End),

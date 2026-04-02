@@ -20,7 +20,9 @@ class PaymentsViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
-    init { loadList() }
+    init {
+        loadList()
+    }
 
     fun refresh() {
         _isRefreshing.value = true

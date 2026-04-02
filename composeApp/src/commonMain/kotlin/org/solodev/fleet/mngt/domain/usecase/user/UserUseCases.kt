@@ -14,9 +14,12 @@ class GetUserUseCase(private val repository: UserRepository) {
     suspend operator fun invoke(id: String) = repository.getUser(id)
 }
 
-class AssignRolesUseCase(private val repository: UserRepository) {
-    suspend operator fun invoke(userId: String, roles: List<String>) =
-        repository.assignRoles(userId, roles)
+class UpdateUserUseCase(private val repository: UserRepository) {
+    suspend operator fun invoke(id: String, request: org.solodev.fleet.mngt.api.dto.auth.UserUpdateRequest) = repository.updateUser(id, request)
+}
+
+class AssignRoleUseCase(private val repository: UserRepository) {
+    suspend operator fun invoke(userId: String, roleName: String) = repository.assignRole(userId, roleName)
 }
 
 class DeleteUserUseCase(private val repository: UserRepository) {

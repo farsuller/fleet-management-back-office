@@ -39,25 +39,18 @@ class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRe
 
     override suspend fun getJob(id: String) = api.getMaintenanceJob(id)
 
-    override suspend fun getJobsByVehicle(vehicleId: String) =
-        api.getMaintenanceJobsByVehicle(vehicleId)
+    override suspend fun getJobsByVehicle(vehicleId: String) = api.getMaintenanceJobsByVehicle(vehicleId)
 
-    override suspend fun createJob(request: CreateMaintenanceRequest) =
-        api.createMaintenanceJob(request).onSuccess { listCache.clear() }
+    override suspend fun createJob(request: CreateMaintenanceRequest) = api.createMaintenanceJob(request).onSuccess { listCache.clear() }
 
-    override suspend fun startJob(id: String) =
-        api.startMaintenanceJob(id).onSuccess { listCache.clear() }
+    override suspend fun startJob(id: String) = api.startMaintenanceJob(id).onSuccess { listCache.clear() }
 
-    override suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long) =
-        api.completeMaintenanceJob(id, CompleteMaintenanceRequest(laborCostPhp, partsCostPhp))
-            .onSuccess { listCache.clear() }
+    override suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long) = api.completeMaintenanceJob(id, CompleteMaintenanceRequest(laborCostPhp, partsCostPhp))
+        .onSuccess { listCache.clear() }
 
-    override suspend fun cancelJob(id: String) =
-        api.cancelMaintenanceJob(id).onSuccess { listCache.clear() }
+    override suspend fun cancelJob(id: String) = api.cancelMaintenanceJob(id).onSuccess { listCache.clear() }
 
-    override suspend fun getIncidents(cursor: String?, limit: Int, status: String?) =
-        api.getIncidents(cursor, limit, status)
+    override suspend fun getIncidents(cursor: String?, limit: Int, status: String?) = api.getIncidents(cursor, limit, status)
 
-    override suspend fun getIncidentsByVehicle(vehicleId: String) =
-        api.getVehicleIncidents(vehicleId)
+    override suspend fun getIncidentsByVehicle(vehicleId: String) = api.getVehicleIncidents(vehicleId)
 }

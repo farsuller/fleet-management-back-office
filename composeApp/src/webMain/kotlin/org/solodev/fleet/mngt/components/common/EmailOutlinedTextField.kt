@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 fun EmailOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
 
@@ -40,7 +40,7 @@ fun EmailOutlinedTextField(
                 Text(
                     text = "Please enter a valid email (e.g., name@domain.com)",
                     color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
                 )
             }
         },
@@ -51,10 +51,9 @@ fun EmailOutlinedTextField(
             imeAction = ImeAction.Unspecified,
             platformImeOptions = null,
             showKeyboardOnFocus = null,
-            hintLocales = null
+            hintLocales = null,
         ),
         singleLine = true,
-        placeholder = { Text("example@mail.com") }
+        placeholder = { Text("example@mail.com") },
     )
-
 }

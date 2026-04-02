@@ -6,8 +6,7 @@ import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.repository.DriverRepository
 
 class GetDriversUseCase(private val repository: DriverRepository) {
-    suspend operator fun invoke(forceRefresh: Boolean = false) =
-        repository.getDrivers(forceRefresh)
+    suspend operator fun invoke(forceRefresh: Boolean = false) = repository.getDrivers(forceRefresh)
 }
 
 class GetDriverUseCase(private val repository: DriverRepository) {
@@ -27,8 +26,7 @@ class ActivateDriverUseCase(private val repository: DriverRepository) {
 }
 
 class AssignDriverUseCase(private val repository: DriverRepository) {
-    suspend operator fun invoke(driverId: String, request: AssignDriverRequest) =
-        repository.assignToVehicle(driverId, request)
+    suspend operator fun invoke(driverId: String, request: AssignDriverRequest) = repository.assignToVehicle(driverId, request)
 }
 
 class ReleaseDriverUseCase(private val repository: DriverRepository) {
@@ -48,6 +46,5 @@ class GetVehicleDriverHistoryUseCase(private val repository: DriverRepository) {
 }
 
 class UpdateDriverUseCase(private val repository: DriverRepository) {
-    suspend operator fun invoke(id: String, request: UpdateDriverRequest) =
-        repository.updateDriver(id, request)
+    suspend operator fun invoke(id: String, request: UpdateDriverRequest) = repository.updateDriver(id, request)
 }

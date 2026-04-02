@@ -27,7 +27,9 @@ object SvgUtils {
                 val lng = parts[0].toDoubleOrNull() ?: return@mapNotNull null
                 val lat = parts[1].toDoubleOrNull() ?: return@mapNotNull null
                 Pair(lng, lat)
-            } else null
+            } else {
+                null
+            }
         }
     }
 
@@ -95,7 +97,7 @@ object SvgUtils {
         fun project(lng: Double, lat: Double, canvasW: Float, canvasH: Float): Pair<Float, Float> {
             val padding = 0.05 // 5% padding on each side
             val x = ((lng - minLng) / (width.takeIf { it > 0.0 } ?: 1.0)).toFloat()
-            val y = ((maxLat - lat)  / (height.takeIf { it > 0.0 } ?: 1.0)).toFloat() // flip Y
+            val y = ((maxLat - lat) / (height.takeIf { it > 0.0 } ?: 1.0)).toFloat() // flip Y
             val px = (padding + x * (1 - 2 * padding)) * canvasW
             val py = (padding + y * (1 - 2 * padding)) * canvasH
             return Pair(px.toFloat(), py.toFloat())

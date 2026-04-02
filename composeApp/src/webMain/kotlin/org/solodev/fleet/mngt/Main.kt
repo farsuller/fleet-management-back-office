@@ -32,7 +32,7 @@ fun main() {
             mapOf(
                 "fleet.api.baseUrl" to PlatformConfig.apiBaseUrl,
                 "fleet.ws.baseUrl" to PlatformConfig.wsBaseUrl,
-            )
+            ),
         )
         modules(storageModule, networkModule, trackingModule, repositoryModule, useCaseModule, viewModelModule)
     }.koin
@@ -62,4 +62,3 @@ fun main() {
         }
     }
 }
-

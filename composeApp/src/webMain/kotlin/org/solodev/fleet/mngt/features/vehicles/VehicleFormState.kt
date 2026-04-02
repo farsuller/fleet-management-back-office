@@ -11,7 +11,7 @@ data class VehicleFormState(
     val color: String = "",
     val mileage: String = "0",
     val lastServiceMileage: String = "0",
-    val nextServiceMileage: String = "10000"
+    val nextServiceMileage: String = "10000",
 ) {
     constructor(vehicle: VehicleDto?) : this(
         vin = vehicle?.vin ?: "",
@@ -22,7 +22,7 @@ data class VehicleFormState(
         color = vehicle?.color ?: "",
         mileage = vehicle?.mileageKm?.toString() ?: "0",
         lastServiceMileage = vehicle?.lastServiceMileage?.toString() ?: "0",
-        nextServiceMileage = vehicle?.nextServiceMileage?.toString() ?: "10000"
+        nextServiceMileage = vehicle?.nextServiceMileage?.toString() ?: "10000",
     )
 }
 
@@ -32,8 +32,7 @@ data class VehicleFormErrors(
     val make: String? = null,
     val model: String? = null,
     val year: String? = null,
-    val serverError: String? = null
+    val serverError: String? = null,
 ) {
-    fun hasErrors(): Boolean =
-        vin != null || licensePlate != null || make != null || model != null || year != null
+    fun hasErrors(): Boolean = vin != null || licensePlate != null || make != null || model != null || year != null
 }

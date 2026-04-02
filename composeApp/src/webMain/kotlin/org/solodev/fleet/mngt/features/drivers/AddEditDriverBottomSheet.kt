@@ -1,11 +1,36 @@
 package org.solodev.fleet.mngt.features.drivers
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +54,7 @@ import org.solodev.fleet.mngt.theme.fleetColors
 fun AddEditDriverBottomSheet(
     onDismiss: () -> Unit,
     sheetState: SheetState,
-    driver: DriverDto? = null
+    driver: DriverDto? = null,
 ) {
     val viewModel = koinViewModel<DriversViewModel>()
     val colors = fleetColors
@@ -51,10 +76,8 @@ fun AddEditDriverBottomSheet(
 
     val datePickerState = rememberDatePickerState(
         selectableDates = object : SelectableDates {
-            override fun isSelectableYear(year: Int): Boolean {
-                return year in 1900..2100
-            }
-        }
+            override fun isSelectableYear(year: Int): Boolean = year in 1900..2100
+        },
     )
 
     LaunchedEffect(actionResult) {
@@ -86,7 +109,7 @@ fun AddEditDriverBottomSheet(
                 phone = phone.takeIf { it != driver.phone },
                 licenseNumber = licenseNumber.takeIf { it != driver.licenseNumber },
                 licenseExpiry = licenseExpiry.takeIf { it.isNotBlank() },
-                isActive = isActive.takeIf { it != driver.isActive }
+                isActive = isActive.takeIf { it != driver.isActive },
             )
             viewModel.updateDriver(driver.id!!, request) { onDismiss() }
         } else {
@@ -96,7 +119,7 @@ fun AddEditDriverBottomSheet(
                 email = email,
                 phone = phone,
                 licenseNumber = licenseNumber,
-                licenseExpiry = licenseExpiry
+                licenseExpiry = licenseExpiry,
             )
             viewModel.createDriver(request) { onDismiss() }
         }
@@ -107,7 +130,7 @@ fun AddEditDriverBottomSheet(
         sheetState = sheetState,
         modifier = Modifier.fillMaxWidth(),
         containerColor = colors.surface,
-        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) },
     ) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
@@ -117,38 +140,38 @@ fun AddEditDriverBottomSheet(
                     .padding(horizontal = 48.dp)
                     .padding(bottom = 40.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             if (driver != null) "Edit Driver" else "Add New Driver",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colors.onBackground
+                            color = colors.onBackground,
                         )
                         Text(
                             if (driver != null) "Update driver profile and license details." else "Create a new driver profile in the system.",
                             fontSize = 14.sp,
-                            color = colors.onBackground.copy(alpha = 0.6f)
+                            color = colors.onBackground.copy(alpha = 0.6f),
                         )
                     }
                     Button(
                         onClick = ::handleSubmit,
                         enabled = !isSubmitting,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         if (isSubmitting) {
                             CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                         } else {
                             Text(
                                 if (driver != null) "Save Changes" else "Create Driver",
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
                             )
                         }
                     }
@@ -158,7 +181,7 @@ fun AddEditDriverBottomSheet(
                     Surface(
                         color = colors.cancelled.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(it, color = colors.cancelled, modifier = Modifier.padding(12.dp), fontSize = 13.sp)
                     }
@@ -173,14 +196,14 @@ fun AddEditDriverBottomSheet(
                             onValueChange = { firstName = it },
                             label = { Text("First Name") },
                             modifier = Modifier.weight(1f),
-                            singleLine = true
+                            singleLine = true,
                         )
                         OutlinedTextField(
                             value = lastName,
                             onValueChange = { lastName = it },
                             label = { Text("Last Name") },
                             modifier = Modifier.weight(1f),
-                            singleLine = true
+                            singleLine = true,
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -195,7 +218,7 @@ fun AddEditDriverBottomSheet(
                                 phone = input
                             },
                             label = "Phone Number",
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
@@ -211,7 +234,7 @@ fun AddEditDriverBottomSheet(
                             onValueChange = { licenseNumber = it.uppercase() },
                             label = { Text("License Number") },
                             modifier = Modifier.weight(1f),
-                            singleLine = true
+                            singleLine = true,
                         )
                         OutlinedTextField(
                             value = licenseExpiry,
@@ -219,7 +242,7 @@ fun AddEditDriverBottomSheet(
                             label = { Text("License Expiry (YYYY-MM-DD)") },
                             modifier = Modifier.weight(1f),
                             placeholder = { Text("2028-12-31") },
-                            singleLine = true
+                            singleLine = true,
                         )
                     }
                 }
@@ -229,19 +252,19 @@ fun AddEditDriverBottomSheet(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column {
                             Text("Account Status", fontWeight = FontWeight.SemiBold)
                             Text(
                                 "Deactivating the driver will prevent them from being assigned.",
                                 fontSize = 12.sp,
-                                color = colors.onBackground.copy(alpha = 0.6f)
+                                color = colors.onBackground.copy(alpha = 0.6f),
                             )
                         }
                         Switch(
                             checked = isActive,
-                            onCheckedChange = { isActive = it }
+                            onCheckedChange = { isActive = it },
                         )
                     }
                 }

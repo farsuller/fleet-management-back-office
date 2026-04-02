@@ -1,30 +1,62 @@
 package org.solodev.fleet.mngt.features.maintenance
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.solodev.fleet.mngt.api.dto.maintenance.*
+import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceType
 import org.solodev.fleet.mngt.components.common.LabeledInfo
 import org.solodev.fleet.mngt.theme.fleetColors
 import kotlin.time.Instant
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +76,7 @@ fun MaintenanceSheet(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = formState.scheduledDate
+        initialSelectedDateMillis = formState.scheduledDate,
     )
 
     LaunchedEffect(actionResult) {
@@ -65,7 +97,7 @@ fun MaintenanceSheet(
             vehicleId = vehicleErr,
             type = typeErr,
             priority = priorityErr,
-            scheduledDate = dateErr
+            scheduledDate = dateErr,
         )
 
         if (!errors.hasErrors()) {
@@ -75,9 +107,9 @@ fun MaintenanceSheet(
                 priority = formState.priority,
                 scheduledDate = formState.scheduledDate ?: 0L,
                 estimatedCostPhp = formState.estimatedCost.toLongOrNull() ?: 0L,
-                description = formState.description
+                description = formState.description,
             )
-            
+
             if (isEdit) {
                 // Update logic if needed, currently scheduleJob handles creation
                 // But for the sake of the task, we'll use scheduleJob for now
@@ -95,7 +127,7 @@ fun MaintenanceSheet(
         modifier = Modifier.fillMaxWidth(),
         containerColor = colors.surface,
         contentColor = colors.onBackground,
-        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) },
     ) {
         val infoIcon = painterResource(Res.drawable.info_icon)
 
@@ -112,19 +144,19 @@ fun MaintenanceSheet(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             if (isEdit) "Edit Maintenance Job" else "Schedule Maintenance",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colors.onBackground
+                            color = colors.onBackground,
                         )
                         Text(
                             "Enter the details to schedule or update a maintenance job.",
                             fontSize = 14.sp,
-                            color = colors.onBackground.copy(alpha = 0.6f)
+                            color = colors.onBackground.copy(alpha = 0.6f),
                         )
                     }
 
@@ -141,7 +173,7 @@ fun MaintenanceSheet(
                     Surface(
                         color = colors.cancelled.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(it, color = colors.cancelled, modifier = Modifier.padding(12.dp), fontSize = 13.sp)
                     }
@@ -149,12 +181,12 @@ fun MaintenanceSheet(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(48.dp)
+                    horizontalArrangement = Arrangement.spacedBy(48.dp),
                 ) {
                     // Left Column: Basic Info
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
                         // Vehicle Selection
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -162,7 +194,7 @@ fun MaintenanceSheet(
                             var expanded by remember { mutableStateOf(false) }
                             ExposedDropdownMenuBox(
                                 expanded = expanded,
-                                onExpandedChange = { expanded = it }
+                                onExpandedChange = { expanded = it },
                             ) {
                                 OutlinedTextField(
                                     value = vehicles.find { it.id == formState.vehicleId }?.licensePlate ?: "Select Vehicle",
@@ -173,12 +205,12 @@ fun MaintenanceSheet(
                                     modifier = Modifier
                                         .menuAnchor(
                                             type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                            enabled = true
+                                            enabled = true,
                                         ).fillMaxWidth(),
                                 )
                                 ExposedDropdownMenu(
                                     expanded = expanded,
-                                    onDismissRequest = { expanded = false }
+                                    onDismissRequest = { expanded = false },
                                 ) {
                                     vehicles.forEach { vehicle ->
                                         DropdownMenuItem(
@@ -187,7 +219,7 @@ fun MaintenanceSheet(
                                                 formState = formState.copy(vehicleId = vehicle.id ?: "")
                                                 expanded = false
                                                 errors = errors.copy(vehicleId = null)
-                                            }
+                                            },
                                         )
                                     }
                                 }
@@ -209,8 +241,8 @@ fun MaintenanceSheet(
                                         modifier = Modifier
                                             .menuAnchor(
                                                 type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                                enabled = true
-                                            ).fillMaxWidth()
+                                                enabled = true,
+                                            ).fillMaxWidth(),
                                     )
                                     ExposedDropdownMenu(expanded, { expanded = false }) {
                                         MaintenanceType.entries.filter { it != MaintenanceType.UNKNOWN }.forEach { type ->
@@ -220,7 +252,7 @@ fun MaintenanceSheet(
                                                     formState = formState.copy(type = type)
                                                     expanded = false
                                                     errors = errors.copy(type = null)
-                                                }
+                                                },
                                             )
                                         }
                                     }
@@ -239,8 +271,8 @@ fun MaintenanceSheet(
                                         modifier = Modifier
                                             .menuAnchor(
                                                 type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                                enabled = true
-                                            ).fillMaxWidth()
+                                                enabled = true,
+                                            ).fillMaxWidth(),
                                     )
                                     ExposedDropdownMenu(expanded, { expanded = false }) {
                                         MaintenancePriority.entries.filter { it != MaintenancePriority.UNKNOWN }.forEach { priority ->
@@ -250,7 +282,7 @@ fun MaintenanceSheet(
                                                     formState = formState.copy(priority = priority)
                                                     expanded = false
                                                     errors = errors.copy(priority = null)
-                                                }
+                                                },
                                             )
                                         }
                                     }
@@ -262,13 +294,13 @@ fun MaintenanceSheet(
                     // Right Column: Details & Date
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
                         // Date Picker
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             LabeledInfo("Scheduled Date", infoIcon)
                             OutlinedTextField(
-                                value = formState.scheduledDate?.let { 
+                                value = formState.scheduledDate?.let {
                                     Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
                                 } ?: "Select Date",
                                 onValueChange = {},
@@ -279,7 +311,7 @@ fun MaintenanceSheet(
                                     IconButton(onClick = { showDatePicker = true }) {
                                         Icon(Icons.Default.DateRange, null)
                                     }
-                                }
+                                },
                             )
                         }
 
@@ -291,7 +323,7 @@ fun MaintenanceSheet(
                                 onValueChange = { if (it.all { c -> c.isDigit() }) formState = formState.copy(estimatedCost = it) },
                                 label = { Text("Cost in PHP") },
                                 modifier = Modifier.fillMaxWidth(),
-                                singleLine = true
+                                singleLine = true,
                             )
                         }
                     }
@@ -304,7 +336,7 @@ fun MaintenanceSheet(
                         value = formState.description,
                         onValueChange = { formState = formState.copy(description = it) },
                         label = { Text("Enter details about the maintenance required...") },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp)
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
                     )
                 }
             }
@@ -322,7 +354,7 @@ fun MaintenanceSheet(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-                }
+                },
             ) {
                 DatePicker(state = datePickerState)
             }

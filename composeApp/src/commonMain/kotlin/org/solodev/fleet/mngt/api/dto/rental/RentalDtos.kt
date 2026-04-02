@@ -6,11 +6,20 @@ import org.solodev.fleet.mngt.api.serializers.FlexibleEpochMsSerializer
 
 @Serializable
 enum class RentalStatus {
-    @SerialName("RESERVED")  RESERVED,
-    @SerialName("ACTIVE")    ACTIVE,
-    @SerialName("COMPLETED") COMPLETED,
-    @SerialName("CANCELLED") CANCELLED,
-    @SerialName("UNKNOWN")   UNKNOWN,
+    @SerialName("RESERVED")
+    RESERVED,
+
+    @SerialName("ACTIVE")
+    ACTIVE,
+
+    @SerialName("COMPLETED")
+    COMPLETED,
+
+    @SerialName("CANCELLED")
+    CANCELLED,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
@@ -43,7 +52,7 @@ data class CreateRentalRequest(
     val customerId: String,
     val vehicleId: String,
     val startDate: String, // ISO-8601
-    val endDate: String,   // ISO-8601
+    val endDate: String, // ISO-8601
     val dailyRateAmount: Long,
 )
 

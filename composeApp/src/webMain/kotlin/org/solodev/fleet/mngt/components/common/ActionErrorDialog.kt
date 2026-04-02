@@ -1,10 +1,24 @@
 package org.solodev.fleet.mngt.components.common
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,13 +42,13 @@ import org.solodev.fleet.mngt.theme.fleetColors
 fun ActionErrorDialog(
     title: String,
     message: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val colors = fleetColors
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Card(
             modifier = Modifier
@@ -43,46 +57,46 @@ fun ActionErrorDialog(
                 .padding(24.dp),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = colors.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         ) {
             Column(
                 modifier = Modifier.padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 // Error Icon with soft red background
                 Surface(
                     modifier = Modifier.size(64.dp),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFFFFEBEE) // Very light red
+                    color = Color(0xFFFFEBEE), // Very light red
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.ErrorOutline,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color(0xFFD32F2F) // Error red
+                            tint = Color(0xFFD32F2F), // Error red
                         )
                     }
                 }
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleLarge,
                         color = colors.onSurface,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                     Text(
                         text = message,
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onSurface.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center,
-                        lineHeight = 20.sp
+                        lineHeight = 20.sp,
                     )
                 }
 
@@ -90,7 +104,7 @@ fun ActionErrorDialog(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                 ) {
                     Text("Understood", fontWeight = FontWeight.Bold)
                 }

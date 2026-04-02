@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -20,13 +19,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,10 +43,10 @@ import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
 import org.solodev.fleet.mngt.components.common.ConfirmDialog
 import org.solodev.fleet.mngt.components.common.MaintenanceStatusBadge
-import org.solodev.fleet.mngt.components.common.MaintenanceStatus as UiMaintenanceStatus
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import org.solodev.fleet.mngt.components.common.MaintenanceStatus as UiMaintenanceStatus
 
 @Composable
 fun MaintenanceDetailScreen(jobId: String, router: AppRouter) {
@@ -114,11 +113,11 @@ private fun MaintenanceDetailContent(
     var showCompleteDialog by remember { mutableStateOf(false) }
 
     fun statusToUi(s: MaintenanceStatus?) = when (s) {
-        MaintenanceStatus.SCHEDULED   -> UiMaintenanceStatus.SCHEDULED
+        MaintenanceStatus.SCHEDULED -> UiMaintenanceStatus.SCHEDULED
         MaintenanceStatus.IN_PROGRESS -> UiMaintenanceStatus.IN_PROGRESS
-        MaintenanceStatus.COMPLETED   -> UiMaintenanceStatus.COMPLETED
-        MaintenanceStatus.CANCELLED   -> UiMaintenanceStatus.CANCELLED
-        else                          -> UiMaintenanceStatus.CANCELLED
+        MaintenanceStatus.COMPLETED -> UiMaintenanceStatus.COMPLETED
+        MaintenanceStatus.CANCELLED -> UiMaintenanceStatus.CANCELLED
+        else -> UiMaintenanceStatus.CANCELLED
     }
 
     // Job info card
@@ -186,14 +185,20 @@ private fun MaintenanceDetailContent(
             title = "Cancel Job",
             message = "Are you sure you want to cancel this maintenance job? This action cannot be undone.",
             confirmText = "Yes, Cancel",
-            onConfirm = { showCancelConfirm = false; onCancel() },
+            onConfirm = {
+                showCancelConfirm = false
+                onCancel()
+            },
             onDismiss = { showCancelConfirm = false },
         )
     }
 
     if (showCompleteDialog) {
         CompleteJobDialog(
-            onConfirm = { labor, parts -> showCompleteDialog = false; onComplete(labor, parts) },
+            onConfirm = { labor, parts ->
+                showCompleteDialog = false
+                onComplete(labor, parts)
+            },
             onDismiss = { showCompleteDialog = false },
         )
     }
@@ -216,14 +221,20 @@ private fun CompleteJobDialog(
                 Text("Enter the actual costs to mark this job as completed.", fontSize = 14.sp)
                 OutlinedTextField(
                     value = laborText,
-                    onValueChange = { laborText = it; error = null },
+                    onValueChange = {
+                        laborText = it
+                        error = null
+                    },
                     label = { Text("Labor Cost (PHP)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = partsText,
-                    onValueChange = { partsText = it; error = null },
+                    onValueChange = {
+                        partsText = it
+                        error = null
+                    },
                     label = { Text("Parts Cost (PHP)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -235,8 +246,14 @@ private fun CompleteJobDialog(
             Button(onClick = {
                 val labor = laborText.trim().toLongOrNull()
                 val parts = partsText.trim().toLongOrNull()
-                if (labor == null || labor < 0) { error = "Enter a valid labor cost"; return@Button }
-                if (parts == null || parts < 0) { error = "Enter a valid parts cost"; return@Button }
+                if (labor == null || labor < 0) {
+                    error = "Enter a valid labor cost"
+                    return@Button
+                }
+                if (parts == null || parts < 0) {
+                    error = "Enter a valid parts cost"
+                    return@Button
+                }
                 onConfirm(labor * 100L, parts * 100L) // convert to centavos
             }) { Text("Complete") }
         },

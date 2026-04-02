@@ -45,7 +45,7 @@ fun ConfirmDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            shape  = RoundedCornerShape(FleetSpacing.cardRadius),
+            shape = RoundedCornerShape(FleetSpacing.cardRadius),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         ) {
@@ -55,20 +55,20 @@ fun ConfirmDialog(
                     .padding(FleetSpacing.lg),
             ) {
                 Text(
-                    text       = title,
-                    style      = MaterialTheme.typography.headlineSmall,
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color      = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(Modifier.height(FleetSpacing.sm))
                 Text(
-                    text  = message,
+                    text = message,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(FleetSpacing.lg))
                 Row(
-                    modifier           = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
                     TextButton(onClick = onDismiss) {
@@ -77,9 +77,13 @@ fun ConfirmDialog(
                     Spacer(Modifier.width(FleetSpacing.sm))
                     OutlinedButton(
                         onClick = onConfirm,
-                        colors  = if (destructive) ButtonDefaults.outlinedButtonColors(
-                            contentColor = FleetColors.Cancelled,
-                        ) else ButtonDefaults.outlinedButtonColors(),
+                        colors = if (destructive) {
+                            ButtonDefaults.outlinedButtonColors(
+                                contentColor = FleetColors.Cancelled,
+                            )
+                        } else {
+                            ButtonDefaults.outlinedButtonColors()
+                        },
                     ) {
                         Text(confirmText)
                     }

@@ -1,6 +1,5 @@
 package org.solodev.fleet.mngt.api.serializers
 
-import kotlin.time.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.nullable
@@ -12,6 +11,7 @@ import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlin.time.Instant
 
 /**
  * Deserializes a Long? timestamp that may arrive from the backend either as:

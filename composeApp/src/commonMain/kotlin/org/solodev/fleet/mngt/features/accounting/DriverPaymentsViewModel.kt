@@ -40,7 +40,9 @@ class DriverPaymentsViewModel(
     private val _collectionResult = MutableStateFlow<Result<PaymentDto>?>(null)
     val collectionResult: StateFlow<Result<PaymentDto>?> = _collectionResult.asStateFlow()
 
-    init { loadDrivers() }
+    init {
+        loadDrivers()
+    }
 
     private fun loadDrivers() = viewModelScope.launch {
         _driversState.value = UiState.Loading
@@ -70,7 +72,9 @@ class DriverPaymentsViewModel(
             .onFailure { _collectionResult.value = Result.failure(it) }
     }
 
-    fun clearCollectionResult() { _collectionResult.value = null }
+    fun clearCollectionResult() {
+        _collectionResult.value = null
+    }
 
     fun refresh() {
         loadDrivers()

@@ -1,8 +1,22 @@
 package org.solodev.fleet.mngt.components.common
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,74 +40,74 @@ import org.solodev.fleet.mngt.theme.fleetColors
  */
 @Composable
 fun ServerErrorDialog(
-        message: String,
-        onRetry: () -> Unit,
-        onDismiss: () -> Unit,
+    message: String,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val colors = fleetColors
 
     Dialog(
-            onDismissRequest = onDismiss,
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Card(
-                modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth().padding(24.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth().padding(24.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = colors.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         ) {
             Column(
-                    modifier = Modifier.padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                modifier = Modifier.padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 // Asset
                 Box(
-                        modifier = Modifier.size(120.dp).clip(RoundedCornerShape(20.dp)),
-                        contentAlignment = Alignment.Center
+                    modifier = Modifier.size(120.dp).clip(RoundedCornerShape(20.dp)),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                            painter = painterResource(Res.drawable.server_error),
-                            contentDescription = null,
-                            modifier = Modifier.size(80.dp),
+                        painter = painterResource(Res.drawable.server_error),
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
                     )
                 }
 
                 Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                            text = "Connection Error",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = colors.onSurface,
-                            fontWeight = FontWeight.Bold
+                        text = "Connection Error",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = colors.onSurface,
+                        fontWeight = FontWeight.Bold,
                     )
                     Text(
-                            text = message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.text2,
-                            textAlign = TextAlign.Center
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.text2,
+                        textAlign = TextAlign.Center,
                     )
                 }
 
                 Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     OutlinedButton(
-                            onClick = onDismiss,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp)
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
                     ) { Text("Dismiss") }
                     Button(
-                            onClick = {
-                                onDismiss()
-                                onRetry()
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                        onClick = {
+                            onDismiss()
+                            onRetry()
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                     ) { Text("Try Again", fontWeight = FontWeight.Bold) }
                 }
             }

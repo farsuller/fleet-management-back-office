@@ -18,16 +18,13 @@ class AuthRepositoryImpl(
     private val dispatcher: AppDependencyDispatcher,
 ) : AuthRepository {
 
-    override suspend fun login(email: String, password: String): Result<LoginResponse> =
-        api.login(LoginRequest(email, password)).onSuccess { response ->
-            dispatcher.sessionFromUserDto(response.token ?: "", response.user ?: UserDto())
-        }
+    override suspend fun login(email: String, password: String): Result<LoginResponse> = api.login(LoginRequest(email, password)).onSuccess { response ->
+        dispatcher.sessionFromUserDto(response.token ?: "", response.user ?: UserDto())
+    }
 
-    override suspend fun logout(): Result<Unit> =
-        api.logout().also { dispatcher.signOut() }
+    override suspend fun logout(): Result<Unit> = api.logout().also { dispatcher.signOut() }
 
-    override suspend fun rehydrate(): Result<LoginResponse> =
-        api.refreshToken().onSuccess { response ->
-            dispatcher.sessionFromUserDto(response.token ?: "", response.user ?: UserDto())
-        }
+    override suspend fun rehydrate(): Result<LoginResponse> = api.refreshToken().onSuccess { response ->
+        dispatcher.sessionFromUserDto(response.token ?: "", response.user ?: UserDto())
+    }
 }

@@ -37,7 +37,7 @@ fun OsmTileLayer(
 
         if (canvasW == 0f || canvasH == 0f) return@Box
 
-        val zoom    = mapState.zoom
+        val zoom = mapState.zoom
         val maxTile = (1 shl zoom) - 1
 
         val cTx = MapProjection.tileX(mapState.centerLon, zoom)
@@ -59,12 +59,12 @@ fun OsmTileLayer(
                 if (leftDp + MapProjection.TILE_PX < 0 || topDp + MapProjection.TILE_PX < 0) continue
 
                 AsyncImage(
-                    model              = "https://tile.openstreetmap.org/$zoom/$wrappedTx/$ty.png",
+                    model = "https://tile.openstreetmap.org/$zoom/$wrappedTx/$ty.png",
                     contentDescription = null,
-                    contentScale       = ContentScale.FillBounds,
+                    contentScale = ContentScale.FillBounds,
                     // absoluteOffset(Dp, Dp) keeps us in logical pixel space.
                     // requiredSize(256.dp) matches the 256 logical-px OSM tile contract.
-                    modifier           = Modifier
+                    modifier = Modifier
                         .absoluteOffset(leftDp.dp, topDp.dp)
                         .requiredSize(MapProjection.TILE_PX.toInt().dp),
                 )

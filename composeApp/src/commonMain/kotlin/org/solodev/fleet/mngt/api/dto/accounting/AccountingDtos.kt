@@ -6,39 +6,77 @@ import org.solodev.fleet.mngt.api.serializers.FlexibleEpochMsSerializer
 
 @Serializable
 enum class InvoiceStatus {
-    @SerialName("DRAFT")     DRAFT,
-    @SerialName("ISSUED")    ISSUED,
-    @SerialName("PENDING")   PENDING,
-    @SerialName("PAID")      PAID,
-    @SerialName("OVERDUE")   OVERDUE,
-    @SerialName("CANCELLED") CANCELLED,
-    @SerialName("UNKNOWN")   UNKNOWN,
+    @SerialName("DRAFT")
+    DRAFT,
+
+    @SerialName("ISSUED")
+    ISSUED,
+
+    @SerialName("PENDING")
+    PENDING,
+
+    @SerialName("PAID")
+    PAID,
+
+    @SerialName("OVERDUE")
+    OVERDUE,
+
+    @SerialName("CANCELLED")
+    CANCELLED,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class AccountType {
-    @SerialName("ASSET")     ASSET,
-    @SerialName("LIABILITY") LIABILITY,
-    @SerialName("EQUITY")    EQUITY,
-    @SerialName("REVENUE")   REVENUE,
-    @SerialName("EXPENSE")   EXPENSE,
-    @SerialName("UNKNOWN")   UNKNOWN,
+    @SerialName("ASSET")
+    ASSET,
+
+    @SerialName("LIABILITY")
+    LIABILITY,
+
+    @SerialName("EQUITY")
+    EQUITY,
+
+    @SerialName("REVENUE")
+    REVENUE,
+
+    @SerialName("EXPENSE")
+    EXPENSE,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class CollectionType {
-    @SerialName("DIRECT")           DIRECT,
-    @SerialName("DRIVER_COLLECTED") DRIVER_COLLECTED,
-    @SerialName("UNKNOWN")          UNKNOWN,
+    @SerialName("DIRECT")
+    DIRECT,
+
+    @SerialName("DRIVER_COLLECTED")
+    DRIVER_COLLECTED,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class RemittanceStatus {
-    @SerialName("PENDING")      PENDING,
-    @SerialName("SUBMITTED")    SUBMITTED,
-    @SerialName("VERIFIED")     VERIFIED,
-    @SerialName("DISCREPANCY")  DISCREPANCY,
-    @SerialName("UNKNOWN")      UNKNOWN,
+    @SerialName("PENDING")
+    PENDING,
+
+    @SerialName("SUBMITTED")
+    SUBMITTED,
+
+    @SerialName("VERIFIED")
+    VERIFIED,
+
+    @SerialName("DISCREPANCY")
+    DISCREPANCY,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable

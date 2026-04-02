@@ -86,7 +86,9 @@ class InvoicesViewModel(
             .onFailure { _actionResult.value = Result.failure(it) }
     }
 
-    fun clearActionResult() { _actionResult.value = null }
+    fun clearActionResult() {
+        _actionResult.value = null
+    }
 
     fun createInvoice(request: CreateInvoiceRequest) = viewModelScope.launch {
         createInvoiceUseCase(request)
@@ -97,6 +99,7 @@ class InvoicesViewModel(
             .onFailure { _createResult.value = Result.failure(it) }
     }
 
-    fun clearCreateResult() { _createResult.value = null }
+    fun clearCreateResult() {
+        _createResult.value = null
+    }
 }
-

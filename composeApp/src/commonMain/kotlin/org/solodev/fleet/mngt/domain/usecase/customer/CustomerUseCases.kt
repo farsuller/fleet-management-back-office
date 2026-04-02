@@ -32,13 +32,11 @@ class DeactivateCustomerUseCase(private val repository: CustomerRepository) {
 }
 
 class GetCustomerRentalsUseCase(private val repository: RentalRepository) {
-    suspend operator fun invoke(customerId: String): Result<List<RentalDto>> =
-        repository.getRentals(limit = 50).map { page ->
-            page.items.filter { it.customerId == customerId }
-        }
+    suspend operator fun invoke(customerId: String): Result<List<RentalDto>> = repository.getRentals(limit = 50).map { page ->
+        page.items.filter { it.customerId == customerId }
+    }
 }
 
 class GetCustomerPaymentsUseCase(private val repository: AccountingRepository) {
-    suspend operator fun invoke(customerId: String) =
-        repository.getPaymentsByCustomer(customerId)
+    suspend operator fun invoke(customerId: String) = repository.getPaymentsByCustomer(customerId)
 }

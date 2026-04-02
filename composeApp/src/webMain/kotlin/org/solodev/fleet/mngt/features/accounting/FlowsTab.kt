@@ -96,8 +96,12 @@ private fun InvoiceIssuanceFlow(vm: InvoicesViewModel) {
 
     LaunchedEffect(createResult) {
         val r = createResult ?: return@LaunchedEffect
-        r.onSuccess { inv -> resultInvoice = inv; step = 4; error = null }
-         .onFailure { e -> error = e.message }
+        r.onSuccess { inv ->
+            resultInvoice = inv
+            step = 4
+            error = null
+        }
+            .onFailure { e -> error = e.message }
         vm.clearCreateResult()
     }
 
@@ -134,8 +138,12 @@ private fun InvoiceIssuanceFlow(vm: InvoicesViewModel) {
                         if (error != null) Text(error!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                             Button(onClick = {
-                                if (customerId.isBlank()) { error = "Customer ID is required"; return@Button }
-                                error = null; step = 2
+                                if (customerId.isBlank()) {
+                                    error = "Customer ID is required"
+                                    return@Button
+                                }
+                                error = null
+                                step = 2
                             }) { Text("Next") }
                         }
                     }
@@ -181,12 +189,21 @@ private fun InvoiceIssuanceFlow(vm: InvoicesViewModel) {
                         )
                         if (error != null) Text(error!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            OutlinedButton(onClick = { step = 2; error = null }) { Text("Back") }
+                            OutlinedButton(onClick = {
+                                step = 2
+                                error = null
+                            }) { Text("Back") }
                             Button(onClick = {
                                 val sub = subtotal.trim().toLongOrNull()
                                 val t = tax.trim().toLongOrNull() ?: 0L
-                                if (sub == null || sub <= 0L) { error = "Enter a valid subtotal (whole PHP amount)"; return@Button }
-                                if (dueDate.isBlank()) { error = "Due date is required (YYYY-MM-DD)"; return@Button }
+                                if (sub == null || sub <= 0L) {
+                                    error = "Enter a valid subtotal (whole PHP amount)"
+                                    return@Button
+                                }
+                                if (dueDate.isBlank()) {
+                                    error = "Due date is required (YYYY-MM-DD)"
+                                    return@Button
+                                }
                                 error = null
                                 vm.createInvoice(
                                     CreateInvoiceRequest(
@@ -195,7 +212,7 @@ private fun InvoiceIssuanceFlow(vm: InvoicesViewModel) {
                                         subtotal = sub,
                                         tax = t,
                                         dueDate = dueDate.trim(),
-                                    )
+                                    ),
                                 )
                             }) { Text("Issue Invoice") }
                         }
@@ -214,8 +231,14 @@ private fun InvoiceIssuanceFlow(vm: InvoicesViewModel) {
                         }
                         Spacer(Modifier.height(4.dp))
                         Button(onClick = {
-                            step = 1; customerId = ""; rentalId = ""; subtotal = ""
-                            tax = ""; dueDate = ""; error = null; resultInvoice = null
+                            step = 1
+                            customerId = ""
+                            rentalId = ""
+                            subtotal = ""
+                            tax = ""
+                            dueDate = ""
+                            error = null
+                            resultInvoice = null
                         }) { Text("Issue Another Invoice") }
                     }
                 }
@@ -240,8 +263,11 @@ private fun InvoicePaymentFlow(vm: InvoicesViewModel) {
 
     LaunchedEffect(actionResult) {
         val r = actionResult ?: return@LaunchedEffect
-        r.onSuccess { step = 3; error = null }
-         .onFailure { e -> error = e.message }
+        r.onSuccess {
+            step = 3
+            error = null
+        }
+            .onFailure { e -> error = e.message }
         vm.clearActionResult()
     }
 
@@ -287,7 +313,11 @@ private fun InvoicePaymentFlow(vm: InvoicesViewModel) {
                                             Surface(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .clickable { selectedInvoice = inv; step = 2; error = null },
+                                                    .clickable {
+                                                        selectedInvoice = inv
+                                                        step = 2
+                                                        error = null
+                                                    },
                                                 shape = RoundedCornerShape(8.dp),
                                                 border = BorderStroke(1.dp, colors.border),
                                                 color = colors.surface,
@@ -377,13 +407,25 @@ private fun InvoicePaymentFlow(vm: InvoicesViewModel) {
                         }
                         if (error != null) Text(error!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            OutlinedButton(onClick = { step = 1; error = null }) { Text("Back") }
+                            OutlinedButton(onClick = {
+                                step = 1
+                                error = null
+                            }) { Text("Back") }
                             Button(onClick = {
                                 val amt = payAmount.trim().toLongOrNull()
-                                if (amt == null || amt <= 0L) { error = "Enter a valid amount"; return@Button }
-                                if (payMethod.isBlank()) { error = "Payment method is required"; return@Button }
+                                if (amt == null || amt <= 0L) {
+                                    error = "Enter a valid amount"
+                                    return@Button
+                                }
+                                if (payMethod.isBlank()) {
+                                    error = "Payment method is required"
+                                    return@Button
+                                }
                                 val id = inv?.id
-                                if (id == null) { error = "No invoice selected"; return@Button }
+                                if (id == null) {
+                                    error = "No invoice selected"
+                                    return@Button
+                                }
                                 error = null
                                 vm.payInvoice(id, payMethod.trim(), amt)
                             }) { Text("Record Payment") }
@@ -398,7 +440,11 @@ private fun InvoicePaymentFlow(vm: InvoicesViewModel) {
                         )
                         Spacer(Modifier.height(4.dp))
                         Button(onClick = {
-                            step = 1; selectedInvoice = null; payAmount = ""; payMethod = ""; error = null
+                            step = 1
+                            selectedInvoice = null
+                            payAmount = ""
+                            payMethod = ""
+                            error = null
                         }) { Text("Pay Another Invoice") }
                     }
                 }
@@ -426,8 +472,8 @@ private fun FlowStepper(
             val isActive = stepNum == currentStep
             val dotColor = when {
                 isCompleted -> FleetColors.Active
-                isActive    -> colors.primary
-                else        -> colors.border
+                isActive -> colors.primary
+                else -> colors.border
             }
             Surface(
                 shape = RoundedCornerShape(20.dp),

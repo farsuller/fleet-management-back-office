@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.domain.model.DashboardSnapshot

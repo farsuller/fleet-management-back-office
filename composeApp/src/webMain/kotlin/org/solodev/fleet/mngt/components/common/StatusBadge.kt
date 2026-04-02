@@ -1,10 +1,7 @@
 package org.solodev.fleet.mngt.components.common
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -25,42 +22,42 @@ enum class VehicleStatus {
     RENTED,
     MAINTENANCE,
     RETIRED,
-    RESERVED
+    RESERVED,
 }
 
 enum class RentalStatus {
     RESERVED,
     ACTIVE,
     COMPLETED,
-    CANCELLED
+    CANCELLED,
 }
 
 enum class MaintenanceStatus {
     SCHEDULED,
     IN_PROGRESS,
     COMPLETED,
-    CANCELLED
+    CANCELLED,
 }
 
 enum class DriverStatus {
     ACTIVE,
     AVAILABLE,
-    DISABLED
+    DISABLED,
 }
 
 enum class Priority {
     LOW,
     NORMAL,
     HIGH,
-    URGENT
+    URGENT,
 }
 
 // ─── Resolved appearance ──────────────────────────────────────────────────────
 
 private data class BadgeStyle(
-        val label: String,
-        val background: @Composable () -> Color,
-        val foreground: @Composable () -> Color = { Color.White },
+    val label: String,
+    val background: @Composable () -> Color,
+    val foreground: @Composable () -> Color = { Color.White },
 )
 
 @Composable
@@ -129,9 +126,9 @@ private fun BadgePill(style: BadgeStyle, modifier: Modifier = Modifier) {
     ) {
         Box(
             modifier =
-                Modifier.clip(RoundedCornerShape(9999.dp))
-                    .background(bg.copy(alpha = 0.20f))
-                    .padding(horizontal = 14.dp, vertical = 6.dp),
+            Modifier.clip(RoundedCornerShape(9999.dp))
+                .background(bg.copy(alpha = 0.20f))
+                .padding(horizontal = 14.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -148,21 +145,16 @@ private fun BadgePill(style: BadgeStyle, modifier: Modifier = Modifier) {
 // ─── Public composables ───────────────────────────────────────────────────────
 
 @Composable
-fun VehicleStatusBadge(status: VehicleStatus, modifier: Modifier = Modifier) =
-        BadgePill(vehicleStyle(status), modifier)
+fun VehicleStatusBadge(status: VehicleStatus, modifier: Modifier = Modifier) = BadgePill(vehicleStyle(status), modifier)
 
 @Composable
-fun RentalStatusBadge(status: RentalStatus, modifier: Modifier = Modifier) =
-        BadgePill(rentalStyle(status), modifier)
+fun RentalStatusBadge(status: RentalStatus, modifier: Modifier = Modifier) = BadgePill(rentalStyle(status), modifier)
 
 @Composable
-fun MaintenanceStatusBadge(status: MaintenanceStatus, modifier: Modifier = Modifier) =
-        BadgePill(maintenanceStyle(status), modifier)
+fun MaintenanceStatusBadge(status: MaintenanceStatus, modifier: Modifier = Modifier) = BadgePill(maintenanceStyle(status), modifier)
 
 @Composable
-fun DriverStatusBadge(status: DriverStatus, modifier: Modifier = Modifier) =
-        BadgePill(driverStyle(status), modifier)
+fun DriverStatusBadge(status: DriverStatus, modifier: Modifier = Modifier) = BadgePill(driverStyle(status), modifier)
 
 @Composable
-fun PriorityBadge(priority: Priority, modifier: Modifier = Modifier) =
-        BadgePill(priorityStyle(priority), modifier)
+fun PriorityBadge(priority: Priority, modifier: Modifier = Modifier) = BadgePill(priorityStyle(priority), modifier)

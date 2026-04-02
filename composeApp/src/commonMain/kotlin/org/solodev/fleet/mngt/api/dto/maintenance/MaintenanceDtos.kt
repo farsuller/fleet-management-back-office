@@ -6,47 +6,92 @@ import org.solodev.fleet.mngt.api.serializers.FlexibleEpochMsSerializer
 
 @Serializable
 enum class MaintenanceStatus {
-    @SerialName("SCHEDULED")   SCHEDULED,
-    @SerialName("IN_PROGRESS") IN_PROGRESS,
-    @SerialName("COMPLETED")   COMPLETED,
-    @SerialName("CANCELLED")   CANCELLED,
-    @SerialName("UNKNOWN")     UNKNOWN,
+    @SerialName("SCHEDULED")
+    SCHEDULED,
+
+    @SerialName("IN_PROGRESS")
+    IN_PROGRESS,
+
+    @SerialName("COMPLETED")
+    COMPLETED,
+
+    @SerialName("CANCELLED")
+    CANCELLED,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class MaintenancePriority {
-    @SerialName("LOW")    LOW,
-    @SerialName("NORMAL") NORMAL,
-    @SerialName("HIGH")   HIGH,
-    @SerialName("URGENT") URGENT,
-    @SerialName("UNKNOWN") UNKNOWN,
+    @SerialName("LOW")
+    LOW,
+
+    @SerialName("NORMAL")
+    NORMAL,
+
+    @SerialName("HIGH")
+    HIGH,
+
+    @SerialName("URGENT")
+    URGENT,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class MaintenanceType {
-    @SerialName("PREVENTIVE")  PREVENTIVE,
-    @SerialName("CORRECTIVE")  CORRECTIVE,
-    @SerialName("INSPECTION")  INSPECTION,
-    @SerialName("EMERGENCY")   EMERGENCY,
-    @SerialName("UNKNOWN")     UNKNOWN,
+    @SerialName("PREVENTIVE")
+    PREVENTIVE,
+
+    @SerialName("CORRECTIVE")
+    CORRECTIVE,
+
+    @SerialName("INSPECTION")
+    INSPECTION,
+
+    @SerialName("EMERGENCY")
+    EMERGENCY,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class IncidentSeverity {
-    @SerialName("LOW")      LOW,
-    @SerialName("MEDIUM")   MEDIUM,
-    @SerialName("HIGH")     HIGH,
-    @SerialName("CRITICAL") CRITICAL,
-    @SerialName("UNKNOWN")  UNKNOWN,
+    @SerialName("LOW")
+    LOW,
+
+    @SerialName("MEDIUM")
+    MEDIUM,
+
+    @SerialName("HIGH")
+    HIGH,
+
+    @SerialName("CRITICAL")
+    CRITICAL,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
 enum class IncidentStatus {
-    @SerialName("REPORTED")       REPORTED,
-    @SerialName("IN_MAINTENANCE") IN_MAINTENANCE,
-    @SerialName("RESOLVED")       RESOLVED,
-    @SerialName("DISMISSED")      DISMISSED,
-    @SerialName("UNKNOWN")        UNKNOWN,
+    @SerialName("REPORTED")
+    REPORTED,
+
+    @SerialName("IN_MAINTENANCE")
+    IN_MAINTENANCE,
+
+    @SerialName("RESOLVED")
+    RESOLVED,
+
+    @SerialName("DISMISSED")
+    DISMISSED,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable
@@ -57,7 +102,7 @@ data class VehicleUsageHistoryDto(
     val endDate: Long,
     val startOdometer: Int? = null,
     val endOdometer: Int? = null,
-    val status: String
+    val status: String,
 )
 
 @Serializable

@@ -3,14 +3,44 @@ package org.solodev.fleet.mngt.features.rentals
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -48,7 +78,7 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
         visible = rentalId != null,
         enter = slideInHorizontally(initialOffsetX = { it }),
         exit = slideOutHorizontally(targetOffsetX = { it }),
-        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp)
+        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp),
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -60,19 +90,19 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                 Row(
                     Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         "Rental Details",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = colors.onBackground
+                        color = colors.onBackground,
                     )
                     IconButton(onClick = onClose) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = colors.onBackground.copy(alpha = 0.6f)
+                            tint = colors.onBackground.copy(alpha = 0.6f),
                         )
                     }
                 }
@@ -86,28 +116,28 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                         color = colors.cancelled.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp),
                         modifier =
-                            Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                .fillMaxWidth()
+                        Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth(),
                     ) {
                         Row(
                             Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 it,
                                 color = colors.cancelled,
                                 fontSize = 13.sp,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                             IconButton(
                                 onClick = { lastError = null },
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp),
                             ) {
                                 Icon(
                                     Icons.Default.Close,
                                     null,
                                     tint = colors.cancelled,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(16.dp),
                                 )
                             }
                         }
@@ -135,23 +165,23 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                     start = 16.dp,
                                     end = 8.dp,
                                     top = 16.dp,
-                                    bottom = 16.dp
+                                    bottom = 16.dp,
                                 ),
-                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                            verticalArrangement = Arrangement.spacedBy(20.dp),
                         ) {
                             // Summary header
                             Column {
                                 Text(
                                     "#${rental.rentalNumber ?: rental.id?.take(8)}",
                                     fontSize = 22.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
                                 )
                                 rental.customerName?.let {
                                     Text(it, fontSize = 16.sp, color = colors.text2)
                                 }
                                 Spacer(Modifier.height(8.dp))
                                 RentalStatusBadge(
-                                    (rental.status ?: RentalStatus.UNKNOWN).toUiStatus()
+                                    (rental.status ?: RentalStatus.UNKNOWN).toUiStatus(),
                                 )
                             }
 
@@ -166,13 +196,13 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                     Spacer(Modifier.width(8.dp))
                                     Text(
                                         "${rental.vehicleMake} ${rental.vehicleModel}",
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Medium,
                                     )
                                 }
                                 Text(
                                     rental.vehiclePlateNumber ?: "",
                                     color = colors.text2,
-                                    fontSize = 13.sp
+                                    fontSize = 13.sp,
                                 )
                             }
 
@@ -180,12 +210,12 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                 LabeledDetail(
                                     "Planned Start",
                                     formatDate(rental.startDate ?: 0L),
-                                    infoIcon
+                                    infoIcon,
                                 )
                                 LabeledDetail(
                                     "Planned End",
                                     formatDate(rental.endDate ?: 0L),
-                                    infoIcon
+                                    infoIcon,
                                 )
                                 rental.actualStartDate?.let {
                                     LabeledDetail("Actual Start", formatDate(it), infoIcon)
@@ -207,15 +237,15 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                     RentalStatus.RESERVED -> {
                                         Button(
                                             onClick = { vm.activateRental(rentalId) },
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth(),
                                         ) { Text("Activate Rental") }
                                         OutlinedButton(
                                             onClick = { vm.cancelRental(rentalId) },
                                             modifier = Modifier.fillMaxWidth(),
                                             colors =
-                                                ButtonDefaults.outlinedButtonColors(
-                                                    contentColor = colors.cancelled
-                                                )
+                                            ButtonDefaults.outlinedButtonColors(
+                                                contentColor = colors.cancelled,
+                                            ),
                                         ) { Text("Cancel Reservation") }
                                     }
 
@@ -225,9 +255,9 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                             onClick = { showCompleteDialog = true },
                                             modifier = Modifier.fillMaxWidth(),
                                             colors =
-                                                ButtonDefaults.buttonColors(
-                                                    containerColor = colors.available
-                                                )
+                                            ButtonDefaults.buttonColors(
+                                                containerColor = colors.available,
+                                            ),
                                         ) { Text("Complete Rental") }
 
                                         if (showCompleteDialog) {
@@ -236,7 +266,7 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                                 onConfirm = { km ->
                                                     vm.completeRental(rentalId, km)
                                                     showCompleteDialog = false
-                                                }
+                                                },
                                             )
                                         }
                                     }
@@ -245,7 +275,7 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
                                         if (rental.invoiceId != null) {
                                             Button(
                                                 onClick = { /* Navigate to Invoice */ },
-                                                modifier = Modifier.fillMaxWidth()
+                                                modifier = Modifier.fillMaxWidth(),
                                             ) { Text("View Invoice") }
                                         }
                                     }
@@ -267,7 +297,7 @@ fun RentalDetailPanel(rentalId: String?, onClose: () -> Unit) {
 private fun DetailSection(
     title: String,
     colors: org.solodev.fleet.mngt.theme.FleetExtendedColors,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -275,7 +305,7 @@ private fun DetailSection(
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = colors.text2,
-            letterSpacing = 1.sp
+            letterSpacing = 1.sp,
         )
         content()
         HorizontalDivider(Modifier.padding(top = 8.dp), color = colors.border.copy(alpha = 0.5f))
@@ -286,7 +316,7 @@ private fun DetailSection(
 private fun LabeledDetail(label: String, value: String, icon: Painter) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 2.dp)
+        modifier = Modifier.padding(vertical = 2.dp),
     ) {
         Icon(icon, null, modifier = Modifier.size(14.dp), tint = fleetColors.text2)
         Spacer(Modifier.width(8.dp))
@@ -309,32 +339,31 @@ fun CompleteRentalDialog(onDismiss: () -> Unit, onConfirm: (Long) -> Unit) {
                     value = km,
                     onValueChange = { if (it.all { c -> c.isDigit() }) km = it },
                     label = { Text("Final Odometer (km)") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         },
         confirmButton = {
             Button(
                 onClick = { onConfirm(km.toLongOrNull() ?: 0L) },
-                enabled = km.isNotEmpty()
+                enabled = km.isNotEmpty(),
             ) { Text("Complete") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
 
-private fun RentalStatus.toUiStatus() =
-    when (this) {
-        RentalStatus.RESERVED -> org.solodev.fleet.mngt.components.common.RentalStatus.RESERVED
-        RentalStatus.ACTIVE -> org.solodev.fleet.mngt.components.common.RentalStatus.ACTIVE
-        RentalStatus.COMPLETED ->
-            org.solodev.fleet.mngt.components.common.RentalStatus.COMPLETED
+private fun RentalStatus.toUiStatus() = when (this) {
+    RentalStatus.RESERVED -> org.solodev.fleet.mngt.components.common.RentalStatus.RESERVED
+    RentalStatus.ACTIVE -> org.solodev.fleet.mngt.components.common.RentalStatus.ACTIVE
+    RentalStatus.COMPLETED ->
+        org.solodev.fleet.mngt.components.common.RentalStatus.COMPLETED
 
-        RentalStatus.CANCELLED ->
-            org.solodev.fleet.mngt.components.common.RentalStatus.CANCELLED
+    RentalStatus.CANCELLED ->
+        org.solodev.fleet.mngt.components.common.RentalStatus.CANCELLED
 
-        RentalStatus.UNKNOWN -> org.solodev.fleet.mngt.components.common.RentalStatus.CANCELLED
-    }
+    RentalStatus.UNKNOWN -> org.solodev.fleet.mngt.components.common.RentalStatus.CANCELLED
+}
 
 private fun formatDate(epochMs: Long): String {
     if (epochMs == 0L) return "—"

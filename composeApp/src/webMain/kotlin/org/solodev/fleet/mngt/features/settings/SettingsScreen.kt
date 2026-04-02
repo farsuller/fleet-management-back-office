@@ -138,11 +138,11 @@ private fun ThemeToggleRow(themeState: ThemeState) {
             checked = isDark,
             onCheckedChange = { themeState.isDark = it },
             colors = SwitchDefaults.colors(
-                checkedThumbColor      = Color.White,
-                checkedTrackColor      = colors.primary,
-                uncheckedThumbColor    = Color.White,
-                uncheckedTrackColor    = colors.border,
-                uncheckedBorderColor   = colors.border,
+                checkedThumbColor = Color.White,
+                checkedTrackColor = colors.primary,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = colors.border,
+                uncheckedBorderColor = colors.border,
             ),
         )
     }

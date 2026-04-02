@@ -25,18 +25,15 @@ class CreateVehicleUseCase(private val repository: VehicleRepository) {
 }
 
 class UpdateVehicleUseCase(private val repository: VehicleRepository) {
-    suspend operator fun invoke(id: String, request: UpdateVehicleRequest) =
-        repository.updateVehicle(id, request)
+    suspend operator fun invoke(id: String, request: UpdateVehicleRequest) = repository.updateVehicle(id, request)
 }
 
 class UpdateVehicleStateUseCase(private val repository: VehicleRepository) {
-    suspend operator fun invoke(id: String, state: VehicleState) =
-        repository.updateVehicleState(id, state)
+    suspend operator fun invoke(id: String, state: VehicleState) = repository.updateVehicleState(id, state)
 }
 
 class UpdateOdometerUseCase(private val repository: VehicleRepository) {
-    suspend operator fun invoke(id: String, readingKm: Long) =
-        repository.updateOdometer(id, readingKm)
+    suspend operator fun invoke(id: String, readingKm: Long) = repository.updateOdometer(id, readingKm)
 }
 
 class DeleteVehicleUseCase(private val repository: VehicleRepository) {

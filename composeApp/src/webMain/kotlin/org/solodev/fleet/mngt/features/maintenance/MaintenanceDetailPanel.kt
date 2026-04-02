@@ -5,15 +5,54 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PriorityHigh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +67,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.solodev.fleet.mngt.api.dto.maintenance.*
+import org.solodev.fleet.mngt.api.dto.maintenance.IncidentSeverity
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
+import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
+import org.solodev.fleet.mngt.api.dto.maintenance.VehicleUsageHistoryDto
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
 import kotlin.time.Instant
@@ -53,12 +96,12 @@ fun MaintenanceDetailPanel(
         visible = jobId != null,
         enter = slideInHorizontally(initialOffsetX = { it }),
         exit = slideOutHorizontally(targetOffsetX = { it }),
-        modifier = Modifier.fillMaxHeight().width(450.dp)
+        modifier = Modifier.fillMaxHeight().width(450.dp),
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = colors.surface,
-            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp),
         ) {
             when (val state = detailState) {
                 is UiState.Loading -> {
@@ -73,7 +116,7 @@ fun MaintenanceDetailPanel(
                         job = job,
                         onClose = onClose,
                         onEdit = { onEdit(job) },
-                        vm = vm
+                        vm = vm,
                     )
                 }
 
@@ -81,7 +124,7 @@ fun MaintenanceDetailPanel(
                     Column(
                         Modifier.fillMaxSize().padding(32.dp),
                         verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Icon(Icons.Default.Warning, null, tint = colors.cancelled, modifier = Modifier.size(48.dp))
                         Spacer(Modifier.height(16.dp))
@@ -105,7 +148,7 @@ private fun MaintenanceDetailContent(
     job: MaintenanceJobDto,
     onClose: () -> Unit,
     onEdit: () -> Unit,
-    vm: MaintenanceViewModel
+    vm: MaintenanceViewModel,
 ) {
     val colors = fleetColors
     var showCompleteDialog by remember { mutableStateOf(false) }
@@ -115,31 +158,30 @@ private fun MaintenanceDetailContent(
         Row(
             Modifier.fillMaxWidth().padding(24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-
             StatusBadge(job.status ?: MaintenanceStatus.UNKNOWN)
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (job.status == MaintenanceStatus.SCHEDULED) {
                     IconButton(
                         modifier = Modifier.size(24.dp),
-                        onClick = onEdit)
-                    {
+                        onClick = onEdit,
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.edit_icon),
                             contentDescription = "Edit",
-                            tint = colors.primary
+                            tint = colors.primary,
                         )
                     }
                 }
                 IconButton(
-                    onClick = onClose
+                    onClick = onClose,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = colors.onBackground.copy(alpha = 0.6f)
+                        tint = colors.onBackground.copy(alpha = 0.6f),
                     )
                 }
             }
@@ -150,7 +192,7 @@ private fun MaintenanceDetailContent(
             modifier = Modifier.weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             // Vehicle Info Card
             VehicleInfoCard(job)
@@ -159,9 +201,13 @@ private fun MaintenanceDetailContent(
             Section("Maintenance Details") {
                 DetailItem(Icons.Default.Info, "Job Type", job.type?.name ?: "N/A")
                 DetailItem(Icons.Default.PriorityHigh, "Priority", job.priority?.name ?: "N/A")
-                DetailItem(Icons.Default.DateRange, "Scheduled Date", job.scheduledDate?.let {
-                    Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
-                } ?: "N/A")
+                DetailItem(
+                    Icons.Default.DateRange,
+                    "Scheduled Date",
+                    job.scheduledDate?.let {
+                        Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+                    } ?: "N/A",
+                )
                 DetailItem(Icons.Default.Description, "Description", job.description ?: "No description provided.")
             }
 
@@ -183,7 +229,7 @@ private fun MaintenanceDetailContent(
                         Icons.Default.ShoppingCart,
                         "Total Cost",
                         "₱${(job.laborCostPhp ?: 0) + (job.partsCostPhp ?: 0)}",
-                        isHighlight = true
+                        isHighlight = true,
                     )
                 }
             }
@@ -204,18 +250,18 @@ private fun MaintenanceDetailContent(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             tonalElevation = 2.dp,
-            border = BorderStroke(1.dp, colors.border.copy(alpha = 0.5f))
+            border = BorderStroke(1.dp, colors.border.copy(alpha = 0.5f)),
         ) {
             Row(
                 Modifier.padding(24.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 when (job.status) {
                     MaintenanceStatus.SCHEDULED -> {
                         Button(
                             onClick = { job.id?.let { vm.startJob(it) } },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
                         ) {
                             Text("Start Work")
                         }
@@ -223,7 +269,7 @@ private fun MaintenanceDetailContent(
                             onClick = { job.id?.let { vm.cancelJob(it) } },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.cancelled)
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.cancelled),
                         ) {
                             Text("Cancel")
                         }
@@ -233,7 +279,7 @@ private fun MaintenanceDetailContent(
                         Button(
                             onClick = { showCompleteDialog = true },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
                         ) {
                             Text("Mark as Completed")
                         }
@@ -251,7 +297,7 @@ private fun MaintenanceDetailContent(
             onConfirm = { labor, parts ->
                 job.id?.let { vm.completeJob(it, labor, parts) }
                 showCompleteDialog = false
-            }
+            },
         )
     }
 }
@@ -262,12 +308,12 @@ private fun VehicleInfoCard(job: MaintenanceJobDto) {
     Surface(
         color = colors.surfaceVariant.copy(alpha = 0.3f),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(48.dp).clip(CircleShape).background(colors.primary.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Default.DirectionsCar, null, tint = colors.primary)
             }
@@ -278,13 +324,13 @@ private fun VehicleInfoCard(job: MaintenanceJobDto) {
                     Text(
                         "${job.vehicleMake ?: ""} ${job.vehicleModel ?: ""}".trim(),
                         color = colors.onBackground.copy(alpha = 0.7f),
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
                     )
                 }
                 Text(
                     "V-ID: ${job.vehicleId?.take(8) ?: "N/A"}",
                     color = colors.onBackground.copy(alpha = 0.4f),
-                    fontSize = 11.sp
+                    fontSize = 11.sp,
                 )
             }
         }
@@ -307,9 +353,10 @@ private fun DetailItem(icon: ImageVector, label: String, value: String, isHighli
     val colors = fleetColors
     Row(verticalAlignment = Alignment.Top) {
         Icon(
-            imageVector = icon, null,
+            imageVector = icon,
+            null,
             tint = colors.onBackground.copy(alpha = 0.4f),
-            modifier = Modifier.padding(top = 2.dp).size(16.dp)
+            modifier = Modifier.padding(top = 2.dp).size(16.dp),
         )
         Spacer(Modifier.width(12.dp))
         Column {
@@ -318,7 +365,7 @@ private fun DetailItem(icon: ImageVector, label: String, value: String, isHighli
                 value,
                 fontSize = 14.sp,
                 fontWeight = if (isHighlight) FontWeight.Bold else FontWeight.Medium,
-                color = if (isHighlight) colors.primary else colors.onBackground
+                color = if (isHighlight) colors.primary else colors.onBackground,
             )
         }
     }
@@ -331,7 +378,7 @@ private fun IncidentItem(incident: VehicleIncidentDto) {
         color = colors.surfaceVariant.copy(alpha = 0.2f),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-        border = BorderStroke(1.dp, colors.border.copy(alpha = 0.2f))
+        border = BorderStroke(1.dp, colors.border.copy(alpha = 0.2f)),
     ) {
         Column(Modifier.padding(12.dp)) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
@@ -347,7 +394,7 @@ private fun IncidentItem(incident: VehicleIncidentDto) {
                     } ?: "N/A"
                 }",
                 fontSize = 10.sp,
-                color = colors.onBackground.copy(alpha = 0.5f)
+                color = colors.onBackground.copy(alpha = 0.5f),
             )
         }
     }
@@ -369,7 +416,7 @@ private fun StatusBadge(status: MaintenanceStatus) {
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
             color = textColor,
             fontWeight = FontWeight.Bold,
-            fontSize = 12.sp
+            fontSize = 12.sp,
         )
     }
 }
@@ -389,7 +436,7 @@ private fun SeverityBadge(severity: IncidentSeverity) {
             color = color,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
         )
     }
 }
@@ -407,13 +454,13 @@ private fun CompleteMaintenanceDialog(onDismiss: () -> Unit, onConfirm: (Long, L
                     labor,
                     { labor = it },
                     label = { Text("Labor Cost (PHP)") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     parts,
                     { parts = it },
                     label = { Text("Parts Cost (PHP)") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         },
@@ -422,7 +469,7 @@ private fun CompleteMaintenanceDialog(onDismiss: () -> Unit, onConfirm: (Long, L
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
+        },
     )
 }
 
@@ -433,21 +480,21 @@ private fun UsageHistoryItem(history: VehicleUsageHistoryDto) {
         color = colors.surfaceVariant.copy(alpha = 0.1f),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-        border = BorderStroke(1.dp, colors.border.copy(alpha = 0.1f))
+        border = BorderStroke(1.dp, colors.border.copy(alpha = 0.1f)),
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text(history.customerName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Surface(
                     color = colors.primary.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(4.dp)
+                    shape = RoundedCornerShape(4.dp),
                 ) {
                     Text(
                         history.status,
                         color = colors.primary,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
             }
@@ -459,7 +506,7 @@ private fun UsageHistoryItem(history: VehicleUsageHistoryDto) {
                     Icons.Default.DateRange,
                     null,
                     tint = colors.onBackground.copy(alpha = 0.4f),
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(14.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 val start = Instant.fromEpochMilliseconds(history.startDate)
@@ -476,13 +523,13 @@ private fun UsageHistoryItem(history: VehicleUsageHistoryDto) {
                         Icons.Default.Speed,
                         null,
                         tint = colors.onBackground.copy(alpha = 0.4f),
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "Odometer: ${history.startOdometer ?: "?"} km → ${history.endOdometer ?: "?"} km",
                         fontSize = 12.sp,
-                        color = colors.onBackground.copy(alpha = 0.6f)
+                        color = colors.onBackground.copy(alpha = 0.6f),
                     )
                 }
             }

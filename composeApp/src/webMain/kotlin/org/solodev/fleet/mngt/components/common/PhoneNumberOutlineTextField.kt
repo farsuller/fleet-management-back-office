@@ -1,6 +1,5 @@
 package org.solodev.fleet.mngt.components.common
 
-
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -14,7 +13,7 @@ fun PhoneNumberOutlinedTextField(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
 ) {
     val colors = fleetColors
 
@@ -35,6 +34,6 @@ fun PhoneNumberOutlinedTextField(
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         placeholder = { Text("9xx xxx xxxx") },
-        singleLine = true
+        singleLine = true,
     )
 }

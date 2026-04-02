@@ -6,12 +6,23 @@ import org.solodev.fleet.mngt.api.serializers.FlexibleEpochMsSerializer
 
 @Serializable
 enum class VehicleState {
-    @SerialName("AVAILABLE") AVAILABLE,
-    @SerialName("RENTED")    RENTED,
-    @SerialName("MAINTENANCE") MAINTENANCE,
-    @SerialName("RETIRED")   RETIRED,
-    @SerialName("RESERVED")  RESERVED,
-    @SerialName("UNKNOWN")   UNKNOWN,
+    @SerialName("AVAILABLE")
+    AVAILABLE,
+
+    @SerialName("RENTED")
+    RENTED,
+
+    @SerialName("MAINTENANCE")
+    MAINTENANCE,
+
+    @SerialName("RETIRED")
+    RETIRED,
+
+    @SerialName("RESERVED")
+    RESERVED,
+
+    @SerialName("UNKNOWN")
+    UNKNOWN,
 }
 
 @Serializable

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,16 +45,16 @@ import org.solodev.fleet.mngt.theme.fleetColors
 
 @Composable
 fun <T> PaginatedTable(
-    headers:       List<String>,
-    items:         List<T>,
-    rowContent:    @Composable RowScope.(item: T, index: Int) -> Unit,
-    modifier:      Modifier = Modifier,
-    onRowClick:    ((index: Int) -> Unit)? = null,
-    isLoading:     Boolean = false,
-    emptyMessage:  String = "No records found.",
-    emptyContent:  (@Composable () -> Unit)? = null,
-    filterSlot:    (@Composable () -> Unit)? = null,
-    pageSize:      Int = 20,
+    headers: List<String>,
+    items: List<T>,
+    rowContent: @Composable RowScope.(item: T, index: Int) -> Unit,
+    modifier: Modifier = Modifier,
+    onRowClick: ((index: Int) -> Unit)? = null,
+    isLoading: Boolean = false,
+    emptyMessage: String = "No records found.",
+    emptyContent: (@Composable () -> Unit)? = null,
+    filterSlot: (@Composable () -> Unit)? = null,
+    pageSize: Int = 20,
 ) {
     val colors = fleetColors
 
@@ -63,14 +62,14 @@ fun <T> PaginatedTable(
     LaunchedEffect(items.size) { currentPage = 0 }
 
     val totalPages = maxOf(1, (items.size + pageSize - 1) / pageSize)
-    val pageItems  = items.drop(currentPage * pageSize).take(pageSize)
-    val fromIdx    = if (items.isEmpty()) 0 else currentPage * pageSize + 1
-    val toIdx      = minOf(currentPage * pageSize + pageItems.size, items.size)
+    val pageItems = items.drop(currentPage * pageSize).take(pageSize)
+    val fromIdx = if (items.isEmpty()) 0 else currentPage * pageSize + 1
+    val toIdx = minOf(currentPage * pageSize + pageItems.size, items.size)
 
     Surface(
-        color    = colors.background,
-        border   = BorderStroke(1.dp, colors.border),
-        shape    = RoundedCornerShape(12.dp),
+        color = colors.background,
+        border = BorderStroke(1.dp, colors.border),
+        shape = RoundedCornerShape(12.dp),
         modifier = modifier,
     ) {
         Column(Modifier.fillMaxSize()) {
@@ -89,12 +88,12 @@ fun <T> PaginatedTable(
             ) {
                 headers.forEach { header ->
                     Text(
-                        text       = header,
-                        modifier   = Modifier.weight(1f),
-                        fontSize   = 13.sp,
-                        style      = MaterialTheme.typography.labelSmall,
+                        text = header,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 13.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color      = colors.text2,
+                        color = colors.text2,
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -111,7 +110,7 @@ fun <T> PaginatedTable(
                     } else {
                         EmptyState(
                             title = "No results found",
-                            description = emptyMessage
+                            description = emptyMessage,
                         )
                     }
                 }
@@ -125,9 +124,11 @@ fun <T> PaginatedTable(
                             .height(FleetSpacing.tableRowHeight)
                             .background(if (hovered && onRowClick != null) colors.surface else Color.Transparent)
                             .then(
-                                if (onRowClick != null)
+                                if (onRowClick != null) {
                                     Modifier.clickable { onRowClick(globalIdx) }
-                                else Modifier
+                                } else {
+                                    Modifier
+                                },
                             )
                             .pointerInput(Unit) {
                                 awaitPointerEventScope {
@@ -135,7 +136,7 @@ fun <T> PaginatedTable(
                                         val event = awaitPointerEvent()
                                         when (event.type) {
                                             PointerEventType.Enter -> hovered = true
-                                            PointerEventType.Exit  -> hovered = false
+                                            PointerEventType.Exit -> hovered = false
                                             else -> {}
                                         }
                                     }
@@ -155,21 +156,21 @@ fun <T> PaginatedTable(
             // Footer
             HorizontalDivider(color = colors.border)
             Row(
-                modifier              = Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = FleetSpacing.md, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text     = if (items.isEmpty()) "No results" else "Showing $fromIdx–$toIdx of ${items.size} results",
-                    color    = colors.text2,
+                    text = if (items.isEmpty()) "No results" else "Showing $fromIdx–$toIdx of ${items.size} results",
+                    color = colors.text2,
                     fontSize = 13.sp,
                 )
                 if (totalPages > 1) {
                     PaginationBar(
-                        currentPage  = currentPage,
-                        totalPages   = totalPages,
+                        currentPage = currentPage,
+                        totalPages = totalPages,
                         onPageChange = { currentPage = it },
                     )
                 }
@@ -180,35 +181,35 @@ fun <T> PaginatedTable(
 
 @Composable
 private fun PaginationBar(
-    currentPage:  Int,
-    totalPages:   Int,
+    currentPage: Int,
+    totalPages: Int,
     onPageChange: (Int) -> Unit,
 ) {
     val colors = fleetColors
-    val pages  = buildPageList(currentPage, totalPages)
+    val pages = buildPageList(currentPage, totalPages)
 
     Row(
-        verticalAlignment     = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         IconButton(
-            onClick  = { onPageChange(currentPage - 1) },
-            enabled  = currentPage > 0,
+            onClick = { onPageChange(currentPage - 1) },
+            enabled = currentPage > 0,
             modifier = Modifier.size(32.dp),
         ) {
             Icon(
-                imageVector        = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "Previous page",
-                tint               = if (currentPage > 0) colors.text1 else colors.text2,
-                modifier           = Modifier.size(16.dp),
+                tint = if (currentPage > 0) colors.text1 else colors.text2,
+                modifier = Modifier.size(16.dp),
             )
         }
 
         pages.forEach { page ->
             if (page == null) {
                 Text(
-                    text     = "…",
-                    color    = colors.text2,
+                    text = "…",
+                    color = colors.text2,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(horizontal = 4.dp),
                 )
@@ -216,16 +217,16 @@ private fun PaginationBar(
                 val isSelected = page == currentPage
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier         = Modifier
+                    modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
                         .background(if (isSelected) colors.primary else Color.Transparent)
                         .clickable { onPageChange(page) },
                 ) {
                     Text(
-                        text       = "${page + 1}",
-                        color      = if (isSelected) colors.onPrimary else colors.text2,
-                        fontSize   = 12.sp,
+                        text = "${page + 1}",
+                        color = if (isSelected) colors.onPrimary else colors.text2,
+                        fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                     )
                 }
@@ -233,15 +234,15 @@ private fun PaginationBar(
         }
 
         IconButton(
-            onClick  = { onPageChange(currentPage + 1) },
-            enabled  = currentPage < totalPages - 1,
+            onClick = { onPageChange(currentPage + 1) },
+            enabled = currentPage < totalPages - 1,
             modifier = Modifier.size(32.dp),
         ) {
             Icon(
-                imageVector        = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Next page",
-                tint               = if (currentPage < totalPages - 1) colors.text1 else colors.text2,
-                modifier           = Modifier.size(16.dp),
+                tint = if (currentPage < totalPages - 1) colors.text1 else colors.text2,
+                modifier = Modifier.size(16.dp),
             )
         }
     }

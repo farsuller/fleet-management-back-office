@@ -1,8 +1,6 @@
 package org.solodev.fleet.mngt.theme
 
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -20,104 +18,109 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.jetbrains.compose.resources.Font
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
-import fleetmanagementbackoffice.composeapp.generated.resources.*
+import fleetmanagementbackoffice.composeapp.generated.resources.funneldisplay_bold
+import fleetmanagementbackoffice.composeapp.generated.resources.funneldisplay_extrabold
+import fleetmanagementbackoffice.composeapp.generated.resources.funneldisplay_light
+import fleetmanagementbackoffice.composeapp.generated.resources.funneldisplay_medium
+import fleetmanagementbackoffice.composeapp.generated.resources.funneldisplay_regular
+import fleetmanagementbackoffice.composeapp.generated.resources.funneldisplay_semibold
+import org.jetbrains.compose.resources.Font
 
 // ─── Color Tokens ─────────────────────────────────────────────────────────────
 
 object FleetColors {
     // Brand
-    val Primary     = Color(0xFFF97316)  // orange (dark mode)
-    val Secondary   = Color(0xFFFB923C)  // light orange
-    val Accent      = Color(0xFFFBBF24)  // amber
+    val Primary = Color(0xFFF97316) // orange (dark mode)
+    val Secondary = Color(0xFFFB923C) // light orange
+    val Accent = Color(0xFFFBBF24) // amber
 
     // Surface (dark)
-    val Surface     = Color(0xFF0D1117)
-    val Surface2    = Color(0xFF161B2C)
-    val Border      = Color(0xFF252D42)
+    val Surface = Color(0xFF0D1117)
+    val Surface2 = Color(0xFF161B2C)
+    val Border = Color(0xFF252D42)
 
     // Text (dark)
-    val Text1       = Color(0xFFE2E8F0)
-    val Text2       = Color(0xFF64748B)
+    val Text1 = Color(0xFFE2E8F0)
+    val Text2 = Color(0xFF64748B)
 
     // ── Light mode palette ───────────────────────────────────────────────────
-    val LightPrimary     = Color(0xFF116FDD)  // blue
-    val LightSecondary   = Color(0xFF3B8EF0)
-    val LightSurface     = Color(0xFFFFFFFF)
-    val LightSurface2    = Color(0xFFF1F5F9)
-    val LightBorder      = Color(0xFFE2E8F0)
-    val LightText1       = Color(0xFF0F172A)
-    val LightText2       = Color(0xFF64748B)
+    val LightPrimary = Color(0xFF116FDD) // blue
+    val LightSecondary = Color(0xFF3B8EF0)
+    val LightSurface = Color(0xFFFFFFFF)
+    val LightSurface2 = Color(0xFFF1F5F9)
+    val LightBorder = Color(0xFFE2E8F0)
+    val LightText1 = Color(0xFF0F172A)
+    val LightText2 = Color(0xFF64748B)
     val LightSurfaceVariant = Color(0xFFE8EEF6)
 
     // Status — Vehicle / Rental
-    val Available   = Color(0xFF22C55E)
-    val Rented      = Color(0xFF3B82F6)
+    val Available = Color(0xFF22C55E)
+    val Rented = Color(0xFF3B82F6)
     val Maintenance = Color(0xFFF59E0B)
 
-    val InProgress   = Color(0xFF22C55E)
-    val Retired     = Color(0xFF94A3B8)
-    val Reserved    = Color(0xFFEAB308)
-    val Active      = Color(0xFF22C55E)
-    val Completed   = Color(0xFF94A3B8)
-    val Cancelled   = Color(0xFFEF4444)
+    val InProgress = Color(0xFF22C55E)
+    val Retired = Color(0xFF94A3B8)
+    val Reserved = Color(0xFFEAB308)
+    val Active = Color(0xFF22C55E)
+    val Completed = Color(0xFF94A3B8)
+    val Cancelled = Color(0xFFEF4444)
 
     // Priority
-    val PriorityLow    = Color(0xFF94A3B8)
+    val PriorityLow = Color(0xFF94A3B8)
     val PriorityNormal = Color(0xFF3B82F6)
-    val PriorityHigh   = Color(0xFFF97316)
+    val PriorityHigh = Color(0xFFF97316)
     val PriorityUrgent = Color(0xFFEF4444)
 
     // Fleet Map
-    val MapBg      = Color(0xFF0F172A)
-    val MapRoute   = Color(0xFF334155)
+    val MapBg = Color(0xFF0F172A)
+    val MapRoute = Color(0xFF334155)
     val MapConnect = Color(0xFF22C55E)
     val MapOffline = Color(0xFFEF4444)
 
     // Semantic aliases
-    val Error   = Cancelled
+    val Error = Cancelled
     val Warning = Accent
     val Success = Available
-    val Info    = Color(0xFF3B82F6)
+    val Info = Color(0xFF3B82F6)
 }
 
 // ─── Color Schemes ────────────────────────────────────────────────────────────
 
 private val FleetDarkColorScheme = darkColorScheme(
-    primary          = FleetColors.Primary,
-    onPrimary        = Color.White,
+    primary = FleetColors.Primary,
+    onPrimary = Color.White,
     primaryContainer = Color(0xFF431407),
-    secondary        = FleetColors.Secondary,
-    onSecondary      = Color.White,
-    tertiary         = FleetColors.Accent,
-    background       = FleetColors.Surface,
-    surface          = FleetColors.Surface2,
-    surfaceVariant   = Color(0xFF1C2436),
-    onBackground     = FleetColors.Text1,
-    onSurface        = FleetColors.Text1,
+    secondary = FleetColors.Secondary,
+    onSecondary = Color.White,
+    tertiary = FleetColors.Accent,
+    background = FleetColors.Surface,
+    surface = FleetColors.Surface2,
+    surfaceVariant = Color(0xFF1C2436),
+    onBackground = FleetColors.Text1,
+    onSurface = FleetColors.Text1,
     onSurfaceVariant = FleetColors.Text2,
-    outline          = FleetColors.Border,
-    error            = FleetColors.Error,
-    onError          = Color.White,
+    outline = FleetColors.Border,
+    error = FleetColors.Error,
+    onError = Color.White,
 )
 
 private val FleetLightColorScheme = lightColorScheme(
-    primary          = FleetColors.LightPrimary,
-    onPrimary        = Color.White,
+    primary = FleetColors.LightPrimary,
+    onPrimary = Color.White,
     primaryContainer = Color(0xFFDBEAFB),
-    secondary        = FleetColors.LightSecondary,
-    onSecondary      = Color.White,
-    tertiary         = FleetColors.Accent,
-    background       = FleetColors.LightSurface,
-    surface          = FleetColors.LightSurface2,
-    surfaceVariant   = FleetColors.LightSurfaceVariant,
-    onBackground     = FleetColors.LightText1,
-    onSurface        = FleetColors.LightText1,
+    secondary = FleetColors.LightSecondary,
+    onSecondary = Color.White,
+    tertiary = FleetColors.Accent,
+    background = FleetColors.LightSurface,
+    surface = FleetColors.LightSurface2,
+    surfaceVariant = FleetColors.LightSurfaceVariant,
+    onBackground = FleetColors.LightText1,
+    onSurface = FleetColors.LightText1,
     onSurfaceVariant = FleetColors.LightText2,
-    outline          = FleetColors.LightBorder,
-    error            = FleetColors.Error,
-    onError          = Color.White,
+    outline = FleetColors.LightBorder,
+    error = FleetColors.Error,
+    onError = Color.White,
 )
 
 // ─── Typography ───────────────────────────────────────────────────────────────
@@ -139,49 +142,49 @@ fun fleetTypography() = Typography(
     displayLarge = TextStyle(
         fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.ExtraBold,
-        fontSize   = 36.sp,
+        fontSize = 36.sp,
         lineHeight = 44.sp,
     ),
     headlineLarge = TextStyle(
         fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.Bold,
-        fontSize   = 32.sp,
+        fontSize = 32.sp,
         lineHeight = 38.4.sp,
     ),
     headlineMedium = TextStyle(
         fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.SemiBold,
-        fontSize   = 24.sp,
+        fontSize = 24.sp,
         lineHeight = 31.2.sp,
     ),
     headlineSmall = TextStyle(
         fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.SemiBold,
-        fontSize   = 18.sp,
+        fontSize = 18.sp,
         lineHeight = 25.2.sp,
     ),
     bodyLarge = TextStyle(
         fontFamily = FunnelDisplayFamily(),
         fontWeight = FontWeight.Normal,
-        fontSize   = 14.sp,
+        fontSize = 14.sp,
         lineHeight = 21.sp,
     ),
     bodyMedium = TextStyle(
         fontFamily = InterFamily,
         fontWeight = FontWeight.Normal,
-        fontSize   = 14.sp,
+        fontSize = 14.sp,
         lineHeight = 21.sp,
     ),
     bodySmall = TextStyle(
         fontFamily = InterFamily,
         fontWeight = FontWeight.Normal,
-        fontSize   = 12.sp,
+        fontSize = 12.sp,
         lineHeight = 16.8.sp,
     ),
     labelSmall = TextStyle(
         fontFamily = InterFamily,
         fontWeight = FontWeight.Medium,
-        fontSize   = 11.sp,
+        fontSize = 11.sp,
         lineHeight = 11.sp,
     ),
 )
@@ -189,20 +192,20 @@ fun fleetTypography() = Typography(
 // ─── Spacing / Shape tokens ───────────────────────────────────────────────────
 
 object FleetSpacing {
-    val unit: Dp      = 8.dp
-    val xs: Dp        = 4.dp
-    val sm: Dp        = 8.dp
-    val md: Dp        = 16.dp
-    val lg: Dp        = 24.dp
-    val xl: Dp        = 32.dp
+    val unit: Dp = 8.dp
+    val xs: Dp = 4.dp
+    val sm: Dp = 8.dp
+    val md: Dp = 16.dp
+    val lg: Dp = 24.dp
+    val xl: Dp = 32.dp
 
-    val cardPaddingSm: Dp   = 16.dp
-    val cardPaddingLg: Dp   = 24.dp
-    val bentoGap: Dp        = 16.dp
-    val sidebarWidth: Dp    = 240.dp
-    val headerHeight: Dp    = 56.dp
-    val tableRowHeight: Dp  = 44.dp
-    val cardRadius: Dp      = 12.dp
+    val cardPaddingSm: Dp = 16.dp
+    val cardPaddingLg: Dp = 24.dp
+    val bentoGap: Dp = 16.dp
+    val sidebarWidth: Dp = 240.dp
+    val headerHeight: Dp = 56.dp
+    val tableRowHeight: Dp = 44.dp
+    val cardRadius: Dp = 12.dp
 }
 
 // ─── Theme state ──────────────────────────────────────────────────────────────
@@ -216,138 +219,158 @@ val LocalThemeState = staticCompositionLocalOf { ThemeState() }
 // ─── Extra tokens delivered via CompositionLocal ──────────────────────────────
 
 data class FleetExtendedColors(
-    val available:      Color,
-    val rented:         Color,
-    val maintenance:    Color,
-    val retired:        Color,
-    val reserved:       Color,
-    val active:         Color,
-    val inProgress:    Color,
-    val completed:      Color,
-    val cancelled:      Color,
-    val priorityLow:    Color,
+    val available: Color,
+    val rented: Color,
+    val maintenance: Color,
+    val retired: Color,
+    val reserved: Color,
+    val active: Color,
+    val inProgress: Color,
+    val completed: Color,
+    val cancelled: Color,
+    val priorityLow: Color,
     val priorityNormal: Color,
-    val priorityHigh:   Color,
+    val priorityHigh: Color,
     val priorityUrgent: Color,
-    val mapBg:          Color,
-    val mapRoute:       Color,
-    val mapConnect:     Color,
-    val mapOffline:     Color,
-    val surface2:       Color,
-    val border:         Color,
-    val text1:          Color,
-    val text2:          Color,
-    val background:     Color,
-    val surface:        Color,
-    val primary:        Color,
-    val onPrimary:      Color,
-    val onBackground:   Color,
-    val onSurface:      Color,
-    val overdue:        Color,
-    val paid:           Color,
+    val mapBg: Color,
+    val mapRoute: Color,
+    val mapConnect: Color,
+    val mapOffline: Color,
+    val surface2: Color,
+    val border: Color,
+    val text1: Color,
+    val text2: Color,
+    val background: Color,
+    val surface: Color,
+    val primary: Color,
+    val onPrimary: Color,
+    val onBackground: Color,
+    val onSurface: Color,
+    val overdue: Color,
+    val paid: Color,
     val surfaceVariant: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val divider: Color,
+    val success: Color,
+    val warning: Color,
 )
 
 val LocalFleetColors = staticCompositionLocalOf {
     FleetExtendedColors(
-        available      = FleetColors.Available,
-        rented         = FleetColors.Rented,
-        maintenance    = FleetColors.Maintenance,
-        retired        = FleetColors.Retired,
-        reserved       = FleetColors.Reserved,
-        active         = FleetColors.Active,
-        completed      = FleetColors.Completed,
-        cancelled      = FleetColors.Cancelled,
-        inProgress     = FleetColors.InProgress,
-        priorityLow    = FleetColors.PriorityLow,
+        available = FleetColors.Available,
+        rented = FleetColors.Rented,
+        maintenance = FleetColors.Maintenance,
+        retired = FleetColors.Retired,
+        reserved = FleetColors.Reserved,
+        active = FleetColors.Active,
+        completed = FleetColors.Completed,
+        cancelled = FleetColors.Cancelled,
+        inProgress = FleetColors.InProgress,
+        priorityLow = FleetColors.PriorityLow,
         priorityNormal = FleetColors.PriorityNormal,
-        priorityHigh   = FleetColors.PriorityHigh,
+        priorityHigh = FleetColors.PriorityHigh,
         priorityUrgent = FleetColors.PriorityUrgent,
-        mapBg          = FleetColors.MapBg,
-        mapRoute       = FleetColors.MapRoute,
-        mapConnect     = FleetColors.MapConnect,
-        mapOffline     = FleetColors.MapOffline,
-        surface2       = FleetColors.Surface2,
-        border         = FleetColors.Border,
-        text1          = FleetColors.Text1,
-        text2          = FleetColors.Text2,
-        background     = FleetColors.Surface,
-        surface        = FleetColors.Surface2,
-        primary        = FleetColors.Primary,
-        onPrimary      = Color.White,
-        onBackground   = FleetColors.Text1,
-        onSurface      = FleetColors.Text1,
-        overdue        = FleetColors.Cancelled,
-        paid           = FleetColors.Active,
+        mapBg = FleetColors.MapBg,
+        mapRoute = FleetColors.MapRoute,
+        mapConnect = FleetColors.MapConnect,
+        mapOffline = FleetColors.MapOffline,
+        surface2 = FleetColors.Surface2,
+        border = FleetColors.Border,
+        text1 = FleetColors.Text1,
+        text2 = FleetColors.Text2,
+        background = FleetColors.Surface,
+        surface = FleetColors.Surface2,
+        primary = FleetColors.Primary,
+        onPrimary = Color.White,
+        onBackground = FleetColors.Text1,
+        onSurface = FleetColors.Text1,
+        overdue = FleetColors.Cancelled,
+        paid = FleetColors.Active,
         surfaceVariant = Color(0xFF1C2436),
+        textPrimary = FleetColors.Text1,
+        textSecondary = FleetColors.Text2,
+        divider = FleetColors.Border,
+        success = FleetColors.Success,
+        warning = FleetColors.Warning,
     )
 }
 
 private fun buildExtendedColors(dark: Boolean) = if (dark) {
     FleetExtendedColors(
-        available      = FleetColors.Available,
-        rented         = FleetColors.Rented,
-        maintenance    = FleetColors.Maintenance,
-        retired        = FleetColors.Retired,
-        reserved       = FleetColors.Reserved,
-        active         = FleetColors.Active,
-        completed      = FleetColors.Completed,
-        cancelled      = FleetColors.Cancelled,
-        inProgress     = FleetColors.InProgress,
-        priorityLow    = FleetColors.PriorityLow,
+        available = FleetColors.Available,
+        rented = FleetColors.Rented,
+        maintenance = FleetColors.Maintenance,
+        retired = FleetColors.Retired,
+        reserved = FleetColors.Reserved,
+        active = FleetColors.Active,
+        completed = FleetColors.Completed,
+        cancelled = FleetColors.Cancelled,
+        inProgress = FleetColors.InProgress,
+        priorityLow = FleetColors.PriorityLow,
         priorityNormal = FleetColors.PriorityNormal,
-        priorityHigh   = FleetColors.PriorityHigh,
+        priorityHigh = FleetColors.PriorityHigh,
         priorityUrgent = FleetColors.PriorityUrgent,
-        mapBg          = FleetColors.MapBg,
-        mapRoute       = FleetColors.MapRoute,
-        mapConnect     = FleetColors.MapConnect,
-        mapOffline     = FleetColors.MapOffline,
-        surface2       = FleetColors.Surface2,
-        border         = FleetColors.Border,
-        text1          = FleetColors.Text1,
-        text2          = FleetColors.Text2,
-        background     = FleetColors.Surface,
-        surface        = FleetColors.Surface2,
-        primary        = FleetColors.Primary,
-        onPrimary      = Color.White,
-        onBackground   = FleetColors.Text1,
-        onSurface      = FleetColors.Text1,
-        overdue        = FleetColors.Cancelled,
-        paid           = FleetColors.Active,
+        mapBg = FleetColors.MapBg,
+        mapRoute = FleetColors.MapRoute,
+        mapConnect = FleetColors.MapConnect,
+        mapOffline = FleetColors.MapOffline,
+        surface2 = FleetColors.Surface2,
+        border = FleetColors.Border,
+        text1 = FleetColors.Text1,
+        text2 = FleetColors.Text2,
+        background = FleetColors.Surface,
+        surface = FleetColors.Surface2,
+        primary = FleetColors.Primary,
+        onPrimary = Color.White,
+        onBackground = FleetColors.Text1,
+        onSurface = FleetColors.Text1,
+        overdue = FleetColors.Cancelled,
+        paid = FleetColors.Active,
         surfaceVariant = Color(0xFF1C2436),
+        textPrimary = FleetColors.Text1,
+        textSecondary = FleetColors.Text2,
+        divider = FleetColors.Border,
+        success = FleetColors.Success,
+        warning = FleetColors.Warning,
     )
 } else {
     FleetExtendedColors(
-        available      = FleetColors.Available,
-        rented         = FleetColors.Rented,
-        maintenance    = FleetColors.Maintenance,
-        retired        = FleetColors.Retired,
-        reserved       = FleetColors.Reserved,
-        active         = FleetColors.Active,
-        completed      = FleetColors.Completed,
-        cancelled      = FleetColors.Cancelled,
-        inProgress     = FleetColors.InProgress,
-        priorityLow    = FleetColors.PriorityLow,
+        available = FleetColors.Available,
+        rented = FleetColors.Rented,
+        maintenance = FleetColors.Maintenance,
+        retired = FleetColors.Retired,
+        reserved = FleetColors.Reserved,
+        active = FleetColors.Active,
+        completed = FleetColors.Completed,
+        cancelled = FleetColors.Cancelled,
+        inProgress = FleetColors.InProgress,
+        priorityLow = FleetColors.PriorityLow,
         priorityNormal = FleetColors.PriorityNormal,
-        priorityHigh   = FleetColors.PriorityHigh,
+        priorityHigh = FleetColors.PriorityHigh,
         priorityUrgent = FleetColors.PriorityUrgent,
-        mapBg          = Color(0xFFE2E8F0),
-        mapRoute       = Color(0xFF94A3B8),
-        mapConnect     = FleetColors.Available,
-        mapOffline     = FleetColors.Cancelled,
-        surface2       = FleetColors.LightSurface2,
-        border         = FleetColors.LightBorder,
-        text1          = FleetColors.LightText1,
-        text2          = FleetColors.LightText2,
-        background     = FleetColors.LightSurface,
-        surface        = FleetColors.LightSurface2,
-        primary        = FleetColors.LightPrimary,
-        onPrimary      = Color.White,
-        onBackground   = FleetColors.LightText1,
-        onSurface      = FleetColors.LightText1,
-        overdue        = FleetColors.Cancelled,
-        paid           = FleetColors.Active,
+        mapBg = Color(0xFFE2E8F0),
+        mapRoute = Color(0xFF94A3B8),
+        mapConnect = FleetColors.Available,
+        mapOffline = FleetColors.Cancelled,
+        surface2 = FleetColors.LightSurface2,
+        border = FleetColors.LightBorder,
+        text1 = FleetColors.LightText1,
+        text2 = FleetColors.LightText2,
+        background = FleetColors.LightSurface,
+        surface = FleetColors.LightSurface2,
+        primary = FleetColors.LightPrimary,
+        onPrimary = Color.White,
+        onBackground = FleetColors.LightText1,
+        onSurface = FleetColors.LightText1,
+        overdue = FleetColors.Cancelled,
+        paid = FleetColors.Active,
         surfaceVariant = FleetColors.LightSurfaceVariant,
+        textPrimary = FleetColors.LightText1,
+        textSecondary = FleetColors.LightText2,
+        divider = FleetColors.LightBorder,
+        success = FleetColors.Success,
+        warning = FleetColors.Warning,
     )
 }
 
@@ -367,8 +390,8 @@ fun FleetTheme(
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography  = fleetTypography(),
-            content     = content,
+            typography = fleetTypography(),
+            content = content,
         )
     }
 }

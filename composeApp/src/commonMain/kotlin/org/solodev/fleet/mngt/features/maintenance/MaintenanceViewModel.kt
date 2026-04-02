@@ -6,11 +6,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import org.solodev.fleet.mngt.auth.AuthState
-import org.solodev.fleet.mngt.auth.AuthStatus
+import kotlinx.coroutines.launch
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.maintenance.CreateMaintenanceRequest
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
@@ -18,6 +16,8 @@ import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceType
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.domain.usecase.maintenance.CancelMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.maintenance.CompleteMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.maintenance.GetMaintenanceJobUseCase
@@ -58,7 +58,7 @@ class MaintenanceViewModel(
     val typeFilter: StateFlow<MaintenanceType?> = _typeFilter.asStateFlow()
 
     // ── Detail state ──────────────────────────────────────────────────────────
-    
+
     private val _selectedJobId = MutableStateFlow<String?>(null)
     val selectedJobId: StateFlow<String?> = _selectedJobId.asStateFlow()
 
@@ -208,7 +208,9 @@ class MaintenanceViewModel(
         }
     }
 
-    fun clearActionResult() { _actionResult.value = null }
+    fun clearActionResult() {
+        _actionResult.value = null
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 

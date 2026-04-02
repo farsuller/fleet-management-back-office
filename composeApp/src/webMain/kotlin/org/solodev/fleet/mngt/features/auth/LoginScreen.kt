@@ -13,12 +13,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,8 +52,8 @@ fun LoginScreen(router: AppRouter) {
     LaunchedEffect(loginState) {
         when (loginState) {
             is UiState.Success -> router.replace(Screen.Dashboard)
-            is UiState.Error  -> errorMessage = (loginState as UiState.Error).message
-            else              -> {}
+            is UiState.Error -> errorMessage = (loginState as UiState.Error).message
+            else -> {}
         }
     }
 
@@ -61,7 +61,7 @@ fun LoginScreen(router: AppRouter) {
         AlertDialog(
             onDismissRequest = { errorMessage = null },
             title = { Text("Login Failed", color = colors.onSurface) },
-            text  = { Text(errorMessage!!, color = colors.onSurface.copy(alpha = 0.8f)) },
+            text = { Text(errorMessage!!, color = colors.onSurface.copy(alpha = 0.8f)) },
             confirmButton = {
                 TextButton(onClick = { errorMessage = null }) {
                     Text("OK", color = colors.primary)
@@ -123,7 +123,6 @@ fun LoginScreen(router: AppRouter) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-
 
             Button(
                 onClick = vm::submit,

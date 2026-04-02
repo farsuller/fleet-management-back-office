@@ -28,44 +28,43 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.theme.FleetSpacing
 import org.solodev.fleet.mngt.theme.fleetColors
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 
 /** Data for a specific segment in the KPI progress bar. */
 data class KpiSegment(
     val weight: Float,
-    val color:  Color,
+    val color: Color,
 )
 
 /** Data for a legend item at the bottom of the KPI card. */
 data class KpiLegendItem(
-    val label:   String,
-    val color:   Color,
-    val icon:    Painter? = null,
+    val label: String,
+    val color: Color,
+    val icon: Painter? = null,
     val onClick: () -> Unit = {},
 )
-
 
 /**
  * Premium Bento-style KPI summary card.
  */
 @Composable
 fun KpiCard(
-    label:        String,
-    value:        String,
-    icon:         Any, // Accepts ImageVector or Painter
-    modifier:     Modifier = Modifier,
-    iconTint:     Color    = FleetColors.Primary,
-    trend:        String?  = null,
-    trendColor:   Color    = FleetColors.Available,
-    isLoading:    Boolean  = false,
-    segments:     List<KpiSegment> = emptyList(),
-    legend:       List<KpiLegendItem> = emptyList(),
+    label: String,
+    value: String,
+    icon: Any, // Accepts ImageVector or Painter
+    modifier: Modifier = Modifier,
+    iconTint: Color = FleetColors.Primary,
+    trend: String? = null,
+    trendColor: Color = FleetColors.Available,
+    isLoading: Boolean = false,
+    segments: List<KpiSegment> = emptyList(),
+    legend: List<KpiLegendItem> = emptyList(),
     onSeeAllClick: (() -> Unit)? = null,
 ) {
     val colors = fleetColors
@@ -76,10 +75,10 @@ fun KpiCard(
     }
 
     Card(
-        modifier  = modifier,
-        shape     = RoundedCornerShape(FleetSpacing.cardRadius),
-        colors    = CardDefaults.cardColors(containerColor = colors.surface),
-        border    = BorderStroke(1.dp, colors.border),
+        modifier = modifier,
+        shape = RoundedCornerShape(FleetSpacing.cardRadius),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        border = BorderStroke(1.dp, colors.border),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         if (isLoading) {
@@ -94,12 +93,12 @@ fun KpiCard(
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .padding(FleetSpacing.cardPaddingSm),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Top Row: Icon, Title & Value, See All
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // Icon chip
                     Box(
@@ -111,72 +110,72 @@ fun KpiCard(
                     ) {
                         iconPainter?.let {
                             Icon(
-                                painter        = it,
+                                painter = it,
                                 contentDescription = label,
-                                tint           = iconTint,
-                                modifier       = Modifier.size(24.dp),
+                                tint = iconTint,
+                                modifier = Modifier.size(24.dp),
                             )
                         }
-                    Box(Modifier.width(0.dp)) // Fallback if no icon
+                        Box(Modifier.width(0.dp)) // Fallback if no icon
                     }
-                    
+
                     Spacer(Modifier.width(16.dp))
-                    
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text       = label,
-                            style      = MaterialTheme.typography.bodySmall,
-                            color      = colors.text2,
+                            text = label,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.text2,
                             fontWeight = FontWeight.Medium,
                         )
                         Text(
-                            text       = value,
-                            style      = MaterialTheme.typography.headlineSmall,
-                            color      = colors.onSurface,
+                            text = value,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = colors.onSurface,
                             fontWeight = FontWeight.Bold,
                         )
                     }
-                    
+
                     onSeeAllClick?.let {
                         androidx.compose.material3.TextButton(onClick = it) {
                             Text(
                                 "See All",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = colors.text2,
-                                fontSize = 11.sp
+                                fontSize = 11.sp,
                             )
                         }
                     }
                 }
-                
+
                 // Trend Row (if any)
                 if (trend != null) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(trendColor.copy(alpha = 0.12f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
                         ) {
                             Text(
                                 text = trend,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = trendColor,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                         }
                         Text(
                             text = "since last week",
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.text2,
-                            fontSize = 11.sp
+                            fontSize = 11.sp,
                         )
                     }
                 }
-                
+
                 // Segmented Progress Bar
                 if (segments.isNotEmpty()) {
                     Row(
@@ -184,20 +183,20 @@ fun KpiCard(
                             .fillMaxWidth()
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
-                            .background(colors.border)
+                            .background(colors.border),
                     ) {
                         segments.forEach { segment ->
                             Box(Modifier.weight(segment.weight).fillMaxHeight().background(segment.color))
                         }
                     }
                 }
-                
+
                 // Legend
                 if (legend.isNotEmpty()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         legend.forEach { item ->
                             Row(
@@ -206,14 +205,14 @@ fun KpiCard(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
                                     .clickable { item.onClick() }
-                                    .padding(vertical = 2.dp)
+                                    .padding(vertical = 2.dp),
                             ) {
                                 if (item.icon != null) {
                                     Icon(
                                         painter = item.icon,
                                         contentDescription = null,
                                         modifier = Modifier.size(12.dp),
-                                        tint = item.color
+                                        tint = item.color,
                                     )
                                 } else {
                                     Box(Modifier.size(6.dp).background(item.color, CircleShape))
@@ -222,7 +221,7 @@ fun KpiCard(
                                     text = item.label,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = colors.text2,
-                                    fontSize = 10.sp
+                                    fontSize = 10.sp,
                                 )
                             }
                         }
@@ -236,15 +235,15 @@ fun KpiCard(
 /** Error state variant for KpiCard. */
 @Composable
 fun KpiCardError(
-    label:    String = "",
+    label: String = "",
     modifier: Modifier = Modifier,
 ) {
     val colors = fleetColors
     Card(
-        modifier  = modifier,
-        shape     = RoundedCornerShape(FleetSpacing.cardRadius),
-        colors    = CardDefaults.cardColors(containerColor = colors.surface),
-        border    = BorderStroke(1.dp, colors.border),
+        modifier = modifier,
+        shape = RoundedCornerShape(FleetSpacing.cardRadius),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        border = BorderStroke(1.dp, colors.border),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
@@ -252,23 +251,23 @@ fun KpiCardError(
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(FleetSpacing.cardPaddingSm),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text  = label,
+                text = label,
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.text2,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text  = "—",
+                    text = "—",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = colors.retired,
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text  = "Unavailable",
+                    text = "Unavailable",
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.cancelled,
                 )

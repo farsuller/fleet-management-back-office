@@ -82,13 +82,13 @@ data class EndShiftRequest(val notes: String? = null)
 
 @Serializable
 data class ShiftResponse(
-    val id:        String,
-    val driverId:  String,
+    val id: String,
+    val driverId: String,
     val vehicleId: String,
     @Serializable(with = FlexibleEpochMsSerializer::class) val startedAt: Long? = null,
-    @Serializable(with = FlexibleEpochMsSerializer::class) val endedAt:   Long? = null,
-    val notes:     String? = null,
-    val isActive:  Boolean,
+    @Serializable(with = FlexibleEpochMsSerializer::class) val endedAt: Long? = null,
+    val notes: String? = null,
+    val isActive: Boolean,
 )
 
 @Serializable

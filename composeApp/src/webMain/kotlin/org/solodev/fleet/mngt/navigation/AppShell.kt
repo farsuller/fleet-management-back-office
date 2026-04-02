@@ -14,25 +14,48 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthStatus
@@ -51,28 +74,46 @@ private data class NavSection(
 )
 
 private val navSections = listOf(
-    NavSection("MAIN", listOf(
-        NavItem("Dashboard", Icons.Default.Dashboard, Screen.Dashboard)
-    )),
-    NavSection("FLEET MANAGEMENT", listOf(
-        NavItem("Vehicles", Icons.Default.DirectionsCar, Screen.Vehicles),
-        NavItem("Drivers", Icons.Default.Badge, Screen.Drivers),
-        NavItem("Maintenance", Icons.Default.Build, Screen.Maintenance),
-        NavItem("Live Tracking", Icons.Default.LocationOn, Screen.LiveTracking)
-    )),
-    NavSection("BOOKINGS", listOf(
-        NavItem("Rentals", Icons.AutoMirrored.Filled.ReceiptLong, Screen.Rentals)
-    )),
-    NavSection("CUSTOMERS", listOf(
-        NavItem("Customers", Icons.Default.Group, Screen.Customers)
-    )),
-    NavSection("FINANCE & REPORTS", listOf(
-        NavItem("Accounting", Icons.Default.AccountBalance, Screen.Accounting),
-        NavItem("Reports", Icons.Default.Description, Screen.Reports)
-    )),
-    NavSection("SETTINGS", listOf(
-        NavItem("Settings", Icons.Default.Settings, Screen.Settings)
-    ))
+    NavSection(
+        "MAIN",
+        listOf(
+            NavItem("Dashboard", Icons.Default.Dashboard, Screen.Dashboard),
+        ),
+    ),
+    NavSection(
+        "FLEET MANAGEMENT",
+        listOf(
+            NavItem("Vehicles", Icons.Default.DirectionsCar, Screen.Vehicles),
+            NavItem("Drivers", Icons.Default.Badge, Screen.Drivers),
+            NavItem("Maintenance", Icons.Default.Build, Screen.Maintenance),
+            NavItem("Live Tracking", Icons.Default.LocationOn, Screen.LiveTracking),
+        ),
+    ),
+    NavSection(
+        "BOOKINGS",
+        listOf(
+            NavItem("Rentals", Icons.AutoMirrored.Filled.ReceiptLong, Screen.Rentals),
+        ),
+    ),
+    NavSection(
+        "CUSTOMERS",
+        listOf(
+            NavItem("Customers", Icons.Default.Group, Screen.Customers),
+        ),
+    ),
+    NavSection(
+        "FINANCE & REPORTS",
+        listOf(
+            NavItem("Accounting", Icons.Default.AccountBalance, Screen.Accounting),
+            NavItem("Reports", Icons.Default.Description, Screen.Reports),
+        ),
+    ),
+    NavSection(
+        "SETTINGS",
+        listOf(
+            NavItem("Settings", Icons.Default.Settings, Screen.Settings),
+        ),
+    ),
 )
 
 @Composable
@@ -122,13 +163,13 @@ fun AppShell(
                     color = colors.onBackground,
                 )
             }
-            
+
             Spacer(Modifier.height(10.dp))
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
             ) {
                 navSections.forEach { section ->
                     SidebarCategoryHeader(section.title)
@@ -137,8 +178,8 @@ fun AppShell(
                             item = item,
                             isSelected = when (item.screen) {
                                 is Screen.Dashboard -> router.currentScreen is Screen.Dashboard
-                                is Screen.Vehicles  -> router.currentScreen is Screen.Vehicles || router.currentScreen is Screen.VehicleDetail
-                                is Screen.Rentals   -> router.currentScreen is Screen.Rentals || router.currentScreen is Screen.RentalDetail
+                                is Screen.Vehicles -> router.currentScreen is Screen.Vehicles || router.currentScreen is Screen.VehicleDetail
+                                is Screen.Rentals -> router.currentScreen is Screen.Rentals || router.currentScreen is Screen.RentalDetail
                                 is Screen.Customers -> router.currentScreen is Screen.Customers || router.currentScreen is Screen.CustomerDetail
                                 is Screen.Maintenance -> router.currentScreen is Screen.Maintenance || router.currentScreen is Screen.MaintenanceDetail
                                 is Screen.Settings -> router.currentScreen is Screen.Settings
@@ -154,7 +195,7 @@ fun AppShell(
                     SidebarCategoryHeader("ADMIN")
                     SidebarItem(
                         item = NavItem("Users", Icons.Default.AdminPanelSettings, Screen.Users),
-                        isSelected = router.currentScreen is Screen.Users || router.currentScreen is Screen.UserDetail,
+                        isSelected = router.currentScreen is Screen.Users,
                         onClick = { router.navigate(Screen.Users) },
                     )
                     Spacer(Modifier.height(12.dp))
@@ -181,7 +222,7 @@ fun AppShell(
                 .fillMaxHeight()
                 .background(colors.background),
         ) {
-            TopBar(router = router)
+            TopBar(router = router, authStatus = authStatus)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -213,8 +254,11 @@ private fun SidebarItem(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
                 .background(
-                    if (isSelected) colors.primary.copy(alpha = 0.1f)
-                    else androidx.compose.ui.graphics.Color.Transparent
+                    if (isSelected) {
+                        colors.primary.copy(alpha = 0.1f)
+                    } else {
+                        androidx.compose.ui.graphics.Color.Transparent
+                    },
                 )
                 .clickable(onClick = onClick)
                 .padding(start = 20.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
@@ -253,7 +297,6 @@ private fun SidebarActionItem(
     icon: ImageVector,
     onClick: () -> Unit,
 ) {
-    val colors = fleetColors
     val tint = androidx.compose.ui.graphics.Color(0xFFEF4444)
     Box(
         modifier = Modifier
@@ -286,8 +329,10 @@ private fun SidebarActionItem(
 }
 
 @Composable
-private fun TopBar(router: AppRouter) {
+private fun TopBar(router: AppRouter, authStatus: AuthStatus) {
     val colors = fleetColors
+    val userSession = (authStatus as? AuthStatus.Authenticated)?.session
+
     Column {
         Row(
             modifier = Modifier
@@ -296,6 +341,7 @@ private fun TopBar(router: AppRouter) {
                 .background(colors.surface)
                 .padding(horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = screenTitle(router.currentScreen),
@@ -303,6 +349,10 @@ private fun TopBar(router: AppRouter) {
                 fontWeight = FontWeight.Medium,
                 color = colors.onSurface.copy(alpha = 0.45f),
             )
+
+            userSession?.let { session ->
+                UserAvatar(session)
+            }
         }
         Box(
             modifier = Modifier
@@ -310,6 +360,132 @@ private fun TopBar(router: AppRouter) {
                 .height(1.dp)
                 .background(colors.border),
         )
+    }
+}
+
+@Composable
+private fun UserAvatar(session: org.solodev.fleet.mngt.auth.UserSession) {
+    val colors = fleetColors
+    var isHovered by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var hoverJob by remember { mutableStateOf<Job?>(null) }
+    val firstLetter = session.fullName.firstOrNull()?.toString()?.uppercase() ?: "?"
+
+    // Larger hit area matching the header height (56dp)
+    Box(
+        modifier = Modifier
+            .fillMaxHeight()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        when (event.type) {
+                            PointerEventType.Enter -> {
+                                hoverJob?.cancel()
+                                isHovered = true
+                            }
+
+                            PointerEventType.Exit -> {
+                                hoverJob = scope.launch {
+                                    delay(200)
+                                    isHovered = false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(horizontal = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(colors.primary.copy(alpha = 0.1f))
+                .clickable { },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = firstLetter,
+                color = colors.primary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        if (isHovered) {
+            Popup(
+                alignment = Alignment.BottomEnd,
+                offset = IntOffset(x = 0, y = 4),
+                properties = PopupProperties(focusable = false),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    when (event.type) {
+                                        PointerEventType.Enter -> {
+                                            hoverJob?.cancel()
+                                            isHovered = true
+                                        }
+
+                                        PointerEventType.Exit -> {
+                                            hoverJob = scope.launch {
+                                                delay(200)
+                                                isHovered = false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(colors.surface)
+                        .padding(1.dp)
+                        .background(colors.border.copy(alpha = 0.1f), RoundedCornerShape(11.dp))
+                        .padding(1.dp)
+                        .background(colors.surface, RoundedCornerShape(10.dp))
+                        .padding(16.dp)
+                        .width(220.dp),
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(colors.primary.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = firstLetter,
+                                    color = colors.primary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = session.fullName,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.onSurface,
+                                )
+                                Text(
+                                    text = session.email,
+                                    fontSize = 12.sp,
+                                    color = colors.onSurface.copy(alpha = 0.5f),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -322,26 +498,33 @@ private fun SidebarCategoryHeader(title: String) {
         color = fleetColors.onBackground.copy(alpha = 0.4f),
         modifier = Modifier
             .padding(horizontal = 24.dp, vertical = 8.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     )
 }
 
 private fun screenTitle(screen: Screen): String = when (screen) {
-    is Screen.Dashboard      -> "Dashboard"
+    is Screen.Dashboard -> "Dashboard"
     is Screen.Vehicles,
-    is Screen.VehicleDetail  -> "Vehicles"
-    is Screen.Drivers        -> "Drivers"
+    is Screen.VehicleDetail,
+    -> "Vehicles"
+
+    is Screen.Drivers -> "Drivers"
     is Screen.Rentals,
-    is Screen.RentalDetail   -> "Rentals"
+    is Screen.RentalDetail,
+    -> "Rentals"
+
     is Screen.Customers,
-    is Screen.CustomerDetail -> "Customers"
+    is Screen.CustomerDetail,
+    -> "Customers"
+
     is Screen.Maintenance,
-    is Screen.MaintenanceDetail -> "Maintenance"
-    is Screen.Accounting     -> "Accounting"
-    is Screen.LiveTracking   -> "Live Tracking"
-    is Screen.Reports        -> "Reports"
-    is Screen.Users,
-    is Screen.UserDetail     -> "Users"
-    is Screen.Settings       -> "Settings"
-    else                     -> "Fleet Manager"
+    is Screen.MaintenanceDetail,
+    -> "Maintenance"
+
+    is Screen.Accounting -> "Accounting"
+    is Screen.LiveTracking -> "Live Tracking"
+    is Screen.Reports -> "Reports"
+    is Screen.Users -> "Users"
+    is Screen.Settings -> "Settings"
+    else -> "Fleet Manager"
 }

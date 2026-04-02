@@ -116,12 +116,12 @@ class FleetTrackingViewModel(
                         .filter { it.latitude != 0.0 || it.longitude != 0.0 }
                         .associate { summary ->
                             summary.vehicleId to VehicleRouteState(
-                                vehicleId     = summary.vehicleId,
-                                latitude      = summary.latitude,
-                                longitude     = summary.longitude,
-                                headingDeg    = summary.heading,
-                                speedKph      = summary.speed,
-                                routeId       = summary.routeId,
+                                vehicleId = summary.vehicleId,
+                                latitude = summary.latitude,
+                                longitude = summary.longitude,
+                                headingDeg = summary.heading,
+                                speedKph = summary.speed,
+                                routeId = summary.routeId,
                                 routeProgress = summary.progress,
                             )
                         }
@@ -141,9 +141,15 @@ class FleetTrackingViewModel(
 
     // ── Map controls ──────────────────────────────────────────────────────────
 
-    fun zoomIn()  { _mapState.value = _mapState.value.zoomedIn() }
-    fun zoomOut() { _mapState.value = _mapState.value.zoomedOut() }
-    fun pan(dx: Float, dy: Float) { _mapState.value = _mapState.value.panned(dx, dy) }
+    fun zoomIn() {
+        _mapState.value = _mapState.value.zoomedIn()
+    }
+    fun zoomOut() {
+        _mapState.value = _mapState.value.zoomedOut()
+    }
+    fun pan(dx: Float, dy: Float) {
+        _mapState.value = _mapState.value.panned(dx, dy)
+    }
 
     // ── Route import ──────────────────────────────────────────────────────────
 
@@ -162,7 +168,9 @@ class FleetTrackingViewModel(
         }
     }
 
-    fun clearImportResult() { _importResult.value = null }
+    fun clearImportResult() {
+        _importResult.value = null
+    }
 
     // ── Internal helpers ──────────────────────────────────────────────────────
 
@@ -173,14 +181,17 @@ class FleetTrackingViewModel(
         // Fit zoom using a reference viewport of 1024×640 dp so routes are fully visible
         // on first load without the user having to manually zoom in or out.
         val fitZ = MapProjection.fitZoom(
-            minLat = bbox.minLat, minLon = bbox.minLng,
-            maxLat = bbox.maxLat, maxLon = bbox.maxLng,
-            canvasW = 1024f, canvasH = 640f,
+            minLat = bbox.minLat,
+            minLon = bbox.minLng,
+            maxLat = bbox.maxLat,
+            maxLon = bbox.maxLng,
+            canvasW = 1024f,
+            canvasH = 640f,
         )
         _mapState.value = _mapState.value.copy(
             centerLat = centerLat,
             centerLon = centerLon,
-            zoom      = fitZ,
+            zoom = fitZ,
         )
     }
 
@@ -215,4 +226,3 @@ class FleetTrackingViewModel(
         data class Error(val message: String) : ImportResult
     }
 }
-

@@ -3,14 +3,46 @@ package org.solodev.fleet.mngt.features.vehicles
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
@@ -24,15 +56,23 @@ import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.solodev.fleet.mngt.api.dto.maintenance.*
+import org.solodev.fleet.mngt.api.dto.maintenance.IncidentSeverity
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
+import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
+import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.auth.UserRole
-import org.solodev.fleet.mngt.components.common.*
+import org.solodev.fleet.mngt.components.common.LabeledInfo
+import org.solodev.fleet.mngt.components.common.MaintenanceStatusBadge
+import org.solodev.fleet.mngt.components.common.Priority
+import org.solodev.fleet.mngt.components.common.PriorityBadge
+import org.solodev.fleet.mngt.components.common.VehicleStatus
+import org.solodev.fleet.mngt.components.common.VehicleStatusBadge
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
 import org.solodev.fleet.mngt.components.common.MaintenanceStatus as MaintenanceStatusCommon
@@ -57,14 +97,13 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
         visible = vehicleId != null,
         enter = slideInHorizontally(initialOffsetX = { it }),
         exit = slideOutHorizontally(targetOffsetX = { it }),
-        modifier = Modifier.fillMaxHeight().width(500.dp).padding(start = 16.dp)
+        modifier = Modifier.fillMaxHeight().width(500.dp).padding(start = 16.dp),
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = colors.surface,
-            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+            shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp),
         ) {
-
             if (vehicleId == null) return@Surface
 
             lastError?.let {
@@ -72,28 +111,28 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                     color = colors.cancelled.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(8.dp),
                     modifier =
-                        Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            .fillMaxWidth()
+                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth(),
                 ) {
                     Row(
                         Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             it,
                             color = colors.cancelled,
                             fontSize = 13.sp,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         IconButton(
                             onClick = { lastError = null },
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 Icons.Default.Close,
                                 null,
                                 tint = colors.cancelled,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }
@@ -118,26 +157,25 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
 
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxSize(),
                     ) {
-
                         // Header
                         Row(
                             Modifier.fillMaxWidth().padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 "Vehicle Details",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = colors.onBackground
+                                color = colors.onBackground,
                             )
                             IconButton(onClick = onClose) {
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "Close",
-                                    tint = colors.onBackground.copy(alpha = 0.6f)
+                                    tint = colors.onBackground.copy(alpha = 0.6f),
                                 )
                             }
                         }
@@ -145,19 +183,18 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
 
                         Column(
                             modifier = Modifier.weight(1f)
-                                .verticalScroll(rememberScrollState())
-                        )
-                        {
+                                .verticalScroll(rememberScrollState()),
+                        ) {
                             Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                                 Text(
                                     text = "${vehicle.make} ${vehicle.model}",
                                     fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
                                 )
                                 Text(
                                     text = vehicle.licensePlate ?: "",
                                     fontSize = 14.sp,
-                                    color = colors.onBackground.copy(alpha = 0.6f)
+                                    color = colors.onBackground.copy(alpha = 0.6f),
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 VehicleStatusBadge(status = (vehicle.state ?: VehicleState.UNKNOWN).toUiBadge())
@@ -169,7 +206,7 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                                 containerColor = colors.surface,
                                 contentColor = colors.primary,
                                 edgePadding = 0.dp,
-                                divider = {}
+                                divider = {},
                             ) {
                                 VehicleTab.entries.forEach { tab ->
                                     Tab(
@@ -180,15 +217,18 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                                                 text = tab.name,
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (activeTab == tab) colors.primary else colors.onBackground.copy(
-                                                    alpha = 0.6f
-                                                )
+                                                color = if (activeTab == tab) {
+                                                    colors.primary
+                                                } else {
+                                                    colors.onBackground.copy(
+                                                        alpha = 0.6f,
+                                                    )
+                                                },
                                             )
-                                        }
+                                        },
                                     )
                                 }
                             }
-
 
                             val dispatcher = koinInject<AppDependencyDispatcher>()
                             val authStatus by dispatcher.status.collectAsState()
@@ -198,42 +238,39 @@ fun VehicleDetailPanel(vehicleId: String?, onClose: () -> Unit) {
                             when (activeTab) {
                                 VehicleTab.INFO ->
                                     Column(
-                                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
                                     ) {
                                         InfoContent(
                                             vehicle = vehicle,
                                             infoIcon = infoIcon,
                                             serviceIcon = serviceIcon,
-                                            colors = colors
+                                            colors = colors,
                                         )
                                         OdometerContent(
                                             vehicle = vehicle,
                                             canEdit = canEdit,
                                             vm = vm,
-                                            infoIcon = infoIcon
+                                            infoIcon = infoIcon,
                                         )
                                         StateContent(vehicle = vehicle, canEdit = canEdit, vm = vm)
                                     }
 
                                 VehicleTab.HISTORY -> {
                                     Column(
-                                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
                                     ) {
                                         HistoryContent(history = snapshot.locationHistory, infoIcon = infoIcon)
                                         MaintenanceContent(jobs = snapshot.maintenanceJobs, infoIcon = infoIcon)
                                         IncidentsContent(incidents = snapshot.incidents, infoIcon = infoIcon)
                                     }
-
                                 }
                             }
                         }
                     }
-
                 }
 
                 else -> {}
             }
-
         }
     }
 }
@@ -243,11 +280,11 @@ private fun InfoContent(
     vehicle: VehicleDto,
     infoIcon: Painter,
     serviceIcon: Painter,
-    colors: org.solodev.fleet.mngt.theme.FleetExtendedColors
+    colors: org.solodev.fleet.mngt.theme.FleetExtendedColors,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         DetailItem("Vehicle Identification Number", vehicle.vin ?: "", infoIcon)
         DetailItem("Manufacturer of the Vehicle", vehicle.make ?: "", infoIcon)
@@ -279,14 +316,14 @@ private fun InfoContent(
                     Spacer(Modifier.width(8.dp))
                     Surface(
                         color = fleetColors.cancelled.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(4.dp),
                     ) {
                         Text(
                             "SERVICE DUE",
                             color = fleetColors.cancelled,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }
                 }
@@ -296,10 +333,15 @@ private fun InfoContent(
                 LinearProgressIndicator(
                     progress = { 1f - progress },
                     modifier = Modifier.fillMaxWidth().height(8.dp).padding(vertical = 4.dp),
-                    color = if (isDue) fleetColors.cancelled
-                    else if (progress > 0.8f) fleetColors.maintenance else fleetColors.primary,
+                    color = if (isDue) {
+                        fleetColors.cancelled
+                    } else if (progress > 0.8f) {
+                        fleetColors.maintenance
+                    } else {
+                        fleetColors.primary
+                    },
                     trackColor = fleetColors.surfaceVariant,
-                    strokeCap = StrokeCap.Round
+                    strokeCap = StrokeCap.Round,
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     val remainingText =
@@ -307,12 +349,12 @@ private fun InfoContent(
                     Text(
                         remainingText,
                         fontSize = 12.sp,
-                        color = if (isDue) fleetColors.cancelled else colors.onBackground.copy(alpha = 0.6f)
+                        color = if (isDue) fleetColors.cancelled else colors.onBackground.copy(alpha = 0.6f),
                     )
                     Text(
                         "${((1f - progress) * 100).toInt()}%",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
             }
@@ -324,7 +366,7 @@ private fun InfoContent(
 private fun StateContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesViewModel) {
     Column(
         Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Management Actions", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
         if (canEdit) {
@@ -335,11 +377,12 @@ private fun StateContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesView
                         colors = ButtonDefaults.buttonColors(containerColor = fleetColors.maintenance),
                         onClick = {
                             vm.changeState(vehicle.id!!, VehicleState.MAINTENANCE)
-                        })
+                        },
+                    )
                     ActionBtn(
                         label = "Retire Vehicle",
                         colors = ButtonDefaults.buttonColors(containerColor = fleetColors.cancelled),
-                        onClick = { vm.changeState(vehicle.id!!, VehicleState.RETIRED) }
+                        onClick = { vm.changeState(vehicle.id!!, VehicleState.RETIRED) },
                     )
                 }
 
@@ -348,21 +391,21 @@ private fun StateContent(vehicle: VehicleDto, canEdit: Boolean, vm: VehiclesView
                         label = "Mark Available",
                         onClick = {
                             vm.changeState(vehicle.id!!, VehicleState.AVAILABLE)
-                        }
+                        },
                     )
                 }
 
                 else -> Text(
                     text = "No manual transitions available.",
                     fontSize = 13.sp,
-                    color = fleetColors.onBackground.copy(alpha = 0.5f)
+                    color = fleetColors.onBackground.copy(alpha = 0.5f),
                 )
             }
         } else {
             Text(
                 "Insufficient permissions.",
                 fontSize = 13.sp,
-                color = fleetColors.onBackground.copy(alpha = 0.5f)
+                color = fleetColors.onBackground.copy(alpha = 0.5f),
             )
         }
     }
@@ -373,12 +416,12 @@ private fun OdometerContent(
     vehicle: VehicleDto,
     canEdit: Boolean,
     vm: VehiclesViewModel,
-    infoIcon: Painter
+    infoIcon: Painter,
 ) {
     var reading by remember { mutableStateOf("") }
     Column(
         modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (canEdit) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -387,7 +430,7 @@ private fun OdometerContent(
                     reading,
                     { reading = it },
                     label = { Text("Enter Reading (km)") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             Button(
@@ -399,7 +442,7 @@ private fun OdometerContent(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
             ) { Text("Update Odometer") }
         }
     }
@@ -410,39 +453,37 @@ private fun MaintenanceContent(jobs: List<MaintenanceJobDto>, infoIcon: Painter)
     if (jobs.isEmpty()) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             LabeledInfo("History", infoIcon)
             Text(
                 "No maintenance history.",
                 fontSize = 13.sp,
-                color = fleetColors.onBackground.copy(alpha = 0.5f)
+                color = fleetColors.onBackground.copy(alpha = 0.5f),
             )
         }
     } else {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             LabeledInfo("Maintenance History", infoIcon)
             jobs.take(10).forEach { job ->
                 Card(
                     colors =
-                        CardDefaults.cardColors(containerColor = fleetColors.surfaceVariant)
+                    CardDefaults.cardColors(containerColor = fleetColors.surfaceVariant),
                 ) {
                     Column(Modifier.padding(12.dp)) {
                         Text(
                             job.description ?: "Repair",
                             fontWeight = FontWeight.Medium,
-                            fontSize = 13.sp
+                            fontSize = 13.sp,
                         )
                         Row(
                             Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            MaintenanceStatusBadge(
-                                (job.status ?: MaintenanceStatus.UNKNOWN).toUiBadge()
-                            )
+                            MaintenanceStatusBadge((job.status ?: MaintenanceStatus.UNKNOWN).toUiBadge())
                             PriorityBadge((job.priority ?: MaintenancePriority.UNKNOWN).toUiBadge())
                         }
                     }
@@ -457,19 +498,19 @@ private fun HistoryContent(history: List<LocationHistoryEntry>, infoIcon: Painte
     if (history.isEmpty()) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             LabeledInfo("History", infoIcon)
             Text(
                 "No tracking data.",
                 fontSize = 13.sp,
-                color = fleetColors.onBackground.copy(alpha = 0.5f)
+                color = fleetColors.onBackground.copy(alpha = 0.5f),
             )
         }
     } else {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             history.take(15).forEach { entry ->
                 val lat = entry.latitude ?: 0.0
@@ -487,37 +528,36 @@ private fun IncidentsContent(incidents: List<VehicleIncidentDto>, infoIcon: Pain
     if (incidents.isEmpty()) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             LabeledInfo("Incident History", infoIcon)
             Text(
                 "No incidents reported.",
                 fontSize = 13.sp,
-                color = fleetColors.onBackground.copy(alpha = 0.5f)
+                color = fleetColors.onBackground.copy(alpha = 0.5f),
             )
         }
-
     } else {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             incidents.forEach { incident ->
                 Card(
                     colors = CardDefaults.cardColors(containerColor = fleetColors.surfaceVariant),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Column(Modifier.padding(12.dp).fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = incident.title,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp,
-                                color = fleetColors.onSurface
+                                color = fleetColors.onSurface,
                             )
                             Surface(
                                 color = when (incident.severity) {
@@ -525,18 +565,18 @@ private fun IncidentsContent(incidents: List<VehicleIncidentDto>, infoIcon: Pain
                                     IncidentSeverity.HIGH -> fleetColors.maintenance.copy(alpha = 0.1f)
                                     else -> fleetColors.primary.copy(alpha = 0.1f)
                                 },
-                                shape = RoundedCornerShape(4.dp)
+                                shape = RoundedCornerShape(4.dp),
                             ) {
                                 Text(
                                     incident.severity.name,
                                     color = when (incident.severity) {
-                                            IncidentSeverity.CRITICAL -> fleetColors.cancelled
-                                            IncidentSeverity.HIGH -> fleetColors.maintenance
-                                            else -> fleetColors.primary
-                                        },
+                                        IncidentSeverity.CRITICAL -> fleetColors.cancelled
+                                        IncidentSeverity.HIGH -> fleetColors.maintenance
+                                        else -> fleetColors.primary
+                                    },
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 )
                             }
                         }
@@ -546,7 +586,7 @@ private fun IncidentsContent(incidents: List<VehicleIncidentDto>, infoIcon: Pain
                         Text(
                             text = incident.description,
                             fontSize = 13.sp,
-                            color = fleetColors.onSurface.copy(alpha = 0.8f)
+                            color = fleetColors.onSurface.copy(alpha = 0.8f),
                         )
 
                         Spacer(Modifier.height(8.dp))
@@ -554,7 +594,7 @@ private fun IncidentsContent(incidents: List<VehicleIncidentDto>, infoIcon: Pain
                         Row(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 incident.reportedAt?.let {
@@ -563,18 +603,18 @@ private fun IncidentsContent(incidents: List<VehicleIncidentDto>, infoIcon: Pain
                                     "Reported on ${it.toSnapshotDate()}"
                                 } ?: "Unknown date",
                                 fontSize = 11.sp,
-                                color = fleetColors.onSurface.copy(alpha = 0.5f)
+                                color = fleetColors.onSurface.copy(alpha = 0.5f),
                             )
 
                             Surface(
                                 color = fleetColors.border.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(4.dp)
+                                shape = RoundedCornerShape(4.dp),
                             ) {
                                 Text(
                                     incident.status.name,
                                     fontSize = 10.sp,
                                     color = fleetColors.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 )
                             }
                         }
@@ -593,7 +633,7 @@ private fun DetailItem(label: String, value: String, infoIcon: Painter) {
             value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(start = 20.dp)
+            modifier = Modifier.padding(start = 20.dp),
         )
     }
 }
@@ -602,43 +642,40 @@ private fun DetailItem(label: String, value: String, infoIcon: Painter) {
 private fun ActionBtn(
     label: String,
     colors: ButtonColors = ButtonDefaults.buttonColors(),
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = colors,
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
     ) { Text(label, fontSize = 13.sp) }
 }
 
-private fun VehicleState.toUiBadge() =
-    when (this) {
-        VehicleState.AVAILABLE -> VehicleStatus.AVAILABLE
-        VehicleState.RENTED -> VehicleStatus.RENTED
-        VehicleState.MAINTENANCE -> VehicleStatus.MAINTENANCE
-        VehicleState.RETIRED -> VehicleStatus.RETIRED
-        VehicleState.RESERVED -> VehicleStatus.RESERVED
-        VehicleState.UNKNOWN -> VehicleStatus.RETIRED
-    }
+private fun VehicleState.toUiBadge() = when (this) {
+    VehicleState.AVAILABLE -> VehicleStatus.AVAILABLE
+    VehicleState.RENTED -> VehicleStatus.RENTED
+    VehicleState.MAINTENANCE -> VehicleStatus.MAINTENANCE
+    VehicleState.RETIRED -> VehicleStatus.RETIRED
+    VehicleState.RESERVED -> VehicleStatus.RESERVED
+    VehicleState.UNKNOWN -> VehicleStatus.RETIRED
+}
 
-private fun MaintenanceStatus.toUiBadge() =
-    when (this) {
-        MaintenanceStatus.SCHEDULED -> MaintenanceStatusCommon.SCHEDULED
-        MaintenanceStatus.IN_PROGRESS -> MaintenanceStatusCommon.IN_PROGRESS
-        MaintenanceStatus.COMPLETED -> MaintenanceStatusCommon.COMPLETED
-        MaintenanceStatus.CANCELLED -> MaintenanceStatusCommon.CANCELLED
-        MaintenanceStatus.UNKNOWN -> MaintenanceStatusCommon.CANCELLED
-    }
+private fun MaintenanceStatus.toUiBadge() = when (this) {
+    MaintenanceStatus.SCHEDULED -> MaintenanceStatusCommon.SCHEDULED
+    MaintenanceStatus.IN_PROGRESS -> MaintenanceStatusCommon.IN_PROGRESS
+    MaintenanceStatus.COMPLETED -> MaintenanceStatusCommon.COMPLETED
+    MaintenanceStatus.CANCELLED -> MaintenanceStatusCommon.CANCELLED
+    MaintenanceStatus.UNKNOWN -> MaintenanceStatusCommon.CANCELLED
+}
 
-private fun MaintenancePriority.toUiBadge() =
-    when (this) {
-        MaintenancePriority.LOW -> Priority.LOW
-        MaintenancePriority.NORMAL -> Priority.NORMAL
-        MaintenancePriority.HIGH -> Priority.HIGH
-        MaintenancePriority.URGENT -> Priority.URGENT
-        MaintenancePriority.UNKNOWN -> Priority.NORMAL
-    }
+private fun MaintenancePriority.toUiBadge() = when (this) {
+    MaintenancePriority.LOW -> Priority.LOW
+    MaintenancePriority.NORMAL -> Priority.NORMAL
+    MaintenancePriority.HIGH -> Priority.HIGH
+    MaintenancePriority.URGENT -> Priority.URGENT
+    MaintenancePriority.UNKNOWN -> Priority.NORMAL
+}
 
 /** Formats a coordinate to 5 decimal places without String.format (unavailable in Kotlin/Wasm). */
 private fun Double.formatCoord(): String {
@@ -646,13 +683,13 @@ private fun Double.formatCoord(): String {
     val rounded = kotlin.math.round(this * factor) / factor
     val str = rounded.toString()
     val dotIdx = str.indexOf('.')
-    return if (dotIdx < 0) "$str.00000"
-    else {
+    return if (dotIdx < 0) {
+        "$str.00000"
+    } else {
         val decimals = str.length - dotIdx - 1
         if (decimals < 5) str + "0".repeat(5 - decimals) else str.take(dotIdx + 6)
     }
 }
-
 
 private fun Long.toSnapshotDate(): String {
     // Very basic placeholder for Wasm/JS compatibility until proper library is used

@@ -1,14 +1,36 @@
 package org.solodev.fleet.mngt.features.vehicles
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -26,7 +48,15 @@ import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.auth.UserRole
-import org.solodev.fleet.mngt.components.common.*
+import org.solodev.fleet.mngt.components.common.ConfirmDialog
+import org.solodev.fleet.mngt.components.common.EmptyState
+import org.solodev.fleet.mngt.components.common.MaintenanceHealthCard
+import org.solodev.fleet.mngt.components.common.PaginatedTable
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import org.solodev.fleet.mngt.components.common.TableSkeleton
+import org.solodev.fleet.mngt.components.common.VehicleHealthCard
+import org.solodev.fleet.mngt.components.common.VehicleStatus
+import org.solodev.fleet.mngt.components.common.VehicleStatusBadge
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
@@ -72,12 +102,13 @@ fun VehiclesListScreen(router: AppRouter) {
             onRetry = {
                 vm.refresh()
             },
-            onDismiss = { }
+            onDismiss = { },
         )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -87,20 +118,20 @@ fun VehiclesListScreen(router: AppRouter) {
                     .fillMaxWidth()
                     .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Vehicles Management", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = colors.onBackground)
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (roles.any { it == UserRole.ADMIN || it == UserRole.FLEET_MANAGER }) {
                         Button(
                             onClick = {
                                 vm.clearActionResult()
                                 showAddSheet = true
-                            }
+                            },
                         ) {
                             Icon(Icons.Filled.Add, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
@@ -116,21 +147,21 @@ fun VehiclesListScreen(router: AppRouter) {
 
             Row(
                 Modifier.fillMaxWidth().height(IntrinsicSize.Max).padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Box(Modifier.weight(1f)) {
                     VehicleHealthCard(
                         modifier = Modifier.fillMaxHeight(),
                         stats = stats,
                         onSeeAllClick = { vm.setStateFilter(null) },
-                        onFilterClick = { vm.setStateFilter(it) }
+                        onFilterClick = { vm.setStateFilter(it) },
                     )
                 }
                 Box(Modifier.weight(1f)) {
                     MaintenanceHealthCard(
                         modifier = Modifier.fillMaxHeight(),
                         stats = maintenanceStats,
-                        onSeeAllClick = { /* Optional: Navigate to maintenance tab or filter */ }
+                        onSeeAllClick = { /* Optional: Navigate to maintenance tab or filter */ },
                     )
                 }
             }
@@ -152,7 +183,7 @@ fun VehiclesListScreen(router: AppRouter) {
                                 "Year",
                                 "State",
                                 "Mileage (km)",
-                                "Actions"
+                                "Actions",
                             ),
                             items = items,
                             onRowClick = { idx -> vm.loadVehicle(items[idx].id ?: "") },
@@ -166,7 +197,7 @@ fun VehiclesListScreen(router: AppRouter) {
                                         vm.clearActionResult()
                                         vehicleToEdit = null
                                         showAddSheet = true
-                                    }
+                                    },
                                 )
                             },
                             rowContent = { vehicle, _ ->
@@ -175,61 +206,61 @@ fun VehiclesListScreen(router: AppRouter) {
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     "${vehicle.make} ${vehicle.model}",
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     vehicle.year.toString(),
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 VehicleStatusBadge(
                                     status = (vehicle.state ?: VehicleState.UNKNOWN).toUiBadge(),
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                                 Text(
                                     vehicle.mileageKm.toString(),
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Row(
                                     modifier = Modifier.weight(1f),
                                     horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     IconButton(
                                         onClick = {
                                             vm.clearActionResult()
                                             vehicleToEdit = vehicle
                                         },
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(28.dp),
                                     ) {
                                         Icon(
                                             painterResource(Res.drawable.edit_icon),
                                             contentDescription = "Edit",
                                             tint = colors.primary,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(16.dp),
                                         )
                                     }
                                     IconButton(
                                         onClick = { vehicleToDelete = vehicle },
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(28.dp),
                                     ) {
                                         Icon(
                                             painterResource(Res.drawable.delete_icon),
                                             contentDescription = "Delete",
                                             tint = colors.cancelled,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(16.dp),
                                         )
                                     }
                                 }
@@ -244,7 +275,7 @@ fun VehiclesListScreen(router: AppRouter) {
         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
             VehicleDetailPanel(
                 vehicleId = selectedVehicleId,
-                onClose = { vm.closeDetail() }
+                onClose = { vm.closeDetail() },
             )
         }
     }
@@ -256,7 +287,7 @@ fun VehiclesListScreen(router: AppRouter) {
                 vehicleToEdit = null
             },
             sheetState = sheetState,
-            vehicle = vehicleToEdit
+            vehicle = vehicleToEdit,
         )
     }
 
@@ -270,7 +301,7 @@ fun VehiclesListScreen(router: AppRouter) {
                 }
             },
             onDismiss = { },
-            destructive = true
+            destructive = true,
         )
     }
 }

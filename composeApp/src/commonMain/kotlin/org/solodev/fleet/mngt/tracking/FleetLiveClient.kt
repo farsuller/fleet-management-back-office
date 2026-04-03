@@ -28,7 +28,10 @@ class FleetLiveClient(
     private val wsBaseUrl: String,
     private val tokenProvider: TokenProvider,
 ) {
-    private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val client = HttpClient {
@@ -60,7 +63,7 @@ class FleetLiveClient(
         var attempts = 0
         while (attempts < MAX_RECONNECT_ATTEMPTS) {
             _connectionState.emit(
-                if (attempts == 0) ConnectionState.Connecting else ConnectionState.Reconnecting(attempts)
+                if (attempts == 0) ConnectionState.Connecting else ConnectionState.Reconnecting(attempts),
             )
             try {
                 val token = tokenProvider.token ?: run {

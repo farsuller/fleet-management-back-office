@@ -20,7 +20,9 @@ class AccountsViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
-    init { load() }
+    init {
+        load()
+    }
 
     fun refresh() {
         _isRefreshing.value = true

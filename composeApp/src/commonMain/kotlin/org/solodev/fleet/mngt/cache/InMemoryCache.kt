@@ -50,10 +50,13 @@ class InMemoryCache<K : Any, V : Any>(private val ttlMs: Long = 60_000L) {
         store[key] = Entry(value, Clock.System.now().toEpochMilliseconds())
     }
 
-    fun invalidate(key: K) { store.remove(key) }
+    fun invalidate(key: K) {
+        store.remove(key)
+    }
 
-    fun clear() { store.clear() }
+    fun clear() {
+        store.clear()
+    }
 
-    private fun age(entry: Entry<V>): Long =
-        Clock.System.now().toEpochMilliseconds() - entry.cachedAt
+    private fun age(entry: Entry<V>): Long = Clock.System.now().toEpochMilliseconds() - entry.cachedAt
 }

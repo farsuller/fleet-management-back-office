@@ -1,6 +1,5 @@
 package org.solodev.fleet.mngt.api
 
-
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -1,11 +1,37 @@
 package org.solodev.fleet.mngt.features.customers
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.PersonSearch
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,30 +71,29 @@ fun CustomersListScreen(router: AppRouter? = null) {
     var showSheet by remember { mutableStateOf(false) }
     var editingCustomer by remember { mutableStateOf<CustomerDto?>(null) }
 
-
     LaunchedEffect(Unit) { vm.refresh() }
 
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             // Header
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
                     Text(
                         "Customer Management",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colors.onBackground
+                        color = colors.onBackground,
                     )
                     Text(
                         "Manage your clientele and rental contracts",
-                        color = colors.onBackground.copy(alpha = 0.6f)
+                        color = colors.onBackground.copy(alpha = 0.6f),
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -78,7 +103,7 @@ fun CustomersListScreen(router: AppRouter? = null) {
                             showSheet = true
                         },
                         colors =
-                            ButtonDefaults.buttonColors(containerColor = colors.primary)
+                        ButtonDefaults.buttonColors(containerColor = colors.primary),
                     ) {
                         Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
@@ -106,20 +131,20 @@ fun CustomersListScreen(router: AppRouter? = null) {
                     text = "Total Customers",
                     value = total.toString(),
                     icon = Icons.Default.Group,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 CustomerHealthCard(
                     text = "Active Rentals",
                     value = activeRentals.toString(),
                     icon = Icons.Default.Key,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 CustomerHealthCard(
                     text = "License Alerts",
                     value = licenseAlerts.toString(),
                     icon = Icons.Default.Warning,
                     iconTint = colors.cancelled,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             }
 
@@ -135,28 +160,28 @@ fun CustomersListScreen(router: AppRouter? = null) {
                         val items = uiState.data.items
                         PaginatedTable(
                             headers =
-                                listOf(
-                                    "Name",
-                                    "Email",
-                                    "Phone",
-                                    "License Expiry",
-                                    "License Health",
-                                    "Status",
-                                    "Actions"
-                                ),
+                            listOf(
+                                "Name",
+                                "Email",
+                                "Phone",
+                                "License Expiry",
+                                "License Health",
+                                "Status",
+                                "Actions",
+                            ),
                             items = items,
                             onRowClick = { index -> vm.loadCustomer(items[index].id!!) },
                             emptyContent = {
                                 EmptyState(
                                     title = "No customers found",
                                     description =
-                                        "You haven't added any customers yet. Start by creating your first client profile to manage their rentals.",
+                                    "You haven't added any customers yet. Start by creating your first client profile to manage their rentals.",
                                     icon = Icons.Default.PersonSearch,
                                     actionLabel = "New Customer",
                                     onAction = {
                                         editingCustomer = null
                                         showSheet = true
-                                    }
+                                    },
                                 )
                             },
                             rowContent = { customer, _ ->
@@ -168,9 +193,11 @@ fun CustomersListScreen(router: AppRouter? = null) {
                                         0L
                                     }
                                 val remaining =
-                                    if (expiry > nowMs)
+                                    if (expiry > nowMs) {
                                         (expiry - nowMs) / (1000L * 60 * 60 * 24)
-                                    else 0L
+                                    } else {
+                                        0L
+                                    }
 
                                 val progress =
                                     if (remaining >= 30) 1.0f else (remaining.toFloat() / 30f).coerceIn(0f, 1f)
@@ -184,21 +211,21 @@ fun CustomersListScreen(router: AppRouter? = null) {
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     text = customer.email ?: "-",
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     customer.phone ?: "-",
                                     Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     text = if (customer.licenseExpiryMs != null &&
@@ -206,22 +233,24 @@ fun CustomersListScreen(router: AppRouter? = null) {
                                     ) {
                                         val dt = Instant.fromEpochMilliseconds(customer.licenseExpiryMs).toLocalDateTime(TimeZone.UTC)
                                         "${dt.year}-${(dt.month.number).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
-                                    } else "N/A",
+                                    } else {
+                                        "N/A"
+                                    },
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
 
                                 Box(
                                     Modifier.weight(1f).padding(end = 24.dp),
-                                    contentAlignment = Alignment.CenterStart
+                                    contentAlignment = Alignment.CenterStart,
                                 ) {
                                     LinearProgressIndicator(
                                         progress = { progress },
                                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                                         color = statusColor,
-                                        trackColor = colors.border.copy(alpha = 0.3f)
+                                        trackColor = colors.border.copy(alpha = 0.3f),
                                     )
                                 }
 
@@ -230,23 +259,24 @@ fun CustomersListScreen(router: AppRouter? = null) {
                                     Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = if (customer.isActive == true) colors.active else colors.retired,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Row(
                                     modifier = Modifier.weight(1f),
                                     horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically) {
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
                                     IconButton(
                                         onClick = {
                                             editingCustomer = customer
                                             showSheet = true
-                                        }
+                                        },
                                     ) {
                                         Icon(
                                             painterResource(Res.drawable.edit_icon),
                                             "Edit",
                                             tint = colors.primary,
-                                            modifier = Modifier.size(18.dp)
+                                            modifier = Modifier.size(18.dp),
                                         )
                                     }
                                     IconButton(onClick = { vm.deactivateCustomer(customer.id!!) }) {
@@ -254,11 +284,11 @@ fun CustomersListScreen(router: AppRouter? = null) {
                                             painterResource(Res.drawable.delete_icon),
                                             "Deactivate",
                                             tint = colors.cancelled,
-                                            modifier = Modifier.size(18.dp)
+                                            modifier = Modifier.size(18.dp),
                                         )
                                     }
                                 }
-                            }
+                            },
                         )
                     }
                 }

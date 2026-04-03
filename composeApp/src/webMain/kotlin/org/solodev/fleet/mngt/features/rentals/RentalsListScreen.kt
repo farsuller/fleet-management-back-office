@@ -1,14 +1,36 @@
 package org.solodev.fleet.mngt.features.rentals
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +49,15 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthStatus
-import org.solodev.fleet.mngt.components.common.*
+import org.solodev.fleet.mngt.components.common.ConfirmDialog
+import org.solodev.fleet.mngt.components.common.EmptyState
+import org.solodev.fleet.mngt.components.common.PaginatedTable
+import org.solodev.fleet.mngt.components.common.RentalHealthCard
+import org.solodev.fleet.mngt.components.common.RentalStatus
+import org.solodev.fleet.mngt.components.common.RentalStatusBadge
+import org.solodev.fleet.mngt.components.common.RevenueHealthCard
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
@@ -79,7 +109,7 @@ fun RentalsListScreen(router: AppRouter) {
                 vm.refresh()
                 showErrorDialog = false
             },
-            onDismiss = { showErrorDialog = false }
+            onDismiss = { showErrorDialog = false },
         )
     }
 
@@ -91,13 +121,13 @@ fun RentalsListScreen(router: AppRouter) {
             Row(
                 Modifier.fillMaxWidth().padding(top = 16.dp, start = 16.dp, end = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Fleet Rentals", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = colors.onBackground)
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (authStatus is AuthStatus.Authenticated) {
                         Button(onClick = {
@@ -116,17 +146,17 @@ fun RentalsListScreen(router: AppRouter) {
             // KPI Cards
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(IntrinsicSize.Max),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 RentalHealthCard(
                     stats = stats,
                     onSeeAllClick = { },
                     onFilterClick = { },
-                    modifier = Modifier.weight(1f).fillMaxHeight()
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
                 )
                 RevenueHealthCard(
                     revenuePhp = stats.revenuePhp,
-                    modifier = Modifier.weight(1f).fillMaxHeight()
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
                 )
             }
 
@@ -152,7 +182,7 @@ fun RentalsListScreen(router: AppRouter) {
                                 "Start Date",
                                 "End Date",
                                 "Total",
-                                "Actions"
+                                "Actions",
                             ),
                             items = items,
                             onRowClick = { idx -> vm.loadRental(items[idx].id ?: "") },
@@ -165,7 +195,7 @@ fun RentalsListScreen(router: AppRouter) {
                                     onAction = {
                                         rentalToEdit = null
                                         showCreateSheet = true
-                                    }
+                                    },
                                 )
                             },
                             rowContent = { rental, _ ->
@@ -175,50 +205,50 @@ fun RentalsListScreen(router: AppRouter) {
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = colors.primary,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     rental.customerName ?: "—",
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Column(
                                     modifier = Modifier.weight(1f),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
                                     Text(
                                         rental.vehiclePlateNumber ?: "—",
                                         fontSize = 13.sp,
                                         color = colors.text1,
                                         fontWeight = FontWeight.Medium,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
                                     )
                                     Text(
                                         "${rental.vehicleMake} ${rental.vehicleModel}",
                                         fontSize = 11.sp,
                                         color = colors.text2,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
                                     )
                                 }
                                 RentalStatusBadge(
                                     status = (rental.status ?: RentalStatusDto.UNKNOWN).toUiBadge(),
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                                 Text(
                                     formatDate(rental.startDate ?: 0L),
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     formatDate(rental.endDate ?: 0L),
                                     modifier = Modifier.weight(1f),
                                     fontSize = 13.sp,
                                     color = colors.text1,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Text(
                                     "PHP ${rental.totalCost}",
@@ -226,36 +256,36 @@ fun RentalsListScreen(router: AppRouter) {
                                     fontSize = 13.sp,
                                     color = colors.text1,
                                     fontWeight = FontWeight.SemiBold,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Row(
                                     modifier = Modifier.weight(1f),
                                     horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     IconButton(
                                         onClick = {
                                             rentalToEdit = rental
                                             showCreateSheet = true
                                         },
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(28.dp),
                                     ) {
                                         Icon(
                                             painterResource(Res.drawable.edit_icon),
                                             contentDescription = "Edit",
                                             tint = colors.primary,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(16.dp),
                                         )
                                     }
                                     IconButton(
                                         onClick = { rentalToDelete = rental },
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(28.dp),
                                     ) {
                                         Icon(
                                             painterResource(Res.drawable.delete_icon),
                                             contentDescription = "Delete",
                                             tint = colors.cancelled,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(16.dp),
                                         )
                                     }
                                 }
@@ -272,7 +302,7 @@ fun RentalsListScreen(router: AppRouter) {
         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
             RentalDetailPanel(
                 rentalId = selectedRentalId,
-                onClose = { vm.closeDetail() }
+                onClose = { vm.closeDetail() },
             )
         }
     }
@@ -284,7 +314,7 @@ fun RentalsListScreen(router: AppRouter) {
                 rentalToEdit = null
             },
             sheetState = sheetState,
-            rental = rentalToEdit
+            rental = rentalToEdit,
         )
     }
 
@@ -298,7 +328,7 @@ fun RentalsListScreen(router: AppRouter) {
                 rentalToDelete = null
             },
             onDismiss = { rentalToDelete = null },
-            destructive = true
+            destructive = true,
         )
     }
 }

@@ -1,20 +1,61 @@
 package org.solodev.fleet.mngt.features.rentals
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -25,7 +66,11 @@ import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
 import kotlinx.coroutines.launch
-import kotlinx.datetime.*
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
@@ -34,7 +79,12 @@ import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
-import org.solodev.fleet.mngt.components.common.*
+import org.solodev.fleet.mngt.components.common.ActionErrorDialog
+import org.solodev.fleet.mngt.components.common.EmailOutlinedTextField
+import org.solodev.fleet.mngt.components.common.LabeledInfo
+import org.solodev.fleet.mngt.components.common.PhoneNumberOutlinedTextField
+import org.solodev.fleet.mngt.components.common.ServerErrorDialog
+import org.solodev.fleet.mngt.components.common.VehicleSelectionCard
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
 import kotlin.time.Clock
@@ -77,7 +127,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                 ?: Clock.System.now()
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .date
-                    .toString()
+                    .toString(),
         )
     }
     var endDate by remember(rental) {
@@ -92,7 +142,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     .plus(7.days)
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .date
-                    .toString()
+                    .toString(),
         )
     }
     var dailyRate by remember(rental) { mutableStateOf(rental?.dailyRate?.toString() ?: "1500") }
@@ -155,7 +205,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     endDate = endIso,
                     dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L,
                     vehicleId = selectedVehicle?.id,
-                    customerId = selectedCustomer?.id
+                    customerId = selectedCustomer?.id,
                 )
             vm.updateRental(rental.id!!, updateReq) { onDismiss() }
         } else if (isNewCustomer) {
@@ -167,7 +217,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     lastName = lastName,
                     phone = phone,
                     driversLicense = licenseNumber,
-                    driverLicenseExpiry = licenseExpiry
+                    driverLicenseExpiry = licenseExpiry,
                 )
             vm.quickCreateCustomer(customerReq) { customerId ->
                 val rentalReq =
@@ -176,7 +226,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                         vehicleId = selectedVehicle!!.id!!,
                         startDate = startIso,
                         endDate = endIso,
-                        dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L
+                        dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L,
                     )
                 vm.createRental(rentalReq) { onDismiss() }
             }
@@ -188,7 +238,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     vehicleId = selectedVehicle!!.id!!,
                     startDate = startIso,
                     endDate = endIso,
-                    dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L
+                    dailyRateAmount = dailyRate.toLongOrNull() ?: 1500L,
                 )
             vm.createRental(rentalReq) { onDismiss() }
         }
@@ -203,16 +253,16 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
         modifier = Modifier.fillMaxWidth(),
         containerColor = colors.surface,
         contentColor = colors.onBackground,
-        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) },
     ) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             Column(
                 modifier =
-                    Modifier.widthIn(max = 1800.dp)
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 40.dp)
-                        .verticalScroll(rememberScrollState()),
+                Modifier.widthIn(max = 1800.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 40.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 // Handle Success/Error from ActionResult
@@ -224,7 +274,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                             onDismiss = {
                                 vm.clearActionResult()
                                 isSubmitting = false
-                            }
+                            },
                         )
                     }
                 }
@@ -233,39 +283,47 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            if (rental != null) "Edit Rental #${rental.rentalNumber ?: ""}"
-                            else "Create New Rental",
+                            if (rental != null) {
+                                "Edit Rental #${rental.rentalNumber ?: ""}"
+                            } else {
+                                "Create New Rental"
+                            },
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colors.onBackground
+                            color = colors.onBackground,
                         )
                         Text(
-                            if (rental != null) "Update rental terms or details."
-                            else "Set up a new rental agreement with an available vehicle.",
+                            if (rental != null) {
+                                "Update rental terms or details."
+                            } else {
+                                "Set up a new rental agreement with an available vehicle."
+                            },
                             fontSize = 14.sp,
-                            color = colors.onBackground.copy(alpha = 0.6f)
+                            color = colors.onBackground.copy(alpha = 0.6f),
                         )
                     }
 
                     Button(
                         onClick = ::handleSubmit,
                         enabled = !isSubmitting,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
-                        if (isSubmitting)
+                        if (isSubmitting) {
                             CircularProgressIndicator(
                                 Modifier.size(20.dp),
                                 color = Color.White,
-                                strokeWidth = 2.dp
+                                strokeWidth = 2.dp,
                             )
-                        else Text(
-                            if (rental != null) "Save Changes" else "Confirm Rental",
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        } else {
+                            Text(
+                                if (rental != null) "Save Changes" else "Confirm Rental",
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
                     }
                 }
 
@@ -273,13 +331,13 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     Surface(
                         color = colors.cancelled.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
                             it,
                             color = colors.cancelled,
                             modifier = Modifier.padding(12.dp),
-                            fontSize = 13.sp
+                            fontSize = 13.sp,
                         )
                     }
                 }
@@ -296,8 +354,8 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                             .height(120.dp)
                                             .background(
                                                 colors.border.copy(alpha = 0.2f),
-                                                RoundedCornerShape(16.dp)
-                                            )
+                                                RoundedCornerShape(16.dp),
+                                            ),
                                     )
                                 }
                             }
@@ -308,14 +366,14 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                 Text(
                                     "No available vehicles found.",
                                     color = colors.text2,
-                                    fontSize = 14.sp
+                                    fontSize = 14.sp,
                                 )
                             } else {
                                 Box(modifier = Modifier.fillMaxWidth()) {
                                     LazyRow(
                                         state = listState,
                                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        contentPadding = PaddingValues(horizontal = 16.dp)
+                                        contentPadding = PaddingValues(horizontal = 16.dp),
                                     ) {
                                         items(s.data) { vehicle ->
                                             VehicleSelectionCard(
@@ -324,7 +382,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                 onClick = {
                                                     selectedVehicle = vehicle
                                                     errors = null
-                                                }
+                                                },
                                             )
                                         }
                                     }
@@ -333,12 +391,12 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                     if (listState.canScrollBackward) {
                                         Surface(
                                             modifier =
-                                                Modifier.align(Alignment.CenterStart)
-                                                    .padding(start = 4.dp)
-                                                    .size(32.dp),
+                                            Modifier.align(Alignment.CenterStart)
+                                                .padding(start = 4.dp)
+                                                .size(32.dp),
                                             shape = RoundedCornerShape(16.dp),
                                             tonalElevation = 2.dp,
-                                            shadowElevation = 4.dp
+                                            shadowElevation = 4.dp,
                                         ) {
                                             IconButton(
                                                 onClick = {
@@ -346,13 +404,13 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                         listState.animateScrollBy(-400f)
                                                     }
                                                 },
-                                                modifier = Modifier.fillMaxSize()
+                                                modifier = Modifier.fillMaxSize(),
                                             ) {
                                                 Icon(
                                                     Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                                     null,
                                                     modifier = Modifier.size(20.dp),
-                                                    tint = colors.primary
+                                                    tint = colors.primary,
                                                 )
                                             }
                                         }
@@ -361,12 +419,12 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                     if (listState.canScrollForward) {
                                         Surface(
                                             modifier =
-                                                Modifier.align(Alignment.CenterEnd)
-                                                    .padding(end = 4.dp)
-                                                    .size(32.dp),
+                                            Modifier.align(Alignment.CenterEnd)
+                                                .padding(end = 4.dp)
+                                                .size(32.dp),
                                             shape = RoundedCornerShape(16.dp),
                                             tonalElevation = 2.dp,
-                                            shadowElevation = 4.dp
+                                            shadowElevation = 4.dp,
                                         ) {
                                             IconButton(
                                                 onClick = {
@@ -374,13 +432,13 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                         listState.animateScrollBy(400f)
                                                     }
                                                 },
-                                                modifier = Modifier.fillMaxSize()
+                                                modifier = Modifier.fillMaxSize(),
                                             ) {
                                                 Icon(
                                                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                                     null,
                                                     modifier = Modifier.size(20.dp),
-                                                    tint = colors.primary
+                                                    tint = colors.primary,
                                                 )
                                             }
                                         }
@@ -394,12 +452,12 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                 // 2. Details & Terms Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(32.dp)
+                    horizontalArrangement = Arrangement.spacedBy(32.dp),
                 ) {
                     // Left Column: Rental Terms
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                        verticalArrangement = Arrangement.spacedBy(24.dp),
                     ) {
                         LabeledInfo("Rental Terms", infoIcon)
 
@@ -411,10 +469,10 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                     onValueChange = {},
                                     readOnly = true,
                                     modifier = Modifier.fillMaxWidth(),
-                                    trailingIcon = { Icon(Icons.Default.DateRange, null) }
+                                    trailingIcon = { Icon(Icons.Default.DateRange, null) },
                                 )
                                 Box(
-                                    modifier = Modifier.matchParentSize().clickable { showStartDatePicker = true }
+                                    modifier = Modifier.matchParentSize().clickable { showStartDatePicker = true },
                                 )
                             }
                         }
@@ -427,10 +485,10 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                     onValueChange = {},
                                     readOnly = true,
                                     modifier = Modifier.fillMaxWidth(),
-                                    trailingIcon = { Icon(Icons.Default.DateRange, null) }
+                                    trailingIcon = { Icon(Icons.Default.DateRange, null) },
                                 )
                                 Box(
-                                    modifier = Modifier.matchParentSize().clickable { showEndDatePicker = true }
+                                    modifier = Modifier.matchParentSize().clickable { showEndDatePicker = true },
                                 )
                             }
                         }
@@ -443,7 +501,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                     if (it.all { char -> char.isDigit() }) dailyRate = it
                                 },
                                 modifier = Modifier.fillMaxWidth(),
-                                prefix = { Text("PHP") }
+                                prefix = { Text("PHP") },
                             )
                         }
                     }
@@ -451,12 +509,12 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     // Right Column: Customer Information
                     Column(
                         modifier = Modifier.weight(1.8f),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             LabeledInfo("Customer Information", infoIcon)
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -468,7 +526,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                         isNewCustomer = it
                                         errors = null
                                     },
-                                    small = true
+                                    small = true,
                                 )
                             }
                         }
@@ -477,24 +535,24 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                             Surface(
                                 border = BorderStroke(1.dp, colors.primary.copy(alpha = 0.3f)),
                                 shape = RoundedCornerShape(16.dp),
-                                color = colors.primary.copy(alpha = 0.02f)
+                                color = colors.primary.copy(alpha = 0.02f),
                             ) {
                                 Column(
                                     Modifier.padding(20.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
                                 ) {
                                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                         OutlinedTextField(
                                             firstName,
                                             { firstName = it },
                                             label = { Text("First Name") },
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
                                         )
                                         OutlinedTextField(
                                             lastName,
                                             { lastName = it },
                                             label = { Text("Last Name") },
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
                                         )
                                     }
                                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -510,7 +568,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                 phone = input
                                             },
                                             label = "Phone Number",
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
                                         )
                                     }
                                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -519,7 +577,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                             { licenseNumber = it.uppercase() },
                                             label = { Text("Driver License #") },
                                             modifier = Modifier.weight(1f),
-                                            singleLine = true
+                                            singleLine = true,
                                         )
                                         OutlinedTextField(
                                             licenseExpiry,
@@ -527,14 +585,14 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                             label = { Text("Expiry (YYYY-MM-DD)") },
                                             modifier = Modifier.weight(1f),
                                             placeholder = { Text("2028-12-31") },
-                                            singleLine = true
+                                            singleLine = true,
                                         )
                                     }
                                     Text(
                                         "Customer ID will be auto-generated upon saving.",
                                         fontSize = 11.sp,
                                         color = colors.primary.copy(alpha = 0.7f),
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Medium,
                                     )
                                 }
                             }
@@ -547,8 +605,8 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                     var filterText by remember { mutableStateOf("") }
                                     val filtered = s.data.filter {
                                         (it.firstName ?: "").contains(filterText, ignoreCase = true) ||
-                                                (it.lastName ?: "").contains(filterText, ignoreCase = true) ||
-                                                (it.email ?: "").contains(filterText, ignoreCase = true)
+                                            (it.lastName ?: "").contains(filterText, ignoreCase = true) ||
+                                            (it.email ?: "").contains(filterText, ignoreCase = true)
                                     }
 
                                     Box {
@@ -568,16 +626,16 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                 IconButton(onClick = { expanded = !expanded }) {
                                                     Icon(
                                                         if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                                        null
+                                                        null,
                                                     )
                                                 }
                                             },
-                                            singleLine = true
+                                            singleLine = true,
                                         )
                                         DropdownMenu(
                                             expanded = expanded && filtered.isNotEmpty(),
                                             onDismissRequest = { expanded = false },
-                                            modifier = Modifier.widthIn(min = 300.dp).fillMaxWidth(0.5f)
+                                            modifier = Modifier.widthIn(min = 300.dp).fillMaxWidth(0.5f),
                                         ) {
                                             filtered.take(10).forEach { customer ->
                                                 DropdownMenuItem(
@@ -585,12 +643,12 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                         Column {
                                                             Text(
                                                                 "${customer.firstName} ${customer.lastName}",
-                                                                fontWeight = FontWeight.Medium
+                                                                fontWeight = FontWeight.Medium,
                                                             )
                                                             Text(
                                                                 customer.email ?: "",
                                                                 fontSize = 11.sp,
-                                                                color = colors.text2
+                                                                color = colors.text2,
                                                             )
                                                         }
                                                     },
@@ -598,7 +656,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                                         selectedCustomer = customer
                                                         filterText = "${customer.firstName} ${customer.lastName}"
                                                         expanded = false
-                                                    }
+                                                    },
                                                 )
                                             }
                                         }
@@ -616,23 +674,23 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     Surface(
                         color = colors.primary.copy(alpha = 0.05f),
                         shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(
                             Modifier.padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "Selected Vehicle",
                                     fontSize = 12.sp,
                                     color = colors.primary,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
                                 )
                                 Text(
                                     "${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})",
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
@@ -650,13 +708,13 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                                 Text(
                                     "Estimated Total ($totalDays days)",
                                     fontSize = 12.sp,
-                                    color = colors.text2
+                                    color = colors.text2,
                                 )
                                 Text(
-                                    "PHP ${total}",
+                                    "PHP $total",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = colors.primary
+                                    color = colors.primary,
                                 )
                             }
                         }
@@ -676,7 +734,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                         endDate = it
                     }
                 },
-                onDismiss = { showStartDatePicker = false }
+                onDismiss = { showStartDatePicker = false },
             )
         }
 
@@ -689,7 +747,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                 initialDate = endDate,
                 minDateMillis = minEndDateMillis,
                 onDateSelected = { endDate = it },
-                onDismiss = { showEndDatePicker = false }
+                onDismiss = { showEndDatePicker = false },
             )
         }
 
@@ -700,7 +758,7 @@ fun CreateRentalBottomSheet(onDismiss: () -> Unit, sheetState: SheetState, renta
                     showErrorDialog = false
                     handleSubmit()
                 },
-                onDismiss = { showErrorDialog = false }
+                onDismiss = { showErrorDialog = false },
             )
         }
     }
@@ -712,7 +770,7 @@ fun RentalDatePickerDialog(
     initialDate: String,
     minDateMillis: Long? = null,
     onDateSelected: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = try {
@@ -724,17 +782,15 @@ fun RentalDatePickerDialog(
         },
         // This is the key to disabling dates
         selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return if (minDateMillis != null) {
-                    utcTimeMillis >= minDateMillis
-                } else {
-                    // Default for Start Date: Don't allow dates before today
-                    val today = Clock.System.now().toEpochMilliseconds()
-                    // We subtract a small buffer or normalize to start of day to ensure 'today' is clickable
-                    utcTimeMillis >= today - (24 * 60 * 60 * 1000)
-                }
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = if (minDateMillis != null) {
+                utcTimeMillis >= minDateMillis
+            } else {
+                // Default for Start Date: Don't allow dates before today
+                val today = Clock.System.now().toEpochMilliseconds()
+                // We subtract a small buffer or normalize to start of day to ensure 'today' is clickable
+                utcTimeMillis >= today - (24 * 60 * 60 * 1000)
             }
-        }
+        },
     )
 
     DatePickerDialog(
@@ -749,7 +805,7 @@ fun RentalDatePickerDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
+        },
     ) {
         DatePicker(state = datePickerState)
     }
@@ -760,6 +816,6 @@ private fun RentalSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, s
     androidx.compose.material3.Switch(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        modifier = if (small) Modifier.scale(0.8f) else Modifier
+        modifier = if (small) Modifier.scale(0.8f) else Modifier,
     )
 }

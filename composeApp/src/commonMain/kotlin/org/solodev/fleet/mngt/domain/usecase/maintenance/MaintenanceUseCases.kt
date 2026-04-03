@@ -26,8 +26,7 @@ class StartMaintenanceUseCase(private val repository: MaintenanceRepository) {
 }
 
 class CompleteMaintenanceUseCase(private val repository: MaintenanceRepository) {
-    suspend operator fun invoke(id: String, laborCostPhp: Long, partsCostPhp: Long) =
-        repository.completeJob(id, laborCostPhp, partsCostPhp)
+    suspend operator fun invoke(id: String, laborCostPhp: Long, partsCostPhp: Long) = repository.completeJob(id, laborCostPhp, partsCostPhp)
 }
 
 class CancelMaintenanceUseCase(private val repository: MaintenanceRepository) {

@@ -5,36 +5,36 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import org.solodev.fleet.mngt.auth.AuthState
-import org.solodev.fleet.mngt.auth.AuthStatus
+import kotlinx.coroutines.launch
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentMethodDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
-import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.api.dto.rental.RentalStatus
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
-import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
+import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CompleteRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.CreateRentalUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.UpdateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.DeleteRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetPaymentMethodsUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.PayInvoiceUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.UpdateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleUseCase
+import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
 import org.solodev.fleet.mngt.ui.UiState
 
 data class RentalStats(
@@ -143,7 +143,7 @@ class RentalsViewModel(
             active = items.count { it.status == RentalStatus.ACTIVE },
             reserved = items.count { it.status == RentalStatus.RESERVED },
             completed = items.count { it.status == RentalStatus.COMPLETED },
-            revenuePhp = items.filter { it.status == RentalStatus.COMPLETED }.sumOf { it.totalCost?.toLong() ?: 0L }
+            revenuePhp = items.filter { it.status == RentalStatus.COMPLETED }.sumOf { it.totalCost?.toLong() ?: 0L },
         )
     }
 
@@ -292,5 +292,7 @@ class RentalsViewModel(
         _actionResult.value = null
     }
 
-    fun clearActionResult() { _actionResult.value = null }
+    fun clearActionResult() {
+        _actionResult.value = null
+    }
 }

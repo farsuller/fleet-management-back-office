@@ -46,12 +46,13 @@ class AccountingRepositoryImpl(private val api: FleetApiClient) : AccountingRepo
 
     override suspend fun getInvoicesByCustomer(customerId: String) = api.getInvoicesByCustomer(customerId)
 
-    override suspend fun createInvoice(request: CreateInvoiceRequest) =
-        api.createInvoice(request).onSuccess { invoiceCache.clear() }
+    override suspend fun createInvoice(request: CreateInvoiceRequest) = api.createInvoice(request).onSuccess { invoiceCache.clear() }
 
-    override suspend fun payInvoice(id: String, request: PayInvoiceRequest, idempotencyKey: String) =
-        api.payInvoice(id, request, idempotencyKey)
-            .onSuccess { invoiceCache.clear(); paymentCache.clear() }
+    override suspend fun payInvoice(id: String, request: PayInvoiceRequest, idempotencyKey: String) = api.payInvoice(id, request, idempotencyKey)
+        .onSuccess {
+            invoiceCache.clear()
+            paymentCache.clear()
+        }
 
     override suspend fun getPayments(cursor: String?, limit: Int, forceRefresh: Boolean): Result<PagedResponse<PaymentDto>> {
         val key = "pay:$cursor:$limit"
@@ -61,15 +62,13 @@ class AccountingRepositoryImpl(private val api: FleetApiClient) : AccountingRepo
 
     override suspend fun getPaymentsByCustomer(customerId: String) = api.getPaymentsByCustomer(customerId)
 
-    override suspend fun recordDriverCollection(request: DriverCollectionRequest) =
-        api.recordDriverCollection(request).onSuccess { paymentCache.clear() }
+    override suspend fun recordDriverCollection(request: DriverCollectionRequest) = api.recordDriverCollection(request).onSuccess { paymentCache.clear() }
 
     override suspend fun getDriverPendingPayments(driverId: String) = api.getDriverPendingPayments(driverId)
 
     override suspend fun getAllDriverPayments(driverId: String) = api.getAllDriverPayments(driverId)
 
-    override suspend fun submitRemittance(request: DriverRemittanceRequest) =
-        api.submitRemittance(request).onSuccess { paymentCache.clear() }
+    override suspend fun submitRemittance(request: DriverRemittanceRequest) = api.submitRemittance(request).onSuccess { paymentCache.clear() }
 
     override suspend fun getRemittancesByDriver(driverId: String) = api.getRemittancesByDriver(driverId)
 

@@ -38,18 +38,13 @@ class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository
 
     override suspend fun getVehicle(id: String) = api.getVehicle(id)
 
-    override suspend fun createVehicle(request: CreateVehicleRequest) =
-        api.createVehicle(request).onSuccess { listCache.clear() }
+    override suspend fun createVehicle(request: CreateVehicleRequest) = api.createVehicle(request).onSuccess { listCache.clear() }
 
-    override suspend fun updateVehicle(id: String, request: UpdateVehicleRequest) =
-        api.updateVehicle(id, request).onSuccess { listCache.clear() }
+    override suspend fun updateVehicle(id: String, request: UpdateVehicleRequest) = api.updateVehicle(id, request).onSuccess { listCache.clear() }
 
-    override suspend fun updateVehicleState(id: String, state: VehicleState) =
-        api.updateVehicleState(id, VehicleStateRequest(state)).onSuccess { listCache.clear() }
+    override suspend fun updateVehicleState(id: String, state: VehicleState) = api.updateVehicleState(id, VehicleStateRequest(state)).onSuccess { listCache.clear() }
 
-    override suspend fun updateOdometer(id: String, readingKm: Long) =
-        api.updateOdometer(id, OdometerRequest(mileageKm = readingKm))
+    override suspend fun updateOdometer(id: String, readingKm: Long) = api.updateOdometer(id, OdometerRequest(mileageKm = readingKm))
 
-    override suspend fun deleteVehicle(id: String) =
-        api.deleteVehicle(id).onSuccess { listCache.clear() }
+    override suspend fun deleteVehicle(id: String) = api.deleteVehicle(id).onSuccess { listCache.clear() }
 }

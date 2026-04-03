@@ -15,19 +15,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
@@ -39,7 +39,6 @@ import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.util.MapProjection
 import org.solodev.fleet.mngt.util.MapViewState
 import org.solodev.fleet.mngt.util.SvgUtils
-
 
 private const val ANIMATION_DURATION_MS = 500
 
@@ -62,10 +61,10 @@ fun FleetMapCanvas(
     onPan: (dx: Float, dy: Float) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
-    val routeClr    = FleetColors.MapRoute
-    val activeClr   = FleetColors.MapConnect
+    val routeClr = FleetColors.MapRoute
+    val activeClr = FleetColors.MapConnect
     val selectedClr = FleetColors.Primary
-    val offlineClr  = FleetColors.Text2
+    val offlineClr = FleetColors.Text2
 
     // ── Animated positions — computed outside the Canvas so state reads drive recomposition ──
     val animatedVehicles = fleetState.keys.map { id ->
@@ -100,79 +99,78 @@ fun FleetMapCanvas(
                 }
             },
     ) {
-      Box(
-          modifier = Modifier
-              .requiredSize(canvasW.dp, canvasH.dp)
-              .align(Alignment.Center)
-      ) {
-        // Layer 1 — OSM tiles
-        OsmTileLayer(mapState = mapState, canvasW = canvasW, canvasH = canvasH, modifier = Modifier.matchParentSize())
+        Box(
+            modifier = Modifier
+                .requiredSize(canvasW.dp, canvasH.dp)
+                .align(Alignment.Center),
+        ) {
+            // Layer 1 — OSM tiles
+            OsmTileLayer(mapState = mapState, canvasW = canvasW, canvasH = canvasH, modifier = Modifier.matchParentSize())
 
-        // Layer 2 — Route polylines (transparent, drawn over tiles)
-        Canvas(modifier = Modifier.matchParentSize()) {
-            routes.forEach { route ->
-                val pts = route.lineString?.let { SvgUtils.wktToPoints(it) } ?: return@forEach
-                if (pts.size < 2) return@forEach
+            // Layer 2 — Route polylines (transparent, drawn over tiles)
+            Canvas(modifier = Modifier.matchParentSize()) {
+                routes.forEach { route ->
+                    val pts = route.lineString?.let { SvgUtils.wktToPoints(it) } ?: return@forEach
+                    if (pts.size < 2) return@forEach
 
-                val path = Path().apply {
-                    val (fx, fy) = MapProjection.toCanvasXY(pts[0].second, pts[0].first, mapState, canvasW, canvasH)
-                    moveTo(fx, fy)
-                    pts.drop(1).forEach { (lng, lat) ->
-                        val (px, py) = MapProjection.toCanvasXY(lat, lng, mapState, canvasW, canvasH)
-                        lineTo(px, py)
+                    val path = Path().apply {
+                        val (fx, fy) = MapProjection.toCanvasXY(pts[0].second, pts[0].first, mapState, canvasW, canvasH)
+                        moveTo(fx, fy)
+                        pts.drop(1).forEach { (lng, lat) ->
+                            val (px, py) = MapProjection.toCanvasXY(lat, lng, mapState, canvasW, canvasH)
+                            lineTo(px, py)
+                        }
                     }
+                    drawPath(path = path, color = routeClr, style = Stroke(width = 4f))
                 }
-                drawPath(path = path, color = routeClr, style = Stroke(width = 4f))
             }
-        }
 
-        // Layer 3 — Car icon markers (composable layer so painterResource works)
-        Box(modifier = Modifier.matchParentSize()) {
-            val carPainter = painterResource(Res.drawable.car_icon)
-            animatedVehicles.forEach { v ->
-                if (v.lat == 0.0 && v.lon == 0.0) return@forEach
-                val (cx, cy) = MapProjection.toCanvasXY(v.lat, v.lon, mapState, canvasW, canvasH)
-                val isSelected = v.vehicleId == selectedVehicleId
-                val iconSize = if (isSelected) 44f else 32f
-                val half = iconSize / 2f
+            // Layer 3 — Car icon markers (composable layer so painterResource works)
+            Box(modifier = Modifier.matchParentSize()) {
+                val carPainter = painterResource(Res.drawable.car_icon)
+                animatedVehicles.forEach { v ->
+                    if (v.lat == 0.0 && v.lon == 0.0) return@forEach
+                    val (cx, cy) = MapProjection.toCanvasXY(v.lat, v.lon, mapState, canvasW, canvasH)
+                    val isSelected = v.vehicleId == selectedVehicleId
+                    val iconSize = if (isSelected) 44f else 32f
+                    val half = iconSize / 2f
 
-                Box(
-                    modifier = Modifier
-                        .absoluteOffset((cx - half).dp, (cy - half).dp)
-                        .size(iconSize.dp)
-                        .rotate(v.rotation)
-                        .clickable { onVehicleClick(v.vehicleId) },
-                ) {
-                    if (isSelected) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(selectedClr.copy(alpha = 0.20f), CircleShape)
-                                .border(2.dp, selectedClr, CircleShape),
+                    Box(
+                        modifier = Modifier
+                            .absoluteOffset((cx - half).dp, (cy - half).dp)
+                            .size(iconSize.dp)
+                            .rotate(v.rotation)
+                            .clickable { onVehicleClick(v.vehicleId) },
+                    ) {
+                        if (isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .background(selectedClr.copy(alpha = 0.20f), CircleShape)
+                                    .border(2.dp, selectedClr, CircleShape),
+                            )
+                        }
+                        Image(
+                            painter = carPainter,
+                            contentDescription = v.vehicleId,
+                            modifier = Modifier.matchParentSize(),
                         )
                     }
-                    Image(
-                        painter = carPainter,
-                        contentDescription = v.vehicleId,
-                        modifier = Modifier.matchParentSize(),
-                    )
                 }
             }
-        }
-
-      }  // inner (requiredSize) Box
+        } // inner (requiredSize) Box
 
         // OSM attribution — lives in the outer (lens) box so it is always
         // visible inside the real container, never clipped by the fixed canvas.
         Text(
-            text     = "© OpenStreetMap contributors",
+            text = "© OpenStreetMap contributors",
             fontSize = 9.sp,
-            color    = Color(0xFF333333),
+            color = Color(0xFF333333),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(horizontal = 6.dp, vertical = 4.dp),
         )
-    }    // outer (lens / clipToBounds) Box
+    } // outer (lens / clipToBounds) Box
 }
 
 private data class AnimatedVehicle(

@@ -41,7 +41,9 @@ class RemittancesViewModel(
     private val _submitResult = MutableStateFlow<Result<DriverRemittanceDto>?>(null)
     val submitResult: StateFlow<Result<DriverRemittanceDto>?> = _submitResult.asStateFlow()
 
-    init { loadDrivers() }
+    init {
+        loadDrivers()
+    }
 
     private fun loadDrivers() = viewModelScope.launch {
         _driversState.value = UiState.Loading
@@ -69,7 +71,9 @@ class RemittancesViewModel(
             .onFailure { _submitResult.value = Result.failure(it) }
     }
 
-    fun clearSubmitResult() { _submitResult.value = null }
+    fun clearSubmitResult() {
+        _submitResult.value = null
+    }
 
     fun refresh() {
         loadDrivers()

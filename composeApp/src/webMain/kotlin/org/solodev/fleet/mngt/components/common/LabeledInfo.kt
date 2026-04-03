@@ -2,7 +2,6 @@ package org.solodev.fleet.mngt.components.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -20,25 +19,25 @@ import org.solodev.fleet.mngt.theme.fleetColors
 fun LabeledInfo(
     text: String,
     infoIcon: Painter,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val colors = fleetColors
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             modifier = Modifier.size(16.dp).padding(end = 4.dp),
             tint = colors.onBackground.copy(alpha = 0.7f),
             painter = infoIcon,
-            contentDescription = null
+            contentDescription = null,
         )
         Text(
             text = text,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            color = colors.onBackground.copy(alpha = 0.7f)
+            color = colors.onBackground.copy(alpha = 0.7f),
         )
     }
 }

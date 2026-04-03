@@ -5,24 +5,24 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import org.solodev.fleet.mngt.auth.AuthState
-import org.solodev.fleet.mngt.auth.AuthStatus
+import kotlinx.coroutines.launch
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.accounting.PaymentDto
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
-import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
+import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
-import org.solodev.fleet.mngt.domain.usecase.customer.UpdateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.DeactivateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerPaymentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerRentalsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
+import org.solodev.fleet.mngt.domain.usecase.customer.UpdateCustomerUseCase
 import org.solodev.fleet.mngt.ui.UiState
 
 enum class CustomerTab { INFO, RENTALS, PAYMENTS }
@@ -170,18 +170,20 @@ class CustomersViewModel(
                 .onSuccess { customer ->
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                    
+
                     // Refresh detail if currently viewing this customer
                     val current = (_detailState.value as? UiState.Success)?.data
                     if (current?.customer?.id == customerId) {
                         _detailState.value = UiState.Success(current.copy(customer = customer))
                     }
-                    
+
                     onUpdated()
                 }
                 .onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun clearActionResult() { _actionResult.value = null }
+    fun clearActionResult() {
+        _actionResult.value = null
+    }
 }

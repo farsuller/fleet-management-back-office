@@ -61,10 +61,12 @@ fun PaymentsTab() {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (isRefreshing) CircularProgressIndicator(
-                modifier = Modifier.width(20.dp).height(20.dp),
-                strokeWidth = 2.dp,
-            )
+            if (isRefreshing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(20.dp).height(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
             IconButton(onClick = vm::refresh) {
                 Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = colors.primary)
             }
@@ -111,8 +113,8 @@ fun PaymentsTab() {
             is UiState.Success -> {
                 val filtered = s.data.filter { payment ->
                     (methodFilter.isBlank() || (payment.paymentMethod ?: "").contains(methodFilter, ignoreCase = true)) &&
-                    (fromMs == null || (payment.paymentDate ?: 0L) >= fromMs) &&
-                    (toMs == null || (payment.paymentDate ?: 0L) <= toMs)
+                        (fromMs == null || (payment.paymentDate ?: 0L) >= fromMs) &&
+                        (toMs == null || (payment.paymentDate ?: 0L) <= toMs)
                 }
                 PaginatedTable(
                     headers = listOf("Payment #", "Invoice #", "Amount ()", "Method", "Type", "Date"),
@@ -125,42 +127,42 @@ fun PaymentsTab() {
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text1,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             payment.invoiceId?.take(8)?.let { "$it..." } ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text1,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             formatPhp(payment.amount ?: 0L),
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text1,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             payment.paymentMethod ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text2,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             payment.collectionType?.name?.replace('_', ' ') ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text2,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             payment.paymentDate?.let { formatDate(it) } ?: "--",
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
                             color = colors.text2,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         )
                     },
                 )

@@ -4,9 +4,9 @@ import org.solodev.fleet.mngt.api.FleetApiClient
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.rental.CompleteRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
-import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
 import org.solodev.fleet.mngt.api.dto.rental.RentalStatus
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface RentalRepository {
@@ -37,18 +37,13 @@ class RentalRepositoryImpl(private val api: FleetApiClient) : RentalRepository {
 
     override suspend fun getRental(id: String) = api.getRental(id)
 
-    override suspend fun createRental(request: CreateRentalRequest) =
-        api.createRental(request).onSuccess { listCache.clear() }
+    override suspend fun createRental(request: CreateRentalRequest) = api.createRental(request).onSuccess { listCache.clear() }
 
-    override suspend fun updateRental(id: String, request: UpdateRentalRequest) =
-        api.updateRental(id, request).onSuccess { listCache.clear() }
+    override suspend fun updateRental(id: String, request: UpdateRentalRequest) = api.updateRental(id, request).onSuccess { listCache.clear() }
 
-    override suspend fun activateRental(id: String) =
-        api.activateRental(id).onSuccess { listCache.clear() }
+    override suspend fun activateRental(id: String) = api.activateRental(id).onSuccess { listCache.clear() }
 
-    override suspend fun cancelRental(id: String) =
-        api.cancelRental(id).onSuccess { listCache.clear() }
+    override suspend fun cancelRental(id: String) = api.cancelRental(id).onSuccess { listCache.clear() }
 
-    override suspend fun completeRental(id: String, finalOdometerKm: Long) =
-        api.completeRental(id, CompleteRentalRequest(finalOdometerKm)).onSuccess { listCache.clear() }
+    override suspend fun completeRental(id: String, finalOdometerKm: Long) = api.completeRental(id, CompleteRentalRequest(finalOdometerKm)).onSuccess { listCache.clear() }
 }

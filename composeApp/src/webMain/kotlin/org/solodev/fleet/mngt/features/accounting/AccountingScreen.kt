@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,12 +65,12 @@ fun AccountingScreen(router: AppRouter) {
                 .padding(top = 16.dp),
         ) {
             when (selectedTab) {
-                AccountingTab.INVOICES       -> InvoicesTab(router = router)
-                AccountingTab.PAYMENTS       -> PaymentsTab()
-                AccountingTab.FLOWS          -> FlowsTab()
+                AccountingTab.INVOICES -> InvoicesTab(router = router)
+                AccountingTab.PAYMENTS -> PaymentsTab()
+                AccountingTab.FLOWS -> FlowsTab()
                 AccountingTab.DRIVER_PAYMENTS -> DriverPaymentsTab()
-                AccountingTab.REMITTANCES    -> RemittancesTab()
-                AccountingTab.ACCOUNTS       -> AccountsTab()
+                AccountingTab.REMITTANCES -> RemittancesTab()
+                AccountingTab.ACCOUNTS -> AccountsTab()
             }
         }
     }

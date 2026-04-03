@@ -8,49 +8,47 @@ import org.solodev.fleet.mngt.api.dto.tracking.VehicleStateDelta
  * Fields that are null in the delta retain their existing values.
  */
 object DeltaDecoder {
-    fun merge(current: VehicleRouteState, delta: VehicleStateDelta): VehicleRouteState =
-        current.copy(
-            latitude      = delta.latitude      ?: current.latitude,
-            longitude     = delta.longitude     ?: current.longitude,
-            speedKph      = delta.speedKph      ?: current.speedKph,
-            headingDeg    = delta.headingDeg    ?: current.headingDeg,
-            routeId       = delta.routeId       ?: current.routeId,
-            routeProgress = delta.routeProgress ?: current.routeProgress,
-            recordedAt    = delta.recordedAt    ?: current.recordedAt,
-            // MERGE — sensor fusion fields
-            accelX        = delta.accelX        ?: current.accelX,
-            accelY        = delta.accelY        ?: current.accelY,
-            accelZ        = delta.accelZ        ?: current.accelZ,
-            gyroX         = delta.gyroX         ?: current.gyroX,
-            gyroY         = delta.gyroY         ?: current.gyroY,
-            gyroZ         = delta.gyroZ         ?: current.gyroZ,
-            batteryLevel  = delta.batteryLevel  ?: current.batteryLevel,
-            harshBrake    = delta.harshBrake    ?: current.harshBrake,
-            harshAccel    = delta.harshAccel    ?: current.harshAccel,
-            sharpTurn     = delta.sharpTurn     ?: current.sharpTurn,
-        )
+    fun merge(current: VehicleRouteState, delta: VehicleStateDelta): VehicleRouteState = current.copy(
+        latitude = delta.latitude ?: current.latitude,
+        longitude = delta.longitude ?: current.longitude,
+        speedKph = delta.speedKph ?: current.speedKph,
+        headingDeg = delta.headingDeg ?: current.headingDeg,
+        routeId = delta.routeId ?: current.routeId,
+        routeProgress = delta.routeProgress ?: current.routeProgress,
+        recordedAt = delta.recordedAt ?: current.recordedAt,
+        // MERGE — sensor fusion fields
+        accelX = delta.accelX ?: current.accelX,
+        accelY = delta.accelY ?: current.accelY,
+        accelZ = delta.accelZ ?: current.accelZ,
+        gyroX = delta.gyroX ?: current.gyroX,
+        gyroY = delta.gyroY ?: current.gyroY,
+        gyroZ = delta.gyroZ ?: current.gyroZ,
+        batteryLevel = delta.batteryLevel ?: current.batteryLevel,
+        harshBrake = delta.harshBrake ?: current.harshBrake,
+        harshAccel = delta.harshAccel ?: current.harshAccel,
+        sharpTurn = delta.sharpTurn ?: current.sharpTurn,
+    )
 
     /** Bootstrap a fresh [VehicleRouteState] from a delta that arrived before any existing state. */
-    fun fromDelta(delta: VehicleStateDelta): VehicleRouteState =
-        VehicleRouteState(
-            vehicleId     = delta.vehicleId,
-            latitude      = delta.latitude,
-            longitude     = delta.longitude,
-            speedKph      = delta.speedKph,
-            headingDeg    = delta.headingDeg,
-            routeId       = delta.routeId,
-            routeProgress = delta.routeProgress,
-            recordedAt    = delta.recordedAt,
-            // START — sensor fusion fields
-            accelX        = delta.accelX,
-            accelY        = delta.accelY,
-            accelZ        = delta.accelZ,
-            gyroX         = delta.gyroX,
-            gyroY         = delta.gyroY,
-            gyroZ         = delta.gyroZ,
-            batteryLevel  = delta.batteryLevel,
-            harshBrake    = delta.harshBrake,
-            harshAccel    = delta.harshAccel,
-            sharpTurn     = delta.sharpTurn,
-        )
+    fun fromDelta(delta: VehicleStateDelta): VehicleRouteState = VehicleRouteState(
+        vehicleId = delta.vehicleId,
+        latitude = delta.latitude,
+        longitude = delta.longitude,
+        speedKph = delta.speedKph,
+        headingDeg = delta.headingDeg,
+        routeId = delta.routeId,
+        routeProgress = delta.routeProgress,
+        recordedAt = delta.recordedAt,
+        // START — sensor fusion fields
+        accelX = delta.accelX,
+        accelY = delta.accelY,
+        accelZ = delta.accelZ,
+        gyroX = delta.gyroX,
+        gyroY = delta.gyroY,
+        gyroZ = delta.gyroZ,
+        batteryLevel = delta.batteryLevel,
+        harshBrake = delta.harshBrake,
+        harshAccel = delta.harshAccel,
+        sharpTurn = delta.sharpTurn,
+    )
 }

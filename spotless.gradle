@@ -1,0 +1,19 @@
+apply plugin: "com.diffplug.spotless"
+spotless {
+    java {
+        target '**/*.java'
+        googleJavaFormat().aosp()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        indentWithSpaces()
+        endWithNewline()
+    }
+    kotlin {
+        target "**/*.kt"
+        targetExclude 'src/webMain/kotlin/org/solodev/fleet/mngt/di'
+        trimTrailingWhitespace()
+        ktlint().editorConfigOverride(["ktlint_standard_function-naming": "disabled"])
+        indentWithSpaces()
+        endWithNewline()
+    }
+}

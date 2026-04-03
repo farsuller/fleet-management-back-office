@@ -43,9 +43,9 @@ fun ImportRouteDialog(
     onImport: (name: String, description: String?, geojson: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var name        by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var geojson     by remember { mutableStateOf("") }
+    var geojson by remember { mutableStateOf("") }
 
     val canImport = name.isNotBlank() && geojson.isNotBlank() && !isLoading
 
@@ -63,38 +63,38 @@ fun ImportRouteDialog(
                 )
 
                 OutlinedTextField(
-                    value         = name,
+                    value = name,
                     onValueChange = { name = it },
-                    label         = { Text("Route Name *") },
-                    singleLine    = true,
+                    label = { Text("Route Name *") },
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    modifier      = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 OutlinedTextField(
-                    value         = description,
+                    value = description,
                     onValueChange = { description = it },
-                    label         = { Text("Description (optional)") },
-                    singleLine    = true,
+                    label = { Text("Description (optional)") },
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    modifier      = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 OutlinedTextField(
-                    value         = geojson,
+                    value = geojson,
                     onValueChange = { geojson = it },
-                    label         = { Text("GeoJSON *") },
-                    placeholder   = { Text("Paste GeoJSON here…", fontSize = 11.sp) },
-                    minLines      = 4,
-                    maxLines      = 8,
-                    modifier      = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+                    label = { Text("GeoJSON *") },
+                    placeholder = { Text("Paste GeoJSON here…", fontSize = 11.sp) },
+                    minLines = 4,
+                    maxLines = 8,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
                 )
 
                 if (errorMessage != null) {
                     Text(
-                        text     = errorMessage,
+                        text = errorMessage,
                         fontSize = 12.sp,
-                        color    = androidx.compose.ui.graphics.Color(0xFFEF4444),
+                        color = androidx.compose.ui.graphics.Color(0xFFEF4444),
                     )
                 }
             }
@@ -106,8 +106,8 @@ fun ImportRouteDialog(
                     Spacer(Modifier.width(8.dp))
                 }
                 TextButton(
-                    onClick  = { if (canImport) onImport(name.trim(), description.trimOrNull(), geojson.trim()) },
-                    enabled  = canImport,
+                    onClick = { if (canImport) onImport(name.trim(), description.trimOrNull(), geojson.trim()) },
+                    enabled = canImport,
                 ) {
                     Text("Import")
                 }

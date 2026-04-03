@@ -53,8 +53,8 @@ actual class SecureStorage {
     }
 
     private companion object {
-        const val TOKEN_KEY   = "fleet_jwt"
+        const val TOKEN_KEY = "fleet_jwt"
         const val SESSION_KEY = "fleet_session"
-        const val THEME_KEY   = "fleet_theme"
+        const val THEME_KEY = "fleet_theme"
     }
 }

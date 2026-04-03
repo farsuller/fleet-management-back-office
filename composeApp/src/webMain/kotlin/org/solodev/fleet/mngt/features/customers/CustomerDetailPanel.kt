@@ -1,18 +1,40 @@
 package org.solodev.fleet.mngt.features.customers
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,7 +60,7 @@ private fun formatDate(epochMs: Long?): String {
 @Composable
 fun CustomerDetailPanel(
     customerId: String?,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
     val vm = koinViewModel<CustomersViewModel>()
     val detailState by vm.detailState.collectAsState()
@@ -48,7 +70,7 @@ fun CustomerDetailPanel(
         visible = customerId != null,
         enter = slideInHorizontally(initialOffsetX = { it }),
         exit = slideOutHorizontally(targetOffsetX = { it }),
-        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp)
+        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp),
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -60,7 +82,7 @@ fun CustomerDetailPanel(
                 Row(
                     Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text("Customer Details", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     IconButton(onClick = onClose) {
@@ -80,18 +102,18 @@ fun CustomerDetailPanel(
                         CustomerContent(
                             customer = snapshot.customer,
                             rentals = snapshot.rentals,
-                            payments = snapshot.payments
+                            payments = snapshot.payments,
                         )
                     }
 
                     is UiState.Error -> Box(
                         Modifier.fillMaxSize().padding(32.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             s.message,
                             color = colors.cancelled,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         )
                     }
 
@@ -110,7 +132,7 @@ fun CustomerDetailPanel(
 private fun CustomerContent(
     customer: CustomerDto,
     rentals: List<RentalDto>,
-    payments: List<PaymentDto>
+    payments: List<PaymentDto>,
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Info", "Rentals", "Payments")
@@ -121,17 +143,17 @@ private fun CustomerContent(
         Row(
             Modifier.fillMaxWidth().padding(24.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Box(
                 Modifier.size(64.dp).clip(RoundedCornerShape(32.dp)).background(colors.primary.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     Icons.Default.Person,
                     contentDescription = null,
                     tint = colors.primary,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
                 )
             }
             Column {
@@ -140,13 +162,12 @@ private fun CustomerContent(
             }
         }
 
-
         PrimaryScrollableTabRow(
             selectedTabIndex = selectedTab,
             containerColor = colors.surface,
             contentColor = colors.primary,
             edgePadding = 24.dp, // Matches the Profile Header padding
-            divider = {}         // Removes the default bottom line for a cleaner look
+            divider = {}, // Removes the default bottom line for a cleaner look
         ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
@@ -156,9 +177,9 @@ private fun CustomerContent(
                         Text(
                             title.uppercase(),
                             fontSize = 11.sp,
-                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
                         )
-                    }
+                    },
                 )
             }
         }
@@ -238,12 +259,12 @@ private fun RentalHistoryItem(rental: RentalDto) {
     Surface(
         color = colors.surfaceVariant.copy(alpha = 0.3f),
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column {
                 val vehicleText =
@@ -252,14 +273,14 @@ private fun RentalHistoryItem(rental: RentalDto) {
                 Text(
                     "${formatDate(rental.startDate)} - ${formatDate(rental.endDate)}",
                     fontSize = 12.sp,
-                    color = colors.text2
+                    color = colors.text2,
                 )
             }
             Text(
                 rental.status?.name ?: "PENDING",
                 color = colors.primary,
                 fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
+                fontSize = 12.sp,
             )
         }
     }
@@ -271,12 +292,12 @@ private fun PaymentHistoryItem(payment: PaymentDto) {
     Surface(
         color = colors.surfaceVariant.copy(alpha = 0.3f),
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column {
                 Text(payment.paymentMethod ?: "Payment", fontWeight = FontWeight.Bold, fontSize = 13.sp)

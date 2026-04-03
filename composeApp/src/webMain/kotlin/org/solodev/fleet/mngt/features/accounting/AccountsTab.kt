@@ -45,10 +45,12 @@ fun AccountsTab() {
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            if (isRefreshing) CircularProgressIndicator(
-                modifier = Modifier.width(20.dp).height(20.dp),
-                strokeWidth = 2.dp,
-            )
+            if (isRefreshing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(20.dp).height(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
         }
 
         when (val s = state) {
@@ -116,43 +118,43 @@ fun AccountsTab() {
                     }
 
                     if (expanded) {
-                    accounts
-                        .sortedBy { it.code ?: "" }
-                        .forEach { account ->
-                            val balance = account.balancePhp ?: 0L
-                            val isNegative = balance < 0
-                            Row(
-                                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Text(
-                                    account.code ?: "—",
-                                    modifier = Modifier.width(80.dp),
-                                    fontSize = 12.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    color = colors.text2,
-                                )
-                                Text(
-                                    account.name ?: "—",
-                                    modifier = Modifier.weight(2f),
-                                    fontSize = 13.sp,
-                                    color = colors.text1,
-                                )
-                                Text(
-                                    account.type?.name ?: "—",
-                                    modifier = Modifier.weight(1f),
-                                    fontSize = 12.sp,
-                                    color = colors.text2,
-                                )
-                                Text(
-                                    formatPhp(balance),
-                                    modifier = Modifier.weight(1f),
-                                    fontSize = 13.sp,
-                                    color = if (isNegative) MaterialTheme.colorScheme.error else colors.text1,
-                                    fontWeight = if (isNegative) FontWeight.Medium else FontWeight.Normal,
-                                )
+                        accounts
+                            .sortedBy { it.code ?: "" }
+                            .forEach { account ->
+                                val balance = account.balancePhp ?: 0L
+                                val isNegative = balance < 0
+                                Row(
+                                    Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Text(
+                                        account.code ?: "—",
+                                        modifier = Modifier.width(80.dp),
+                                        fontSize = 12.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = colors.text2,
+                                    )
+                                    Text(
+                                        account.name ?: "—",
+                                        modifier = Modifier.weight(2f),
+                                        fontSize = 13.sp,
+                                        color = colors.text1,
+                                    )
+                                    Text(
+                                        account.type?.name ?: "—",
+                                        modifier = Modifier.weight(1f),
+                                        fontSize = 12.sp,
+                                        color = colors.text2,
+                                    )
+                                    Text(
+                                        formatPhp(balance),
+                                        modifier = Modifier.weight(1f),
+                                        fontSize = 13.sp,
+                                        color = if (isNegative) MaterialTheme.colorScheme.error else colors.text1,
+                                        fontWeight = if (isNegative) FontWeight.Medium else FontWeight.Normal,
+                                    )
+                                }
                             }
-                        }
                     } // end if (expanded)
 
                     if (expanded) Spacer(Modifier.height(8.dp))

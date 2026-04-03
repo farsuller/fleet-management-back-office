@@ -6,4 +6,17 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.spotless) apply false
+}
+
+buildscript {
+    dependencies {
+        classpath(libs.spotless)
+    }
+}
+
+subprojects {
+    afterEvaluate {
+        project.apply("${project.rootDir}/spotless.gradle")
+    }
 }

@@ -1,11 +1,36 @@
 package org.solodev.fleet.mngt.features.vehicles
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -47,10 +72,8 @@ fun VehicleSheet(
 
     val datePickerState = rememberDatePickerState(
         selectableDates = object : SelectableDates {
-            override fun isSelectableYear(year: Int): Boolean {
-                return year in 1900..2100
-            }
-        }
+            override fun isSelectableYear(year: Int): Boolean = year in 1900..2100
+        },
     )
 
     actionResult?.let { result ->
@@ -70,7 +93,7 @@ fun VehicleSheet(
             licensePlate = plateErr,
             make = makeErr,
             model = modelErr,
-            year = yearErr
+            year = yearErr,
         )
 
         if (!errors.hasErrors()) {
@@ -85,7 +108,7 @@ fun VehicleSheet(
                         mileageKm = formState.mileage.toLongOrNull(),
                         lastServiceMileage = formState.lastServiceMileage.toIntOrNull(),
                         nextServiceMileage = formState.nextServiceMileage.toIntOrNull(),
-                        version = vehicle.version
+                        version = vehicle.version,
                     )
                     vm.updateVehicle(id, request)
                     onDismiss()
@@ -101,8 +124,8 @@ fun VehicleSheet(
                         color = formState.color,
                         mileageKm = formState.mileage.toLongOrNull() ?: 0,
                         lastServiceMileage = formState.lastServiceMileage.toIntOrNull(),
-                        nextServiceMileage = formState.nextServiceMileage.toIntOrNull()
-                    )
+                        nextServiceMileage = formState.nextServiceMileage.toIntOrNull(),
+                    ),
                 ) { createdId ->
                     onDismiss()
                 }
@@ -116,7 +139,7 @@ fun VehicleSheet(
         modifier = Modifier.fillMaxWidth(),
         containerColor = colors.surface,
         contentColor = colors.onBackground,
-        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) },
     ) {
         val infoIcon = painterResource(Res.drawable.info_icon)
         val serviceIcon = painterResource(Res.drawable.ic_service)
@@ -134,19 +157,19 @@ fun VehicleSheet(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             if (isEdit) "Edit Vehicle" else "Add New Vehicle",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colors.onBackground
+                            color = colors.onBackground,
                         )
                         Text(
                             if (isEdit) "Update the vehicle details below." else "Enter the vehicle details below to add it to your fleet.",
                             fontSize = 14.sp,
-                            color = colors.onBackground.copy(alpha = 0.6f)
+                            color = colors.onBackground.copy(alpha = 0.6f),
                         )
                     }
 
@@ -163,7 +186,7 @@ fun VehicleSheet(
                     Surface(
                         color = colors.cancelled.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(it, color = colors.cancelled, modifier = Modifier.padding(12.dp), fontSize = 13.sp)
                     }
@@ -171,12 +194,12 @@ fun VehicleSheet(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(48.dp)
+                    horizontalArrangement = Arrangement.spacedBy(48.dp),
                 ) {
                     // Left Column: Vehicle Details
                     Column(
                         modifier = Modifier.weight(1.5f),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
                         // VIN & Plate
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -201,8 +224,9 @@ fun VehicleSheet(
                                 OutlinedTextField(
                                     value = formState.licensePlate,
                                     onValueChange = {
-                                        formState = formState.copy(licensePlate = it.uppercase()); errors =
-                                        errors.copy(licensePlate = null)
+                                        formState = formState.copy(licensePlate = it.uppercase())
+                                        errors =
+                                            errors.copy(licensePlate = null)
                                     },
                                     label = { Text("License Plate") },
                                     isError = errors.licensePlate != null,
@@ -219,22 +243,28 @@ fun VehicleSheet(
                                 LabeledInfo("Manufacturer of the Vehicle (Toyota, Honda, etc.)", infoIcon)
                                 OutlinedTextField(
                                     formState.make,
-                                    { formState = formState.copy(make = it); errors = errors.copy(make = null) },
+                                    {
+                                        formState = formState.copy(make = it)
+                                        errors = errors.copy(make = null)
+                                    },
                                     label = { Text("Make") },
                                     isError = errors.make != null,
                                     modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true
+                                    singleLine = true,
                                 )
                             }
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 LabeledInfo("Vehicle Model (Corolla, Camry, etc.)", infoIcon)
                                 OutlinedTextField(
                                     formState.model,
-                                    { formState = formState.copy(model = it); errors = errors.copy(model = null) },
+                                    {
+                                        formState = formState.copy(model = it)
+                                        errors = errors.copy(model = null)
+                                    },
                                     label = { Text("Model") },
                                     isError = errors.model != null,
                                     modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true
+                                    singleLine = true,
                                 )
                             }
                             Column(Modifier.weight(0.7f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -247,7 +277,7 @@ fun VehicleSheet(
                                         isError = errors.year != null,
                                         modifier = Modifier.fillMaxWidth(),
                                         singleLine = true,
-                                        readOnly = true
+                                        readOnly = true,
                                     )
                                     Box(
                                         modifier = Modifier
@@ -261,7 +291,7 @@ fun VehicleSheet(
                                                         }
                                                     }
                                                 }
-                                            }
+                                            },
                                     )
                                 }
                             }
@@ -276,13 +306,14 @@ fun VehicleSheet(
                                     { formState = formState.copy(color = it) },
                                     label = { Text("Color") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true
+                                    singleLine = true,
                                 )
                             }
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 LabeledInfo("Current Mileage (km)", infoIcon)
                                 OutlinedTextField(
-                                    formState.mileage, { formState = formState.copy(mileage = it) },
+                                    formState.mileage,
+                                    { formState = formState.copy(mileage = it) },
                                     label = { Text("Odometer (km)") },
                                     modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
@@ -294,13 +325,13 @@ fun VehicleSheet(
                     // Right Column: Maintenance & Actions
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
                         Text(
                             "Maintenance Schedule",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = colors.primary
+                            color = colors.primary,
                         )
                         HorizontalDivider(color = colors.primary.copy(alpha = 0.2f))
 
@@ -310,7 +341,7 @@ fun VehicleSheet(
                             { formState = formState.copy(lastServiceMileage = it) },
                             serviceIcon,
                             "Odometer reading at last oil change.",
-                            isNumber = true
+                            isNumber = true,
                         )
                         LabeledTextField(
                             "Next Service Mileage",
@@ -318,7 +349,7 @@ fun VehicleSheet(
                             { formState = formState.copy(nextServiceMileage = it) },
                             serviceIcon,
                             "Odometer reading when next service is due.",
-                            isNumber = true
+                            isNumber = true,
                         )
                     }
                 }
@@ -342,11 +373,11 @@ fun VehicleSheet(
                             TextButton(onClick = { showYearPicker = false }) {
                                 Text("Cancel")
                             }
-                        }
+                        },
                     ) {
                         DatePicker(
                             state = datePickerState,
-                            showModeToggle = true
+                            showModeToggle = true,
                         )
                     }
                 }
@@ -362,7 +393,7 @@ private fun LabeledTextField(
     onValueChange: (String) -> Unit,
     infoIcon: Painter,
     infoText: String,
-    isNumber: Boolean = false
+    isNumber: Boolean = false,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         LabeledInfo(label, infoIcon)
@@ -371,7 +402,7 @@ private fun LabeledTextField(
             onValueChange = onValueChange,
             label = { Text(label) },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
         )
     }
 }

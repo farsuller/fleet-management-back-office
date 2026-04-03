@@ -4,7 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +24,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,7 +64,7 @@ fun DriverDetailPanel(
     driverId: String?,
     onClose: () -> Unit,
     onEdit: (DriverDto) -> Unit,
-    viewModel: DriversViewModel = koinViewModel()
+    viewModel: DriversViewModel = koinViewModel(),
 ) {
     val detailState by viewModel.detailState.collectAsState()
     val colors = fleetColors
@@ -50,7 +74,7 @@ fun DriverDetailPanel(
         visible = driverId != null,
         enter = slideInHorizontally(initialOffsetX = { it }),
         exit = slideOutHorizontally(targetOffsetX = { it }),
-        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp)
+        modifier = Modifier.fillMaxHeight().width(400.dp).padding(start = 16.dp),
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -62,13 +86,13 @@ fun DriverDetailPanel(
                 Row(
                     Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         "Driver Details",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = colors.onBackground
+                        color = colors.onBackground,
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { (detailState as? UiState.Success)?.data?.let { onEdit(it) } }) {
@@ -76,14 +100,14 @@ fun DriverDetailPanel(
                                 painter = painterResource(Res.drawable.edit_icon),
                                 contentDescription = "Edit Driver",
                                 tint = colors.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                         }
                         IconButton(onClick = onClose) {
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Close",
-                                tint = colors.onBackground.copy(alpha = 0.6f)
+                                tint = colors.onBackground.copy(alpha = 0.6f),
                             )
                         }
                     }
@@ -94,7 +118,7 @@ fun DriverDetailPanel(
                 when (val state = detailState) {
                     is UiState.Loading -> Box(
                         Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) { CircularProgressIndicator() }
 
                     is UiState.Error -> Column(Modifier.padding(16.dp)) {
@@ -109,7 +133,7 @@ fun DriverDetailPanel(
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp)
                                 .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(24.dp)
+                            verticalArrangement = Arrangement.spacedBy(24.dp),
                         ) {
                             // Profile Header Card
                             Card(
@@ -117,23 +141,23 @@ fun DriverDetailPanel(
                                 colors = CardDefaults.cardColors(containerColor = colors.surface),
                                 border = androidx.compose.foundation.BorderStroke(
                                     1.dp,
-                                    colors.border.copy(alpha = 0.5f)
-                                )
+                                    colors.border.copy(alpha = 0.5f),
+                                ),
                             ) {
                                 Row(
                                     modifier = Modifier.padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Box(
                                         modifier = Modifier.size(64.dp).clip(CircleShape)
                                             .background(colors.primary.copy(alpha = 0.1f)),
-                                        contentAlignment = Alignment.Center
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Text(
                                             (driver.firstName ?: " ").take(1).uppercase(),
                                             fontSize = 24.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = colors.primary
+                                            color = colors.primary,
                                         )
                                     }
                                     Spacer(Modifier.width(16.dp))
@@ -141,12 +165,16 @@ fun DriverDetailPanel(
                                         Text(
                                             "${driver.firstName} ${driver.lastName}",
                                             fontSize = 18.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
                                         )
                                         Spacer(Modifier.height(4.dp))
-                                        val status = if (driver.currentAssignment?.isActive == true) DriverStatus.ACTIVE
-                                        else if (driver.isActive == true) DriverStatus.AVAILABLE
-                                        else DriverStatus.DISABLED
+                                        val status = if (driver.currentAssignment?.isActive == true) {
+                                            DriverStatus.ACTIVE
+                                        } else if (driver.isActive == true) {
+                                            DriverStatus.AVAILABLE
+                                        } else {
+                                            DriverStatus.DISABLED
+                                        }
                                         DriverStatusBadge(status)
                                     }
                                 }
@@ -172,33 +200,33 @@ fun DriverDetailPanel(
                                     Column(
                                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
                                             .background(colors.primary.copy(alpha = 0.05f)).padding(12.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
                                                 painterResource(Res.drawable.ic_car),
                                                 null,
                                                 modifier = Modifier.size(24.dp),
-                                                tint = colors.primary
+                                                tint = colors.primary,
                                             )
                                             Spacer(Modifier.width(8.dp))
                                             Text(
                                                 "Vehicle: ${assignment.vehicleId}",
                                                 fontWeight = FontWeight.Bold,
-                                                color = colors.primary
+                                                color = colors.primary,
                                             )
                                         }
                                         Text(
                                             "Started: ${assignment.assignedAt ?: "—"}",
                                             fontSize = 12.sp,
-                                            color = colors.text2
+                                            color = colors.text2,
                                         )
 
                                         Button(
                                             onClick = { viewModel.releaseFromVehicle(driver.id!!) },
                                             modifier = Modifier.fillMaxWidth(),
                                             colors = ButtonDefaults.buttonColors(containerColor = colors.cancelled),
-                                            shape = RoundedCornerShape(8.dp)
+                                            shape = RoundedCornerShape(8.dp),
                                         ) {
                                             Text("Release from Vehicle")
                                         }
@@ -207,7 +235,7 @@ fun DriverDetailPanel(
                                     Text(
                                         "Not currently assigned to any vehicle.",
                                         fontSize = 13.sp,
-                                        color = colors.text2
+                                        color = colors.text2,
                                     )
                                 }
                             }
@@ -215,14 +243,14 @@ fun DriverDetailPanel(
                             // Professional Actions
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.padding(bottom = 24.dp)
+                                modifier = Modifier.padding(bottom = 24.dp),
                             ) {
                                 Text("Administrative Actions", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                                 Button(
                                     onClick = { onEdit(driver) },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(8.dp),
                                 ) {
                                     Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
@@ -232,14 +260,17 @@ fun DriverDetailPanel(
                                 val isActivating = driver.isActive != true
                                 OutlinedButton(
                                     onClick = {
-                                        if (isActivating) viewModel.activateDriver(driver.id!!)
-                                        else viewModel.deactivateDriver(driver.id!!)
+                                        if (isActivating) {
+                                            viewModel.activateDriver(driver.id!!)
+                                        } else {
+                                            viewModel.deactivateDriver(driver.id!!)
+                                        }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = if (isActivating) colors.available else colors.cancelled
+                                        contentColor = if (isActivating) colors.available else colors.cancelled,
                                     ),
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(8.dp),
                                 ) {
                                     Text(if (isActivating) "Activate Account" else "Deactivate Account")
                                 }
@@ -256,7 +287,7 @@ fun DriverDetailPanel(
 private fun DetailSection(
     title: String,
     colors: org.solodev.fleet.mngt.theme.FleetExtendedColors,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
@@ -264,7 +295,7 @@ private fun DetailSection(
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = colors.text2,
-            letterSpacing = 1.sp
+            letterSpacing = 1.sp,
         )
         content()
         HorizontalDivider(Modifier.padding(top = 4.dp), color = colors.border.copy(alpha = 0.5f))
@@ -276,7 +307,7 @@ private fun LabeledDetail(label: String, value: String, icon: Painter) {
     val colors = fleetColors
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 4.dp)
+        modifier = Modifier.padding(vertical = 4.dp),
     ) {
         Icon(icon, null, modifier = Modifier.size(14.dp), tint = colors.text2)
         Spacer(Modifier.width(8.dp))

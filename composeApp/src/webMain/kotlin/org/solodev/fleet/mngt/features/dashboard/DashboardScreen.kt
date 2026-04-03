@@ -18,13 +18,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -48,10 +46,18 @@ import com.himanshoe.charty.pie.PieChart
 import com.himanshoe.charty.pie.config.PieChartConfig
 import com.himanshoe.charty.pie.config.PieChartStyle
 import com.himanshoe.charty.pie.data.PieData
+import fleetmanagementbackoffice.composeapp.generated.resources.Res
+import fleetmanagementbackoffice.composeapp.generated.resources.ic_car
+import fleetmanagementbackoffice.composeapp.generated.resources.ic_service
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.rental.RentalDto
+import org.solodev.fleet.mngt.components.common.ChartSkeleton
 import org.solodev.fleet.mngt.components.common.KpiCard
 import org.solodev.fleet.mngt.components.common.KpiCardError
+import org.solodev.fleet.mngt.components.common.KpiLegendItem
+import org.solodev.fleet.mngt.components.common.KpiSegment
+import org.solodev.fleet.mngt.components.common.ListSectionSkeleton
 import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 import org.solodev.fleet.mngt.domain.model.DashboardSnapshot
 import org.solodev.fleet.mngt.domain.model.FinancialSummary
@@ -60,13 +66,6 @@ import org.solodev.fleet.mngt.navigation.Screen
 import org.solodev.fleet.mngt.theme.FleetColors
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
-import org.solodev.fleet.mngt.components.common.*
-import org.jetbrains.compose.resources.painterResource
-import fleetmanagementbackoffice.composeapp.generated.resources.Res
-import fleetmanagementbackoffice.composeapp.generated.resources.ic_car
-import fleetmanagementbackoffice.composeapp.generated.resources.ic_service
-import org.solodev.fleet.mngt.components.common.KpiSegment
-import org.solodev.fleet.mngt.components.common.KpiLegendItem
 
 /** Converts a centavo amount to a ₱X,XXX display string (no decimals). */
 private fun formatPesosShort(centavos: Long): String {
@@ -91,7 +90,7 @@ fun DashboardScreen(router: AppRouter) {
     val colors = fleetColors
 
     var showErrorDialog by remember { mutableStateOf<Boolean>(false) }
-    
+
     // Auto-show dialog on error
     LaunchedEffect(state) {
         if (state is UiState.Error) {
@@ -106,7 +105,7 @@ fun DashboardScreen(router: AppRouter) {
                 vm.refresh()
                 showErrorDialog = false
             },
-            onDismiss = { showErrorDialog = false }
+            onDismiss = { showErrorDialog = false },
         )
     }
 
@@ -155,41 +154,39 @@ private fun FinancialSummaryRow(summary: FinancialSummary?, isLoading: Boolean =
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         KpiCard(
-            label    = "Total Assets",
-            value    = summary?.let { formatPesosShort(it.totalAssetsPhp) } ?: "—",
-            icon     = Icons.Filled.AccountBalance,
+            label = "Total Assets",
+            value = summary?.let { formatPesosShort(it.totalAssetsPhp) } ?: "—",
+            icon = Icons.Filled.AccountBalance,
             iconTint = colors.primary,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             isLoading = isLoading,
         )
         KpiCard(
-            label    = "Rental Revenue",
-            value    = summary?.let { formatPesosShort(it.totalRevenuePhp) } ?: "—",
-            icon     = Icons.AutoMirrored.Filled.TrendingUp,
+            label = "Rental Revenue",
+            value = summary?.let { formatPesosShort(it.totalRevenuePhp) } ?: "—",
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
             iconTint = colors.active,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             isLoading = isLoading,
         )
         KpiCard(
-            label    = "Cash Balance",
-            value    = summary?.let { formatPesosShort(it.cashBalancePhp) } ?: "—",
-            icon     = Icons.Filled.Payments,
+            label = "Cash Balance",
+            value = summary?.let { formatPesosShort(it.cashBalancePhp) } ?: "—",
+            icon = Icons.Filled.Payments,
             iconTint = colors.paid,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             isLoading = isLoading,
         )
         KpiCard(
-            label    = "Accounts Receivable",
-            value    = summary?.let { formatPesosShort(it.accountsReceivablePhp) } ?: "—",
-            icon     = Icons.AutoMirrored.Filled.ReceiptLong,
+            label = "Accounts Receivable",
+            value = summary?.let { formatPesosShort(it.accountsReceivablePhp) } ?: "—",
+            icon = Icons.AutoMirrored.Filled.ReceiptLong,
             iconTint = colors.maintenance,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             isLoading = isLoading,
         )
     }
 }
-
-
 
 @Composable
 private fun KpiGrid(
@@ -199,7 +196,7 @@ private fun KpiGrid(
 ) {
     val colors = fleetColors
     val stats = snapshot?.stats
-    
+
     Row(
         modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -218,16 +215,22 @@ private fun KpiGrid(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 segments = stats?.let {
                     listOf(
-                        KpiSegment(it.availableVehicles.toFloat() / it.totalVehicles.coerceAtLeast(1), colors.available),
-                        KpiSegment(it.maintenanceVehicles.toFloat() / it.totalVehicles.coerceAtLeast(1), colors.maintenance),
+                        KpiSegment(
+                            it.availableVehicles.toFloat() / it.totalVehicles.coerceAtLeast(1),
+                            colors.available,
+                        ),
+                        KpiSegment(
+                            it.maintenanceVehicles.toFloat() / it.totalVehicles.coerceAtLeast(1),
+                            colors.maintenance,
+                        ),
                         KpiSegment(it.retiredVehicles.toFloat() / it.totalVehicles.coerceAtLeast(1), colors.cancelled),
                     ).filter { s -> s.weight > 0 }
                 } ?: emptyList(),
                 legend = listOf(
                     KpiLegendItem("Available", colors.available),
                     KpiLegendItem("Service", colors.maintenance, painterResource(Res.drawable.ic_service)),
-                    KpiLegendItem("Damaged", colors.cancelled)
-                )
+                    KpiLegendItem("Damaged", colors.cancelled),
+                ),
             )
 
             // 2. Active Rentals
@@ -240,7 +243,8 @@ private fun KpiGrid(
                 isLoading = isLoading,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 segments = stats?.let {
-                    val total = it.activeRentals + it.pendingInvoices // Using invoices as placeholder for "upcoming/reserved"
+                    val total =
+                        it.activeRentals + it.pendingInvoices // Using invoices as placeholder for "upcoming/reserved"
                     listOf(
                         KpiSegment(it.activeRentals.toFloat() / total.coerceAtLeast(1), colors.active),
                         KpiSegment(it.pendingInvoices.toFloat() / total.coerceAtLeast(1), colors.reserved),
@@ -248,8 +252,8 @@ private fun KpiGrid(
                 } ?: emptyList(),
                 legend = listOf(
                     KpiLegendItem("Active", colors.active),
-                    KpiLegendItem("Reserved", colors.reserved)
-                )
+                    KpiLegendItem("Reserved", colors.reserved),
+                ),
             )
 
             // 3. Pending Maintenance
@@ -270,8 +274,8 @@ private fun KpiGrid(
                 } ?: emptyList(),
                 legend = listOf(
                     KpiLegendItem("Urgent", colors.cancelled),
-                    KpiLegendItem("Routine", colors.maintenance)
-                )
+                    KpiLegendItem("Routine", colors.maintenance),
+                ),
             )
 
             // 4. Overdue Invoices
@@ -294,8 +298,8 @@ private fun KpiGrid(
                 } ?: emptyList(),
                 legend = listOf(
                     KpiLegendItem("Overdue", colors.cancelled),
-                    KpiLegendItem("Paid", colors.available)
-                )
+                    KpiLegendItem("Paid", colors.available),
+                ),
             )
 
             // 5. Revenue (Month)
@@ -311,8 +315,8 @@ private fun KpiGrid(
                     listOf(KpiSegment(1f, colors.paid))
                 } ?: emptyList(),
                 legend = listOf(
-                    KpiLegendItem("Target ₱ 500k", colors.text2)
-                )
+                    KpiLegendItem("Target ₱ 500k", colors.text2),
+                ),
             )
 
             // 6. Active Incidents
@@ -329,8 +333,8 @@ private fun KpiGrid(
                     listOf(KpiSegment(1f, colors.cancelled))
                 } ?: emptyList(),
                 legend = listOf(
-                    KpiLegendItem("Requires Action", colors.cancelled)
-                )
+                    KpiLegendItem("Requires Action", colors.cancelled),
+                ),
             )
         }
     }
@@ -392,32 +396,32 @@ private fun RecentIncidentsSection(snapshot: DashboardSnapshot, router: AppRoute
                     modifier = Modifier
                         .size(32.dp)
                         .background(colors.cancelled.copy(alpha = 0.1f), CircleShape),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         "!",
                         color = colors.cancelled,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         incident.vehiclePlate ?: "—",
                         fontWeight = FontWeight.Medium,
-                        color = colors.onBackground
+                        color = colors.onBackground,
                     )
                     Text(
                         incident.description,
                         color = colors.onBackground.copy(0.75f),
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
                     )
                 }
                 Text(
                     incident.status.name,
                     color = colors.cancelled,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
             }
         }
@@ -477,7 +481,7 @@ private fun UrgentMaintenanceSection(snapshot: DashboardSnapshot, router: AppRou
 @Composable
 private fun FleetChartsRowSkeleton(snapshot: DashboardSnapshot? = null) {
     val colors = fleetColors
-    
+
     Row(
         modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -486,12 +490,12 @@ private fun FleetChartsRowSkeleton(snapshot: DashboardSnapshot? = null) {
             ChartSkeleton(
                 modifier = Modifier
                     .weight(1f).fillMaxHeight()
-                    .background(colors.surface, shape = RoundedCornerShape(12.dp))
+                    .background(colors.surface, shape = RoundedCornerShape(12.dp)),
             )
             ChartSkeleton(
                 modifier = Modifier
                     .weight(1f).fillMaxHeight()
-                    .background(colors.surface, shape = RoundedCornerShape(12.dp))
+                    .background(colors.surface, shape = RoundedCornerShape(12.dp)),
             )
         } else {
             val stats = snapshot.stats
@@ -499,11 +503,51 @@ private fun FleetChartsRowSkeleton(snapshot: DashboardSnapshot? = null) {
             ChartCard(title = "Fleet Status", modifier = Modifier.weight(1f).fillMaxHeight()) {
                 val pieData = remember(stats) {
                     buildList {
-                        if (stats.availableVehicles > 0)   add(PieData("Available",  stats.availableVehicles.toFloat(),   FleetColors.Available))
-                        if (stats.rentedVehicles > 0)       add(PieData("Rented",     stats.rentedVehicles.toFloat(),      FleetColors.Rented))
-                        if (stats.maintenanceVehicles > 0)  add(PieData("In Service", stats.maintenanceVehicles.toFloat(), FleetColors.Maintenance))
-                        if (stats.reservedVehicles > 0)     add(PieData("Reserved",   stats.reservedVehicles.toFloat(),    FleetColors.Reserved))
-                        if (stats.retiredVehicles > 0)      add(PieData("Retired",    stats.retiredVehicles.toFloat(),     FleetColors.Retired))
+                        if (stats.availableVehicles > 0) {
+                            add(
+                                PieData(
+                                    "Available",
+                                    stats.availableVehicles.toFloat(),
+                                    FleetColors.Available,
+                                ),
+                            )
+                        }
+                        if (stats.rentedVehicles > 0) {
+                            add(
+                                PieData(
+                                    "Rented",
+                                    stats.rentedVehicles.toFloat(),
+                                    FleetColors.Rented,
+                                ),
+                            )
+                        }
+                        if (stats.maintenanceVehicles > 0) {
+                            add(
+                                PieData(
+                                    "In Service",
+                                    stats.maintenanceVehicles.toFloat(),
+                                    FleetColors.Maintenance,
+                                ),
+                            )
+                        }
+                        if (stats.reservedVehicles > 0) {
+                            add(
+                                PieData(
+                                    "Reserved",
+                                    stats.reservedVehicles.toFloat(),
+                                    FleetColors.Reserved,
+                                ),
+                            )
+                        }
+                        if (stats.retiredVehicles > 0) {
+                            add(
+                                PieData(
+                                    "Retired",
+                                    stats.retiredVehicles.toFloat(),
+                                    FleetColors.Retired,
+                                ),
+                            )
+                        }
                     }
                 }
                 if (pieData.isNotEmpty()) {
@@ -530,7 +574,7 @@ private fun FleetChartsRowSkeleton(snapshot: DashboardSnapshot? = null) {
                                     Box(
                                         Modifier
                                             .size(8.dp)
-                                            .background(slice.color ?: colors.primary, CircleShape)
+                                            .background(slice.color ?: colors.primary, CircleShape),
                                     )
                                     Text(slice.label, fontSize = 11.sp, color = colors.text2)
                                 }
@@ -546,10 +590,42 @@ private fun FleetChartsRowSkeleton(snapshot: DashboardSnapshot? = null) {
             ChartCard(title = "Invoice Summary", modifier = Modifier.weight(1f).fillMaxHeight()) {
                 val barData = remember(stats) {
                     buildList {
-                        if (stats.paidInvoices > 0)      add(BarData("Paid",      stats.paidInvoices.toFloat(),      ChartyColor.Solid(FleetColors.Available)))
-                        if (stats.pendingInvoices > 0)   add(BarData("Pending",   stats.pendingInvoices.toFloat(),   ChartyColor.Solid(FleetColors.Reserved)))
-                        if (stats.overdueInvoices > 0)   add(BarData("Overdue",   stats.overdueInvoices.toFloat(),   ChartyColor.Solid(FleetColors.Cancelled)))
-                        if (stats.cancelledInvoices > 0) add(BarData("Cancelled", stats.cancelledInvoices.toFloat(), ChartyColor.Solid(FleetColors.Retired)))
+                        if (stats.paidInvoices > 0) {
+                            add(
+                                BarData(
+                                    "Paid",
+                                    stats.paidInvoices.toFloat(),
+                                    ChartyColor.Solid(FleetColors.Available),
+                                ),
+                            )
+                        }
+                        if (stats.pendingInvoices > 0) {
+                            add(
+                                BarData(
+                                    "Pending",
+                                    stats.pendingInvoices.toFloat(),
+                                    ChartyColor.Solid(FleetColors.Reserved),
+                                ),
+                            )
+                        }
+                        if (stats.overdueInvoices > 0) {
+                            add(
+                                BarData(
+                                    "Overdue",
+                                    stats.overdueInvoices.toFloat(),
+                                    ChartyColor.Solid(FleetColors.Cancelled),
+                                ),
+                            )
+                        }
+                        if (stats.cancelledInvoices > 0) {
+                            add(
+                                BarData(
+                                    "Cancelled",
+                                    stats.cancelledInvoices.toFloat(),
+                                    ChartyColor.Solid(FleetColors.Retired),
+                                ),
+                            )
+                        }
                     }
                 }
                 if (barData.isNotEmpty()) {

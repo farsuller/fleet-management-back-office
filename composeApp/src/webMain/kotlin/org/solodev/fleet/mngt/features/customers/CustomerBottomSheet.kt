@@ -1,13 +1,39 @@
 package org.solodev.fleet.mngt.features.customers
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,8 +47,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
 import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
-import org.solodev.fleet.mngt.components.common.PhoneNumberOutlinedTextField
 import org.solodev.fleet.mngt.components.common.EmailOutlinedTextField
+import org.solodev.fleet.mngt.components.common.PhoneNumberOutlinedTextField
 import org.solodev.fleet.mngt.theme.fleetColors
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -32,7 +58,7 @@ import kotlin.time.Instant
 fun CustomerBottomSheet(
     onDismiss: () -> Unit,
     customer: CustomerDto? = null,
-    sheetState: SheetState = rememberModalBottomSheetState()
+    sheetState: SheetState = rememberModalBottomSheetState(),
 ) {
     val vm = koinViewModel<CustomersViewModel>()
     val colors = fleetColors
@@ -44,10 +70,10 @@ fun CustomerBottomSheet(
     var phone by remember(customer) {
         mutableStateOf(
             customer?.phone
-                ?.replace("+63", "")      // Remove prefix if it exists
+                ?.replace("+63", "") // Remove prefix if it exists
                 ?.filter { it.isDigit() } // Remove spaces or dashes
-                ?.takeLast(10)            // Take only the last 10 digits
-                ?: ""
+                ?.takeLast(10) // Take only the last 10 digits
+                ?: "",
         )
     }
     var licenseNumber by remember { mutableStateOf(customer?.driverLicenseNumber ?: "") }
@@ -56,7 +82,9 @@ fun CustomerBottomSheet(
             if (customer?.licenseExpiryMs != null && customer.licenseExpiryMs != 0L) {
                 val dt = Instant.fromEpochMilliseconds(customer.licenseExpiryMs).toLocalDateTime(TimeZone.UTC)
                 dt.date.toString()
-            } else ""
+            } else {
+                ""
+            },
         )
     }
     var isActive by remember { mutableStateOf(customer?.isActive ?: true) }
@@ -67,7 +95,7 @@ fun CustomerBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
-        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) },
     ) {
         Column(
             modifier = Modifier
@@ -75,25 +103,24 @@ fun CustomerBottomSheet(
                 .fillMaxWidth()
                 .padding(bottom = 48.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 modifier = Modifier
                     .widthIn(max = 800.dp)
                     .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = if (isEdit) "Edit Customer" else "Add New Customer",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colors.onBackground
+                        color = colors.onBackground,
                     )
 
                     Button(
@@ -108,9 +135,9 @@ fun CustomerBottomSheet(
                                             email = email,
                                             phone = phone,
                                             driversLicense = licenseNumber,
-                                            driverLicenseExpiry = licenseExpiry
+                                            driverLicenseExpiry = licenseExpiry,
                                         ),
-                                        onUpdated = onDismiss
+                                        onUpdated = onDismiss,
                                     )
                                 }
                             } else {
@@ -121,18 +148,18 @@ fun CustomerBottomSheet(
                                         lastName = lastName,
                                         phone = phone,
                                         driversLicense = licenseNumber,
-                                        driverLicenseExpiry = licenseExpiry
+                                        driverLicenseExpiry = licenseExpiry,
                                     ),
-                                    onCreated = { onDismiss() }
+                                    onCreated = { onDismiss() },
                                 )
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
                     ) {
                         Text(
                             if (isEdit) "Save Changes" else "Create Customer",
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
                 }
@@ -144,7 +171,7 @@ fun CustomerBottomSheet(
                         label = { Text("First Name") },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("e.g. John") },
-                        singleLine = true
+                        singleLine = true,
                     )
                     OutlinedTextField(
                         value = lastName,
@@ -152,7 +179,7 @@ fun CustomerBottomSheet(
                         label = { Text("Last Name") },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("e.g. Doe") },
-                        singleLine = true
+                        singleLine = true,
                     )
                 }
 
@@ -168,7 +195,7 @@ fun CustomerBottomSheet(
                             phone = input
                         },
                         label = "Phone Number",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
 
@@ -179,7 +206,7 @@ fun CustomerBottomSheet(
                         label = { Text("Driver's License #") },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Nxx-xx-xxxxxx") },
-                        singleLine = true
+                        singleLine = true,
                     )
                     Box(modifier = Modifier.weight(1f)) {
                         OutlinedTextField(
@@ -189,7 +216,7 @@ fun CustomerBottomSheet(
                             readOnly = true,
                             modifier = Modifier.fillMaxWidth(),
                             trailingIcon = { Icon(Icons.Default.DateRange, null) },
-                            placeholder = { Text("YYYY-MM-DD") }
+                            placeholder = { Text("YYYY-MM-DD") },
                         )
                         Box(Modifier.matchParentSize().clickable { showDatePicker = true })
                     }
@@ -199,20 +226,23 @@ fun CustomerBottomSheet(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Column {
                             Text(
                                 "Account Status",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = colors.onBackground
+                                color = colors.onBackground,
                             )
                             Text(
-                                if (isActive) "Customer is active and can rent vehicles"
-                                else "Customer is deactivated",
+                                if (isActive) {
+                                    "Customer is active and can rent vehicles"
+                                } else {
+                                    "Customer is deactivated"
+                                },
                                 fontSize = 12.sp,
-                                color = colors.onBackground.copy(alpha = 0.6f)
+                                color = colors.onBackground.copy(alpha = 0.6f),
                             )
                         }
                         Switch(
@@ -220,8 +250,8 @@ fun CustomerBottomSheet(
                             onCheckedChange = { isActive = it },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = colors.active,
-                                uncheckedThumbColor = colors.retired
-                            )
+                                uncheckedThumbColor = colors.retired,
+                            ),
                         )
                     }
                 }
@@ -241,7 +271,7 @@ fun CustomerBottomSheet(
                     }
                 } else {
                     Clock.System.now().toEpochMilliseconds()
-                }
+                },
             )
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
@@ -257,7 +287,7 @@ fun CustomerBottomSheet(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-                }
+                },
             ) {
                 DatePicker(state = datePickerState)
             }

@@ -42,27 +42,27 @@ fun ConnectionStatusBar(
     val colors = fleetColors
 
     val (dotColor, label) = when (connectionState) {
-        ConnectionState.Connected        -> colors.mapConnect to "Connected"
-        is ConnectionState.Reconnecting  -> colors.maintenance to "Reconnecting (attempt ${connectionState.attempt})…"
-        ConnectionState.Connecting       -> colors.maintenance to "Connecting…"
-        ConnectionState.Disconnected     -> colors.mapOffline  to "Disconnected"
-        is ConnectionState.Error         -> colors.mapOffline  to "Connection error \u2014 retrying"
+        ConnectionState.Connected -> colors.mapConnect to "Connected"
+        is ConnectionState.Reconnecting -> colors.maintenance to "Reconnecting (attempt ${connectionState.attempt})…"
+        ConnectionState.Connecting -> colors.maintenance to "Connecting…"
+        ConnectionState.Disconnected -> colors.mapOffline to "Disconnected"
+        is ConnectionState.Error -> colors.mapOffline to "Connection error \u2014 retrying"
     }
 
     val isAnimating = connectionState is ConnectionState.Reconnecting ||
-            connectionState is ConnectionState.Connecting
+        connectionState is ConnectionState.Connecting
     val infiniteTransition = rememberInfiniteTransition()
     val pulseAlpha by if (isAnimating) {
         infiniteTransition.animateFloat(
             initialValue = 1f,
-            targetValue  = 0.3f,
+            targetValue = 0.3f,
             animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
         )
     } else {
         // Static alpha 1f for non-animating states
         infiniteTransition.animateFloat(
             initialValue = 1f,
-            targetValue  = 1f,
+            targetValue = 1f,
             animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Restart),
         )
     }
@@ -73,7 +73,7 @@ fun ConnectionStatusBar(
             .height(32.dp)
             .background(colors.surface)
             .padding(horizontal = 16.dp),
-        verticalAlignment    = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
@@ -84,15 +84,15 @@ fun ConnectionStatusBar(
                 .alpha(if (isAnimating) pulseAlpha else 1f),
         )
         Text(
-            text      = label,
-            fontSize  = 11.sp,
-            color     = colors.text2,
+            text = label,
+            fontSize = 11.sp,
+            color = colors.text2,
         )
         Spacer(Modifier.weight(1f))
         Text(
-            text     = "Live Tracking",
+            text = "Live Tracking",
             fontSize = 11.sp,
-            color    = colors.text2,
+            color = colors.text2,
         )
     }
 }

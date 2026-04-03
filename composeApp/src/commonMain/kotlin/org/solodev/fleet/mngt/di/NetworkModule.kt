@@ -2,7 +2,6 @@ package org.solodev.fleet.mngt.di
 
 import org.koin.dsl.module
 import org.solodev.fleet.mngt.api.FleetApiClient
-import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.InMemoryTokenProvider
 import org.solodev.fleet.mngt.auth.TokenProvider

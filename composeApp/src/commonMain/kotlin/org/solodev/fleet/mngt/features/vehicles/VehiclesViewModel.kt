@@ -5,11 +5,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import org.solodev.fleet.mngt.auth.AuthState
-import org.solodev.fleet.mngt.auth.AuthStatus
+import kotlinx.coroutines.launch
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
@@ -18,9 +16,11 @@ import org.solodev.fleet.mngt.api.dto.vehicle.CreateVehicleRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.UpdateVehicleRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
-import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleIncidentsUseCase
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.domain.usecase.vehicle.CreateVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.DeleteVehicleUseCase
+import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleIncidentsUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleLocationHistoryUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleMaintenanceUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleUseCase
@@ -149,17 +149,17 @@ class VehiclesViewModel(
             good = goodCount,
             needsService = maintenanceCount,
             damaged = damagedCount,
-            trend = "+5%"
+            trend = "+5%",
         )
 
         // Maintenance Stats
         val currentMileage = items.map { it.mileageKm ?: 0L }
-        val overdueCount = items.count { 
+        val overdueCount = items.count {
             val next = it.nextServiceMileage ?: 0
             val current = it.mileageKm ?: 0L
             current >= next && next > 0
         }
-        val upcomingCount = items.count { 
+        val upcomingCount = items.count {
             val next = it.nextServiceMileage ?: 0
             val current = it.mileageKm ?: 0L
             val diff = next - current
@@ -172,7 +172,7 @@ class VehiclesViewModel(
             overdue = overdueCount,
             upcoming = upcomingCount,
             onTrack = onTrackCount,
-            total = totalCount
+            total = totalCount,
         )
     }
 
@@ -190,7 +190,7 @@ class VehiclesViewModel(
                     launch {
                         getVehicleMaintenanceUseCase(vehicleId)
                             .onSuccess { jobs ->
-                                 val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
+                                val current = (_detailState.value as? UiState.Success)?.data ?: return@onSuccess
                                 _detailState.value = UiState.Success(current.copy(maintenanceJobs = jobs))
                             }
                     }
@@ -215,7 +215,7 @@ class VehiclesViewModel(
     fun setActiveTab(tab: VehicleTab) {
         _activeTab.value = tab
         val vehicleId = (_detailState.value as? UiState.Success)?.data?.vehicle?.id ?: return
-        
+
         when (tab) {
             VehicleTab.HISTORY -> {
                 viewModelScope.launch {
@@ -305,5 +305,7 @@ class VehiclesViewModel(
         }
     }
 
-    fun clearActionResult() { _actionResult.value = null }
+    fun clearActionResult() {
+        _actionResult.value = null
+    }
 }

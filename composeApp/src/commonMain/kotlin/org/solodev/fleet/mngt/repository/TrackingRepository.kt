@@ -34,21 +34,17 @@ class TrackingRepositoryImpl(private val api: FleetApiClient) : TrackingReposito
     // Individual vehicle positions are delivered via FleetLiveClient WebSocket — not cached.
     override suspend fun getVehicleState(vehicleId: String) = api.getVehicleState(vehicleId)
 
-    override suspend fun getLocationHistory(vehicleId: String, limit: Int) =
-        api.getLocationHistory(vehicleId, limit)
+    override suspend fun getLocationHistory(vehicleId: String, limit: Int) = api.getLocationHistory(vehicleId, limit)
 
     override suspend fun getActiveRoutes(forceRefresh: Boolean): Result<List<RouteDto>> {
         if (!forceRefresh) routesCache.get("routes")?.let { return Result.success(it) }
         return api.getActiveRoutes().onSuccess { routesCache.put("routes", it) }
     }
 
-    override suspend fun createRoute(name: String, description: String?, geojson: String): Result<RouteDto> =
-        api.createRoute(CreateRouteRequest(name, description, geojson))
-            .onSuccess { routesCache.invalidate("routes") }  // stale on next load
+    override suspend fun createRoute(name: String, description: String?, geojson: String): Result<RouteDto> = api.createRoute(CreateRouteRequest(name, description, geojson))
+        .onSuccess { routesCache.invalidate("routes") } // stale on next load
 
-    override suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus> =
-        api.getCoordinateReceptionStatus()
+    override suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus> = api.getCoordinateReceptionStatus()
 
-    override suspend fun setCoordinateReceptionEnabled(enabled: Boolean): Result<CoordinateReceptionStatus> =
-        api.setCoordinateReceptionEnabled(enabled)
+    override suspend fun setCoordinateReceptionEnabled(enabled: Boolean): Result<CoordinateReceptionStatus> = api.setCoordinateReceptionEnabled(enabled)
 }

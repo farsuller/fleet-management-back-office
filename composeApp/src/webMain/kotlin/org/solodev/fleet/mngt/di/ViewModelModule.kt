@@ -1,6 +1,5 @@
 package org.solodev.fleet.mngt.di
 
-
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.solodev.fleet.mngt.auth.AuthState
@@ -8,10 +7,22 @@ import org.solodev.fleet.mngt.domain.usecase.accounting.GetPaymentMethodsUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.CreateCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomerUseCase
 import org.solodev.fleet.mngt.domain.usecase.customer.GetCustomersUseCase
-import org.solodev.fleet.mngt.domain.usecase.rental.*
+import org.solodev.fleet.mngt.domain.usecase.rental.ActivateRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.CancelRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.CompleteRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.CreateRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.DeleteRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.GetRentalsUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.PayInvoiceUseCase
+import org.solodev.fleet.mngt.domain.usecase.rental.UpdateRentalUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
-import org.solodev.fleet.mngt.features.accounting.*
+import org.solodev.fleet.mngt.features.accounting.AccountsViewModel
+import org.solodev.fleet.mngt.features.accounting.DriverPaymentsViewModel
+import org.solodev.fleet.mngt.features.accounting.InvoicesViewModel
+import org.solodev.fleet.mngt.features.accounting.PaymentsViewModel
+import org.solodev.fleet.mngt.features.accounting.RemittancesViewModel
 import org.solodev.fleet.mngt.features.auth.LoginViewModel
 import org.solodev.fleet.mngt.features.customers.CustomersViewModel
 import org.solodev.fleet.mngt.features.dashboard.DashboardViewModel
@@ -117,8 +128,11 @@ val viewModelModule = module {
         UsersViewModel(
             getUsersUseCase = get(),
             getUserUseCase = get(),
-            assignRolesUseCase = get(),
+            registerUserUseCase = get(),
+            updateUserUseCase = get(),
+            assignRoleUseCase = get(),
             deleteUserUseCase = get(),
+            getRolesUseCase = get(),
         )
     }
     viewModel {

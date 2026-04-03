@@ -5,17 +5,29 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import org.solodev.fleet.mngt.auth.AuthState
-import org.solodev.fleet.mngt.auth.AuthStatus
-import org.solodev.fleet.mngt.api.dto.driver.*
+import kotlinx.coroutines.launch
+import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
+import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
+import org.solodev.fleet.mngt.api.dto.driver.DriverDto
+import org.solodev.fleet.mngt.api.dto.driver.EndShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.ShiftResponse
+import org.solodev.fleet.mngt.api.dto.driver.StartShiftRequest
+import org.solodev.fleet.mngt.api.dto.driver.UpdateDriverRequest
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
-import org.solodev.fleet.mngt.domain.usecase.driver.*
-import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
+import org.solodev.fleet.mngt.auth.AuthState
+import org.solodev.fleet.mngt.auth.AuthStatus
+import org.solodev.fleet.mngt.domain.usecase.driver.ActivateDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.AssignDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.CreateDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
+import org.solodev.fleet.mngt.domain.usecase.driver.UpdateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleUseCase
+import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
 import org.solodev.fleet.mngt.repository.DriverRepository
 import org.solodev.fleet.mngt.ui.UiState
 
@@ -163,7 +175,7 @@ class DriversViewModel(
             active = active,
             available = available,
             disabled = disabled,
-            trend = "+2%"
+            trend = "+2%",
         )
     }
 
@@ -205,10 +217,13 @@ class DriversViewModel(
 
     fun assignToVehicle(driverId: String, vehicleId: String, notes: String?) {
         viewModelScope.launch {
-            assignDriverUseCase(driverId, AssignDriverRequest(
-                vehicleId = vehicleId,
-                notes = notes?.takeIf { it.isNotBlank() },
-            ))
+            assignDriverUseCase(
+                driverId,
+                AssignDriverRequest(
+                    vehicleId = vehicleId,
+                    notes = notes?.takeIf { it.isNotBlank() },
+                ),
+            )
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
@@ -244,5 +259,7 @@ class DriversViewModel(
         }
     }
 
-    fun clearActionResult() { _actionResult.value = null }
+    fun clearActionResult() {
+        _actionResult.value = null
+    }
 }

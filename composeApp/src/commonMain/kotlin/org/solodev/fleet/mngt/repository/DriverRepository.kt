@@ -39,39 +39,27 @@ class DriverRepositoryImpl(private val api: FleetApiClient) : DriverRepository {
 
     override suspend fun getDriver(id: String) = api.getDriver(id)
 
-    override suspend fun createDriver(request: CreateDriverRequest) =
-        api.createDriver(request).onSuccess { listCache.clear() }
+    override suspend fun createDriver(request: CreateDriverRequest) = api.createDriver(request).onSuccess { listCache.clear() }
 
-    override suspend fun deactivateDriver(id: String) =
-        api.deactivateDriver(id).onSuccess { listCache.clear() }
+    override suspend fun deactivateDriver(id: String) = api.deactivateDriver(id).onSuccess { listCache.clear() }
 
-    override suspend fun activateDriver(id: String) =
-        api.activateDriver(id).onSuccess { listCache.clear() }
+    override suspend fun activateDriver(id: String) = api.activateDriver(id).onSuccess { listCache.clear() }
 
-    override suspend fun updateDriver(id: String, request: UpdateDriverRequest) =
-        api.updateDriver(id, request).onSuccess { listCache.clear() }
+    override suspend fun updateDriver(id: String, request: UpdateDriverRequest) = api.updateDriver(id, request).onSuccess { listCache.clear() }
 
-    override suspend fun assignToVehicle(driverId: String, request: AssignDriverRequest) =
-        api.assignDriver(driverId, request).onSuccess { listCache.clear() }
+    override suspend fun assignToVehicle(driverId: String, request: AssignDriverRequest) = api.assignDriver(driverId, request).onSuccess { listCache.clear() }
 
-    override suspend fun releaseFromVehicle(driverId: String) =
-        api.releaseDriver(driverId).onSuccess { listCache.clear() }
+    override suspend fun releaseFromVehicle(driverId: String) = api.releaseDriver(driverId).onSuccess { listCache.clear() }
 
-    override suspend fun getAssignmentHistory(driverId: String) =
-        api.getDriverAssignments(driverId)
+    override suspend fun getAssignmentHistory(driverId: String) = api.getDriverAssignments(driverId)
 
-    override suspend fun getVehicleActiveDriver(vehicleId: String) =
-        api.getVehicleActiveDriver(vehicleId)
+    override suspend fun getVehicleActiveDriver(vehicleId: String) = api.getVehicleActiveDriver(vehicleId)
 
-    override suspend fun getVehicleDriverHistory(vehicleId: String) =
-        api.getVehicleDriverHistory(vehicleId)
+    override suspend fun getVehicleDriverHistory(vehicleId: String) = api.getVehicleDriverHistory(vehicleId)
 
-    override suspend fun startShift(request: StartShiftRequest) =
-        api.startDriverShift(request)
+    override suspend fun startShift(request: StartShiftRequest) = api.startDriverShift(request)
 
-    override suspend fun endShift(request: EndShiftRequest) =
-        api.endDriverShift(request)
+    override suspend fun endShift(request: EndShiftRequest) = api.endDriverShift(request)
 
-    override suspend fun getActiveShift() =
-        api.getActiveDriverShift()
+    override suspend fun getActiveShift() = api.getActiveDriverShift()
 }

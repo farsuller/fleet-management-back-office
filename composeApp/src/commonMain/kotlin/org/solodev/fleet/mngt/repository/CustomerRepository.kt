@@ -3,8 +3,8 @@ package org.solodev.fleet.mngt.repository
 import org.solodev.fleet.mngt.api.FleetApiClient
 import org.solodev.fleet.mngt.api.PagedResponse
 import org.solodev.fleet.mngt.api.dto.customer.CreateCustomerRequest
-import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.api.dto.customer.CustomerDto
+import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface CustomerRepository {
@@ -32,12 +32,9 @@ class CustomerRepositoryImpl(private val api: FleetApiClient) : CustomerReposito
 
     override suspend fun getCustomer(id: String) = api.getCustomer(id)
 
-    override suspend fun createCustomer(request: CreateCustomerRequest) =
-        api.createCustomer(request).onSuccess { listCache.clear() }
+    override suspend fun createCustomer(request: CreateCustomerRequest) = api.createCustomer(request).onSuccess { listCache.clear() }
 
-    override suspend fun updateCustomer(id: String, request: UpdateCustomerRequest) =
-        api.updateCustomer(id, request).onSuccess { listCache.clear() }
+    override suspend fun updateCustomer(id: String, request: UpdateCustomerRequest) = api.updateCustomer(id, request).onSuccess { listCache.clear() }
 
-    override suspend fun deactivateCustomer(id: String) =
-        api.deactivateCustomer(id).onSuccess { listCache.clear() }
+    override suspend fun deactivateCustomer(id: String) = api.deactivateCustomer(id).onSuccess { listCache.clear() }
 }

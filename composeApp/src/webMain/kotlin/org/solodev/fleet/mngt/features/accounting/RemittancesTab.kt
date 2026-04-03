@@ -74,7 +74,9 @@ fun RemittancesTab() {
         r.onSuccess {
             submitSuccess = true
             selectedPaymentIds = emptySet()
-            remittanceDate = ""; remittanceNotes = ""; submitError = null
+            remittanceDate = ""
+            remittanceNotes = ""
+            submitError = null
         }.onFailure { e -> submitError = e.message }
         vm.clearSubmitResult()
     }
@@ -267,15 +269,19 @@ fun RemittancesTab() {
                             Button(
                                 onClick = {
                                     val driverId = selectedDriverId ?: return@Button
-                                    if (selectedPaymentIds.isEmpty()) { submitError = "Select at least one payment"; return@Button }
-                                    submitError = null; submitSuccess = false
+                                    if (selectedPaymentIds.isEmpty()) {
+                                        submitError = "Select at least one payment"
+                                        return@Button
+                                    }
+                                    submitError = null
+                                    submitSuccess = false
                                     vm.submitRemittance(
                                         DriverRemittanceRequest(
                                             driverId = driverId,
                                             paymentIds = selectedPaymentIds.toList(),
                                             remittanceDate = remittanceDate.trim().ifBlank { null },
                                             notes = remittanceNotes.trim().ifBlank { null },
-                                        )
+                                        ),
                                     )
                                 },
                                 enabled = selectedPaymentIds.isNotEmpty(),
@@ -311,7 +317,7 @@ fun RemittancesTab() {
                                         RemittanceStatus.VERIFIED -> FleetColors.Active
                                         RemittanceStatus.DISCREPANCY -> MaterialTheme.colorScheme.error
                                         else -> colors.border
-                                    }
+                                    },
                                 ),
                                 color = colors.surface,
                                 modifier = Modifier.fillMaxWidth(),

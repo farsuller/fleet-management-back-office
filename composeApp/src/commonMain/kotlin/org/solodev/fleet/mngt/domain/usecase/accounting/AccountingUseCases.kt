@@ -27,8 +27,7 @@ class CreateInvoiceUseCase(private val repository: AccountingRepository) {
 }
 
 class PayInvoiceUseCase(private val repository: AccountingRepository) {
-    suspend operator fun invoke(id: String, request: PayInvoiceRequest, idempotencyKey: String) =
-        repository.payInvoice(id, request, idempotencyKey)
+    suspend operator fun invoke(id: String, request: PayInvoiceRequest, idempotencyKey: String) = repository.payInvoice(id, request, idempotencyKey)
 }
 
 class GetPaymentsUseCase(private val repository: AccountingRepository) {
@@ -40,13 +39,11 @@ class GetPaymentsUseCase(private val repository: AccountingRepository) {
 }
 
 class GetPaymentsByCustomerUseCase(private val repository: AccountingRepository) {
-    suspend operator fun invoke(customerId: String) =
-        repository.getPaymentsByCustomer(customerId)
+    suspend operator fun invoke(customerId: String) = repository.getPaymentsByCustomer(customerId)
 }
 
 class RecordDriverCollectionUseCase(private val repository: AccountingRepository) {
-    suspend operator fun invoke(request: DriverCollectionRequest) =
-        repository.recordDriverCollection(request)
+    suspend operator fun invoke(request: DriverCollectionRequest) = repository.recordDriverCollection(request)
 }
 
 class GetDriverPendingPaymentsUseCase(private val repository: AccountingRepository) {
@@ -58,8 +55,7 @@ class GetAllDriverPaymentsUseCase(private val repository: AccountingRepository) 
 }
 
 class SubmitRemittanceUseCase(private val repository: AccountingRepository) {
-    suspend operator fun invoke(request: DriverRemittanceRequest) =
-        repository.submitRemittance(request)
+    suspend operator fun invoke(request: DriverRemittanceRequest) = repository.submitRemittance(request)
 }
 
 class GetRemittancesByDriverUseCase(private val repository: AccountingRepository) {
@@ -77,4 +73,3 @@ class GetAccountsUseCase(private val repository: AccountingRepository) {
 class GetPaymentMethodsUseCase(private val repository: AccountingRepository) {
     suspend operator fun invoke() = repository.getPaymentMethods()
 }
-

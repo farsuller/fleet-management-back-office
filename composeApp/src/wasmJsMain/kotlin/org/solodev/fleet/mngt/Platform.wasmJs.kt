@@ -1,6 +1,6 @@
 package org.solodev.fleet.mngt
 
-class WasmPlatform: Platform {
+class WasmPlatform : Platform {
     override val name: String = "Web with Kotlin/Wasm"
 }
 

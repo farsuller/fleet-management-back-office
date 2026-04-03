@@ -1,13 +1,13 @@
 package org.solodev.fleet.mngt.domain.usecase.rental
 
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import org.solodev.fleet.mngt.api.dto.accounting.PayInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.rental.CreateRentalRequest
-import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.api.dto.rental.RentalStatus
+import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.repository.AccountingRepository
 import org.solodev.fleet.mngt.repository.RentalRepository
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class GetRentalsUseCase(private val repository: RentalRepository) {
     suspend operator fun invoke(
@@ -39,8 +39,7 @@ class CancelRentalUseCase(private val repository: RentalRepository) {
 }
 
 class CompleteRentalUseCase(private val repository: RentalRepository) {
-    suspend operator fun invoke(id: String, finalOdometerKm: Long) =
-        repository.completeRental(id, finalOdometerKm)
+    suspend operator fun invoke(id: String, finalOdometerKm: Long) = repository.completeRental(id, finalOdometerKm)
 }
 
 class GetPaymentMethodsUseCase(private val repository: AccountingRepository) {
@@ -49,11 +48,9 @@ class GetPaymentMethodsUseCase(private val repository: AccountingRepository) {
 
 class PayInvoiceUseCase(private val repository: AccountingRepository) {
     @OptIn(ExperimentalUuidApi::class)
-    suspend operator fun invoke(invoiceId: String, paymentMethod: String, amount: Long, notes: String? = null) =
-        repository.payInvoice(
-            id = invoiceId,
-            request = PayInvoiceRequest(amount = amount, paymentMethod = paymentMethod, notes = notes),
-            idempotencyKey = Uuid.random().toString(),
-        )
+    suspend operator fun invoke(invoiceId: String, paymentMethod: String, amount: Long, notes: String? = null) = repository.payInvoice(
+        id = invoiceId,
+        request = PayInvoiceRequest(amount = amount, paymentMethod = paymentMethod, notes = notes),
+        idempotencyKey = Uuid.random().toString(),
+    )
 }
-

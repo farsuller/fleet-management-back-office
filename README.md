@@ -49,6 +49,13 @@ in your IDE's toolbar or run it directly from the terminal:
     ```shell
     .\gradlew.bat :composeApp:jsBrowserDevelopmentRun
     ```
+    
+## Run Lint Spotless
+To run lint spotless, use the run configuration from the run widget
+  - Windows
+  ```shell
+    ./gradlew spotlessApply
+  ```
 
 ## Build and Run iOS Application
 

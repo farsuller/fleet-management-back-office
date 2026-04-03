@@ -1,6 +1,7 @@
 package org.solodev.fleet.mngt.features.architecture
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -406,7 +407,7 @@ fun TableCard(table: DbTable) {
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
+                Image(
                     painter = painterResource(Res.drawable.ic_sql_file),
                     contentDescription = null,
                     modifier = Modifier.size(14.dp),

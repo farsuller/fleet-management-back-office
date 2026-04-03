@@ -26,6 +26,7 @@ import org.solodev.fleet.mngt.features.settings.SettingsScreen
 import org.solodev.fleet.mngt.features.tracking.LiveTrackingScreen
 import org.solodev.fleet.mngt.features.users.UsersListScreen
 import org.solodev.fleet.mngt.features.vehicles.VehiclesListScreen
+import org.solodev.fleet.mngt.features.architecture.ArchitectureScreen
 import org.solodev.fleet.mngt.theme.fleetColors
 
 @Composable
@@ -90,6 +91,7 @@ fun AppNavHost(router: AppRouter) {
         is Screen.LiveTracking -> AppShell(router = router) { LiveTrackingScreen(router = router) }
 
         is Screen.Settings -> AppShell(router = router) { SettingsScreen() }
+        is Screen.Architecture -> AppShell(router = router) { ArchitectureScreen() }
 
         else -> AppShell(router = router) {
             // Remaining feature screens will be wired in future phases

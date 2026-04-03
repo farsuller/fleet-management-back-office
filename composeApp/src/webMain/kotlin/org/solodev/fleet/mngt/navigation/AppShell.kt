@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Schema
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -112,6 +113,12 @@ private val navSections = listOf(
         "SETTINGS",
         listOf(
             NavItem("Settings", Icons.Default.Settings, Screen.Settings),
+        ),
+    ),
+    NavSection(
+        "SYSTEM",
+        listOf(
+            NavItem("Architecture", Icons.Default.Schema, Screen.Architecture),
         ),
     ),
 )
@@ -526,5 +533,6 @@ private fun screenTitle(screen: Screen): String = when (screen) {
     is Screen.Reports -> "Reports"
     is Screen.Users -> "Users"
     is Screen.Settings -> "Settings"
+    is Screen.Architecture -> "System Architecture"
     else -> "Fleet Manager"
 }

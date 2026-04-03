@@ -15,6 +15,7 @@ import org.koin.compose.koinInject
 import org.solodev.fleet.mngt.auth.AppDependencyDispatcher
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.features.accounting.AccountingScreen
+import org.solodev.fleet.mngt.features.architecture.ArchitectureScreen
 import org.solodev.fleet.mngt.features.auth.LoginScreen
 import org.solodev.fleet.mngt.features.customers.CustomersListScreen
 import org.solodev.fleet.mngt.features.dashboard.DashboardScreen
@@ -26,7 +27,6 @@ import org.solodev.fleet.mngt.features.settings.SettingsScreen
 import org.solodev.fleet.mngt.features.tracking.LiveTrackingScreen
 import org.solodev.fleet.mngt.features.users.UsersListScreen
 import org.solodev.fleet.mngt.features.vehicles.VehiclesListScreen
-import org.solodev.fleet.mngt.features.architecture.ArchitectureScreen
 import org.solodev.fleet.mngt.theme.fleetColors
 
 @Composable

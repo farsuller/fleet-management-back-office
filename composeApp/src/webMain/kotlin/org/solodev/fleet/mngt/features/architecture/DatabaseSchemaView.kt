@@ -46,7 +46,7 @@ data class DbTable(
     val name: String,
     val x: Float,
     val y: Float,
-    val columns: List<DbColumn>
+    val columns: List<DbColumn>,
 )
 
 data class DbColumn(
@@ -54,12 +54,12 @@ data class DbColumn(
     val type: String,
     val isPK: Boolean = false,
     val isFK: Boolean = false,
-    val isUK: Boolean = false
+    val isUK: Boolean = false,
 )
 
 data class DbRelation(
     val fromTableId: String,
-    val toTableId: String
+    val toTableId: String,
 )
 
 @Composable
@@ -67,128 +67,242 @@ fun DatabaseSchemaSection() {
     val tables = remember {
         listOf(
             // IDENTITY MODULE
-            DbTable("users", "USERS", 520f, 40f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("email", "varchar", isUK = true),
-                DbColumn("password_hash", "varchar"),
-                DbColumn("first_name", "varchar"),
-                DbColumn("last_name", "varchar"),
-                DbColumn("is_active", "boolean")
-            )),
-            DbTable("roles", "ROLES", 850f, 40f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("name", "varchar", isUK = true),
-                DbColumn("description", "text")
-            )),
-            DbTable("user_roles", "USER_ROLES", 685f, 280f, listOf(
-                DbColumn("user_id", "uuid", isPK = true, isFK = true),
-                DbColumn("role_id", "uuid", isPK = true, isFK = true)
-            )),
-            DbTable("staff", "STAFF_PROFILES", 250f, 160f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("user_id", "uuid", isFK = true),
-                DbColumn("employee_id", "varchar", isUK = true),
-                DbColumn("department", "varchar")
-            )),
-            DbTable("tokens", "VERIFICATION_TOKENS", 520f, 280f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("user_id", "uuid", isFK = true),
-                DbColumn("token", "varchar"),
-                DbColumn("expiry", "tstz")
-            )),
+            DbTable(
+                "users",
+                "USERS",
+                520f,
+                40f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("email", "varchar", isUK = true),
+                    DbColumn("password_hash", "varchar"),
+                    DbColumn("first_name", "varchar"),
+                    DbColumn("last_name", "varchar"),
+                    DbColumn("is_active", "boolean"),
+                ),
+            ),
+            DbTable(
+                "roles",
+                "ROLES",
+                850f,
+                40f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("name", "varchar", isUK = true),
+                    DbColumn("description", "text"),
+                ),
+            ),
+            DbTable(
+                "user_roles",
+                "USER_ROLES",
+                685f,
+                280f,
+                listOf(
+                    DbColumn("user_id", "uuid", isPK = true, isFK = true),
+                    DbColumn("role_id", "uuid", isPK = true, isFK = true),
+                ),
+            ),
+            DbTable(
+                "staff",
+                "STAFF_PROFILES",
+                250f,
+                160f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("user_id", "uuid", isFK = true),
+                    DbColumn("employee_id", "varchar", isUK = true),
+                    DbColumn("department", "varchar"),
+                ),
+            ),
+            DbTable(
+                "tokens",
+                "VERIFICATION_TOKENS",
+                520f,
+                280f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("user_id", "uuid", isFK = true),
+                    DbColumn("token", "varchar"),
+                    DbColumn("expiry", "tstz"),
+                ),
+            ),
 
             // FLEET MODULE
-            DbTable("vehicles", "VEHICLES", 150f, 450f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("plate_number", "varchar", isUK = true),
-                DbColumn("make", "varchar"),
-                DbColumn("model", "varchar"),
-                DbColumn("status", "varchar"),
-                DbColumn("current_odo", "int")
-            )),
-            DbTable("odo", "ODOMETER_READINGS", 20f, 650f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("vehicle_id", "uuid", isFK = true),
-                DbColumn("reading_km", "integer"),
-                DbColumn("recorded_at", "tstz")
-            )),
-            DbTable("maint_sched", "MAINT_SCHEDULES", 380f, 650f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("vehicle_id", "uuid", isFK = true),
-                DbColumn("schedule_type", "varchar"),
-                DbColumn("next_due", "tstz")
-            )),
-            DbTable("incidents", "VEHICLE_INCIDENTS", 180f, 820f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("vehicle_id", "uuid", isFK = true),
-                DbColumn("description", "text"),
-                DbColumn("severity", "varchar")
-            )),
+            DbTable(
+                "vehicles",
+                "VEHICLES",
+                150f,
+                450f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("plate_number", "varchar", isUK = true),
+                    DbColumn("make", "varchar"),
+                    DbColumn("model", "varchar"),
+                    DbColumn("status", "varchar"),
+                    DbColumn("current_odo", "int"),
+                ),
+            ),
+            DbTable(
+                "odo",
+                "ODOMETER_READINGS",
+                20f,
+                650f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("vehicle_id", "uuid", isFK = true),
+                    DbColumn("reading_km", "integer"),
+                    DbColumn("recorded_at", "tstz"),
+                ),
+            ),
+            DbTable(
+                "maint_sched",
+                "MAINT_SCHEDULES",
+                380f,
+                650f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("vehicle_id", "uuid", isFK = true),
+                    DbColumn("schedule_type", "varchar"),
+                    DbColumn("next_due", "tstz"),
+                ),
+            ),
+            DbTable(
+                "incidents",
+                "VEHICLE_INCIDENTS",
+                180f,
+                820f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("vehicle_id", "uuid", isFK = true),
+                    DbColumn("description", "text"),
+                    DbColumn("severity", "varchar"),
+                ),
+            ),
 
             // RENTAL MODULE
-            DbTable("customers", "CUSTOMERS", 820f, 450f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("user_id", "uuid", isFK = true, isUK = true),
-                DbColumn("email", "varchar"),
-                DbColumn("license_no", "varchar")
-            )),
-            DbTable("rentals", "RENTALS", 1020f, 620f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("customer_id", "uuid", isFK = true),
-                DbColumn("vehicle_id", "uuid", isFK = true),
-                DbColumn("status", "varchar"),
-                DbColumn("start_date", "tstz")
-            )),
-            DbTable("charges", "RENTAL_CHARGES", 800f, 850f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("rental_id", "uuid", isFK = true),
-                DbColumn("amount", "integer"),
-                DbColumn("type", "varchar")
-            )),
-            DbTable("payments", "RENTAL_PAYMENTS", 1120f, 850f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("rental_id", "uuid", isFK = true),
-                DbColumn("amount", "integer"),
-                DbColumn("status", "varchar")
-            )),
+            DbTable(
+                "customers",
+                "CUSTOMERS",
+                820f,
+                450f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("user_id", "uuid", isFK = true, isUK = true),
+                    DbColumn("email", "varchar"),
+                    DbColumn("license_no", "varchar"),
+                ),
+            ),
+            DbTable(
+                "rentals",
+                "RENTALS",
+                1020f,
+                620f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("customer_id", "uuid", isFK = true),
+                    DbColumn("vehicle_id", "uuid", isFK = true),
+                    DbColumn("status", "varchar"),
+                    DbColumn("start_date", "tstz"),
+                ),
+            ),
+            DbTable(
+                "charges",
+                "RENTAL_CHARGES",
+                800f,
+                850f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("rental_id", "uuid", isFK = true),
+                    DbColumn("amount", "integer"),
+                    DbColumn("type", "varchar"),
+                ),
+            ),
+            DbTable(
+                "payments",
+                "RENTAL_PAYMENTS",
+                1120f,
+                850f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("rental_id", "uuid", isFK = true),
+                    DbColumn("amount", "integer"),
+                    DbColumn("status", "varchar"),
+                ),
+            ),
 
             // DRIVER MODULE
-            DbTable("drivers", "DRIVERS", 150f, 1050f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("user_id", "uuid", isFK = true),
-                DbColumn("license_no", "varchar", isUK = true),
-                DbColumn("is_active", "boolean")
-            )),
-            DbTable("shifts", "DRIVER_SHIFTS", 50f, 1250f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("driver_id", "uuid", isFK = true),
-                DbColumn("start_time", "tstz")
-            )),
-            DbTable("assignments", "DRIVER_ASSIGNMENTS", 450f, 1050f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("vehicle_id", "uuid", isFK = true),
-                DbColumn("driver_id", "uuid", isFK = true)
-            )),
+            DbTable(
+                "drivers",
+                "DRIVERS",
+                150f,
+                1050f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("user_id", "uuid", isFK = true),
+                    DbColumn("license_no", "varchar", isUK = true),
+                    DbColumn("is_active", "boolean"),
+                ),
+            ),
+            DbTable(
+                "shifts",
+                "DRIVER_SHIFTS",
+                50f,
+                1250f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("driver_id", "uuid", isFK = true),
+                    DbColumn("start_time", "tstz"),
+                ),
+            ),
+            DbTable(
+                "assignments",
+                "DRIVER_ASSIGNMENTS",
+                450f,
+                1050f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("vehicle_id", "uuid", isFK = true),
+                    DbColumn("driver_id", "uuid", isFK = true),
+                ),
+            ),
 
             // TRACKING
-            DbTable("loc_hist", "LOCATION_HISTORY", 1050f, 1050f, listOf(
-                DbColumn("id", "bigint", isPK = true),
-                DbColumn("vehicle_id", "uuid", isFK = true),
-                DbColumn("lon", "float"),
-                DbColumn("lat", "float")
-            )),
-            DbTable("routes", "GEO_ROUTES", 820f, 1250f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("name", "varchar"),
-                DbColumn("geom", "geometry")
-            )),
+            DbTable(
+                "loc_hist",
+                "LOCATION_HISTORY",
+                1050f,
+                1050f,
+                listOf(
+                    DbColumn("id", "bigint", isPK = true),
+                    DbColumn("vehicle_id", "uuid", isFK = true),
+                    DbColumn("lon", "float"),
+                    DbColumn("lat", "float"),
+                ),
+            ),
+            DbTable(
+                "routes",
+                "GEO_ROUTES",
+                820f,
+                1250f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("name", "varchar"),
+                    DbColumn("geom", "geometry"),
+                ),
+            ),
 
             // ACCOUNTING
-            DbTable("invoices", "INVOICES", 1050f, 1250f, listOf(
-                DbColumn("id", "uuid", isPK = true),
-                DbColumn("customer_id", "uuid", isFK = true),
-                DbColumn("amount", "integer")
-            ))
+            DbTable(
+                "invoices",
+                "INVOICES",
+                1050f,
+                1250f,
+                listOf(
+                    DbColumn("id", "uuid", isPK = true),
+                    DbColumn("customer_id", "uuid", isFK = true),
+                    DbColumn("amount", "integer"),
+                ),
+            ),
         )
     }
 
@@ -211,7 +325,7 @@ fun DatabaseSchemaSection() {
             DbRelation("assignments", "vehicles"),
             DbRelation("assignments", "drivers"),
             DbRelation("loc_hist", "vehicles"),
-            DbRelation("invoices", "customers")
+            DbRelation("invoices", "customers"),
         )
     }
 
@@ -220,13 +334,13 @@ fun DatabaseSchemaSection() {
             "Database Table Schemas",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         )
         Text(
             "Comprehensive entity-relationship diagram of the fleet management ecosystem",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 24.dp),
         )
 
         Box(modifier = Modifier.fillMaxWidth().height(1450.dp)) {
@@ -247,13 +361,16 @@ fun DatabaseSchemaSection() {
                         val path = Path().apply {
                             moveTo(from.x.dp.toPx() + 100.dp.toPx(), from.y.dp.toPx() + 60.dp.toPx())
                             cubicTo(
-                                from.x.dp.toPx() + 100.dp.toPx(), (from.y + to.y).dp.toPx() / 2,
-                                to.x.dp.toPx() + 100.dp.toPx(), (from.y + to.y).dp.toPx() / 2,
-                                to.x.dp.toPx() + 100.dp.toPx(), to.y.dp.toPx() + 60.dp.toPx()
+                                from.x.dp.toPx() + 100.dp.toPx(),
+                                (from.y + to.y).dp.toPx() / 2,
+                                to.x.dp.toPx() + 100.dp.toPx(),
+                                (from.y + to.y).dp.toPx() / 2,
+                                to.x.dp.toPx() + 100.dp.toPx(),
+                                to.y.dp.toPx() + 60.dp.toPx(),
                             )
                         }
                         drawPath(path, connectionColor, style = Stroke(width = 1.dp.toPx(), cap = StrokeCap.Round))
-                        
+
                         // Small arrow head at the "to" end
                         drawCircle(connectionColor, radius = 3.dp.toPx(), center = Offset(to.x.dp.toPx() + 100.dp.toPx(), to.y.dp.toPx() + 60.dp.toPx()))
                     }
@@ -277,8 +394,8 @@ fun TableCard(table: DbTable) {
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+        ),
     ) {
         Column {
             // Header
@@ -287,22 +404,22 @@ fun TableCard(table: DbTable) {
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
                     .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_sql_file),
                     contentDescription = null,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(14.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     table.name,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
                 )
             }
-            
+
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
             // Columns
@@ -311,7 +428,7 @@ fun TableCard(table: DbTable) {
                     Row(
                         Modifier.fillMaxWidth().padding(vertical = 1.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (col.isPK) {

@@ -10,7 +10,12 @@ import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface MaintenanceRepository {
-    suspend fun getJobs(cursor: String? = null, limit: Int = 20, status: MaintenanceStatus? = null, forceRefresh: Boolean = false): Result<PagedResponse<MaintenanceJobDto>>
+    suspend fun getJobs(
+        cursor: String? = null,
+        limit: Int = 20,
+        status: MaintenanceStatus? = null,
+        forceRefresh: Boolean = false,
+    ): Result<PagedResponse<MaintenanceJobDto>>
     suspend fun getJob(id: String): Result<MaintenanceJobDto>
     suspend fun getJobsByVehicle(vehicleId: String): Result<List<MaintenanceJobDto>>
     suspend fun createJob(request: CreateMaintenanceRequest): Result<MaintenanceJobDto>

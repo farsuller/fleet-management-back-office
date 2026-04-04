@@ -84,7 +84,7 @@ val useCaseModule = module {
     factory { GetVehicleUseCase(get()) }
     factory { CreateVehicleUseCase(get()) }
     factory { UpdateVehicleUseCase(get()) }
-    factory { UpdateVehicleStateUseCase(get()) }
+    factory { UpdateVehicleStateUseCase(get(), get()) }
     factory { UpdateOdometerUseCase(get()) }
     factory { DeleteVehicleUseCase(get()) }
     factory { GetVehicleMaintenanceUseCase(get()) }
@@ -117,9 +117,9 @@ val useCaseModule = module {
     factory { GetRentalUseCase(get()) }
     factory { CreateRentalUseCase(get()) }
     factory { UpdateRentalUseCase(get()) }
-    factory { ActivateRentalUseCase(get()) }
+    factory { ActivateRentalUseCase(get(), get()) }
     factory { CancelRentalUseCase(get()) }
-    factory { CompleteRentalUseCase(get()) }
+    factory { CompleteRentalUseCase(get(), get()) }
     factory { DeleteRentalUseCase(get()) }
     factory(named("rentalPaymentMethods")) { RentalGetPaymentMethodsUseCase(get()) }
     factory { PayInvoiceUseCase(get()) }

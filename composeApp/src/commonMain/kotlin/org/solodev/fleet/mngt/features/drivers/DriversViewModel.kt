@@ -26,7 +26,6 @@ import org.solodev.fleet.mngt.domain.usecase.driver.DeactivateDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.GetDriversUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.ReleaseDriverUseCase
 import org.solodev.fleet.mngt.domain.usecase.driver.UpdateDriverUseCase
-import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.GetVehiclesUseCase
 import org.solodev.fleet.mngt.repository.DriverRepository
 import org.solodev.fleet.mngt.ui.UiState
@@ -48,7 +47,6 @@ class DriversViewModel(
     private val assignDriverUseCase: AssignDriverUseCase,
     private val releaseDriverUseCase: ReleaseDriverUseCase,
     private val getVehiclesUseCase: GetVehiclesUseCase,
-    private val getVehicleUseCase: GetVehicleUseCase,
     private val driverRepository: DriverRepository,
     private val authState: AuthState,
 ) : ViewModel() {

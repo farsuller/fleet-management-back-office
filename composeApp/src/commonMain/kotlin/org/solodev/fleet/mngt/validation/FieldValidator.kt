@@ -4,9 +4,11 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 object FieldValidator {
+    private const val VIN_LENGTH = 17
+    private const val MIN_PASSWORD_LENGTH = 8
 
     fun validateVin(vin: String): String? {
-        if (vin.length != 17) return "VIN must be exactly 17 characters"
+        if (vin.length != VIN_LENGTH) return "VIN must be exactly $VIN_LENGTH characters"
         if (!vin.all { it.isLetterOrDigit() }) return "VIN must contain only letters and digits"
         return null
     }
@@ -34,7 +36,7 @@ object FieldValidator {
     }
 
     fun validatePassword(password: String): String? {
-        if (password.length < 8) return "Password must be at least 8 characters"
+        if (password.length < MIN_PASSWORD_LENGTH) return "Password must be at least $MIN_PASSWORD_LENGTH characters"
         return null
     }
 }

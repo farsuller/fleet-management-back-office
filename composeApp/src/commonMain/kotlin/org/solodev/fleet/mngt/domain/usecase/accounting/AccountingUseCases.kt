@@ -3,8 +3,10 @@ package org.solodev.fleet.mngt.domain.usecase.accounting
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.DriverCollectionRequest
 import org.solodev.fleet.mngt.api.dto.accounting.DriverRemittanceRequest
+import org.solodev.fleet.mngt.api.dto.accounting.InvoiceStatus
 import org.solodev.fleet.mngt.api.dto.accounting.PayInvoiceRequest
 import org.solodev.fleet.mngt.repository.AccountingRepository
+import kotlin.Result
 
 class GetInvoicesUseCase(private val repository: AccountingRepository) {
     suspend operator fun invoke(
@@ -27,7 +29,32 @@ class CreateInvoiceUseCase(private val repository: AccountingRepository) {
 }
 
 class PayInvoiceUseCase(private val repository: AccountingRepository) {
-    suspend operator fun invoke(id: String, request: PayInvoiceRequest, idempotencyKey: String) = repository.payInvoice(id, request, idempotencyKey)
+    suspend operator fun invoke(
+        id: String,
+        request: PayInvoiceRequest,
+        idempotencyKey: String,
+    ): Result<Any> {
+        if (request.amount <= 0) {
+            return Result.failure(IllegalArgumentException("Payment amount must be greater than 0"))
+        }
+
+        val invoiceResult = repository.getInvoice(id)
+        val invoice = invoiceResult.getOrNull() ?: return invoiceResult as Result<Any>
+
+        if (invoice.status == InvoiceStatus.PAID) {
+            return Result.failure(IllegalStateException("Invoice is already paid"))
+        }
+
+        val total = invoice.total ?: 0L
+        val paid = invoice.paidAmount ?: 0L
+        val balance = total - paid
+
+        if (request.amount > balance) {
+            return Result.failure(IllegalArgumentException("Payment amount exceeds balance due"))
+        }
+
+        return repository.payInvoice(id, request, idempotencyKey)
+    }
 }
 
 class GetPaymentsUseCase(private val repository: AccountingRepository) {

@@ -8,6 +8,34 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kover)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    source.setFrom(files("src/commonMain/kotlin", "src/androidMain/kotlin", "src/wasmJsMain/kotlin"))
+    config.setFrom(files("${project.rootDir}/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        sarif.required.set(true)
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*.BuildConfig", "org.solodev.fleet.mngt.di.*")
+            }
+        }
+    }
 }
 
 kotlin {
@@ -26,6 +54,7 @@ kotlin {
         browser()
         binaries.executable()
     }
+    jvm()
 
     sourceSets {
         androidMain.dependencies {
@@ -63,23 +92,38 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.charty)
+            implementation(libs.ksafe)
         }
         // webMain is a shared source set for JS and WASM targets so that
         // browser-only code (Compose for Web entry point, DI wiring, etc.)
         // is compiled into both outputs without duplication.
         val webMain by creating {
             dependsOn(commonMain.get())
-            dependencies { implementation(libs.ksafe) }
         }
         val wasmJsMain by getting {
             dependsOn(webMain)
             dependencies { implementation(libs.ktor.client.js) }
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.ktor.client.mock)
-            implementation(libs.koin.test)
-            implementation(libs.kotlinx.coroutines.test)
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+
+                implementation("org.jetbrains.kotlin:kotlin-test-common")
+                implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
+
+                implementation(libs.kotlin.test)
+                implementation(libs.ktor.client.mock)
+                implementation(libs.koin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlinx.datetime)
+            }
+        }
+
+        val jvmTest by getting {
+            dependencies {
+                // Force the JVM to see the test library
+                implementation(kotlin("test-junit"))
+            }
         }
     }
 }
@@ -108,6 +152,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
     }
 }
 

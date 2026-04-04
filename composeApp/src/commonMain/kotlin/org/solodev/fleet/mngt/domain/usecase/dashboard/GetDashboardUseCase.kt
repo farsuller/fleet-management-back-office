@@ -22,6 +22,10 @@ class GetDashboardUseCase(
     private val maintenanceRepository: MaintenanceRepository,
     private val accountingRepository: AccountingRepository,
 ) {
+    private companion object {
+        const val MAX_RECENT_ITEMS_DASHBOARD = 5
+    }
+
     suspend operator fun invoke(forceRefresh: Boolean = false): Result<DashboardSnapshot> = supervisorScope {
         // All four fetches run in parallel; one failure won't cancel the others.
         val vehiclesDeferred = async { vehicleRepository.getVehicles(limit = 200, forceRefresh = forceRefresh) }
@@ -98,11 +102,11 @@ class GetDashboardUseCase(
                     cancelledInvoices = invoices.items.count { it.status == InvoiceStatus.CANCELLED },
                     activeIncidents = incidents.items.size,
                 ),
-                recentRentals = rentals.items.take(5),
+                recentRentals = rentals.items.take(MAX_RECENT_ITEMS_DASHBOARD),
                 urgentMaintenance = maintenance.items
                     .sortedByDescending { it.priority?.ordinal ?: -1 }
-                    .take(5),
-                recentIncidents = incidents.items.take(5),
+                    .take(MAX_RECENT_ITEMS_DASHBOARD),
+                recentIncidents = incidents.items.take(MAX_RECENT_ITEMS_DASHBOARD),
                 financialSummary = financialSummary,
             )
         }

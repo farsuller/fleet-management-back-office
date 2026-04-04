@@ -21,12 +21,17 @@ object MapProjection {
 
     // ── Coordinate → world pixel ──────────────────────────────────────────────
 
+    const val MAX_LATITUDE = 85.05112878
+    const val LONGITUDE_RANGE = 360.0
+    const val LONGITUDE_OFFSET = 180.0
+    private const val CANVAS_FIT_FACTOR = 0.85
+
     /** Longitude → world-pixel X (unclamped). */
-    fun lonToWorldX(lon: Double, zoom: Int): Double = (lon + 180.0) / 360.0 * worldSize(zoom)
+    fun lonToWorldX(lon: Double, zoom: Int): Double = (lon + LONGITUDE_OFFSET) / LONGITUDE_RANGE * worldSize(zoom)
 
     /** Latitude → world-pixel Y. Uses Web Mercator formula; clamped to ≈ ±85.05°. */
     fun latToWorldY(lat: Double, zoom: Int): Double {
-        val latRad = lat.coerceIn(-85.05112878, 85.05112878) * PI / 180.0
+        val latRad = lat.coerceIn(-MAX_LATITUDE, MAX_LATITUDE) * PI / 180.0
         return (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * worldSize(zoom)
     }
 
@@ -95,7 +100,7 @@ object MapProjection {
             val x2 = lonToWorldX(maxLon, z)
             val y1 = latToWorldY(maxLat, z)
             val y2 = latToWorldY(minLat, z)
-            if ((x2 - x1) < canvasW * 0.85 && (y2 - y1) < canvasH * 0.85) return z
+            if ((x2 - x1) < canvasW * CANVAS_FIT_FACTOR && (y2 - y1) < canvasH * CANVAS_FIT_FACTOR) return z
         }
         return minZoom
     }
@@ -124,13 +129,13 @@ data class MapViewState(
         val ws = MapProjection.worldSize(zoom)
         val wx = (MapProjection.lonToWorldX(centerLon, zoom) - dxPx).coerceIn(0.0, ws)
         val wy = (MapProjection.latToWorldY(centerLat, zoom) - dyPx).coerceIn(0.0, ws)
-        val newLon = wx / ws * 360.0 - 180.0
+        val newLon = wx / ws * MapProjection.LONGITUDE_RANGE - MapProjection.LONGITUDE_OFFSET
         // Inverse Web Mercator for latitude
         val newLat = kotlin.math.atan(
             kotlin.math.sinh(kotlin.math.PI * (1.0 - 2.0 * wy / ws)),
         ) * 180.0 / kotlin.math.PI
         return copy(
-            centerLat = newLat.coerceIn(-85.05112878, 85.05112878),
+            centerLat = newLat.coerceIn(-MapProjection.MAX_LATITUDE, MapProjection.MAX_LATITUDE),
             centerLon = newLon,
         )
     }

@@ -113,8 +113,6 @@ class MaintenanceViewModel(
                     forceRefresh = forceRefresh,
                 ).onSuccess { _listState.value = UiState.Success(it) }
                     .onFailure { _listState.value = UiState.Error(it.message ?: "Failed to load jobs") }
-            } catch (e: CancellationException) {
-                throw e
             } finally {
                 _isRefreshing.value = false
             }
@@ -135,76 +133,56 @@ class MaintenanceViewModel(
     fun loadJob(id: String) {
         _detailState.value = UiState.Loading
         viewModelScope.launch {
-            try {
-                getMaintenanceJobUseCase(id)
-                    .onSuccess { _detailState.value = UiState.Success(it) }
-                    .onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load job") }
-            } catch (e: CancellationException) {
-                throw e
-            }
+            getMaintenanceJobUseCase(id)
+                .onSuccess { _detailState.value = UiState.Success(it) }
+                .onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load job") }
         }
     }
 
     fun startJob(id: String) {
         viewModelScope.launch {
-            try {
-                startMaintenanceUseCase(id)
-                    .onSuccess {
-                        _detailState.value = UiState.Success(it)
-                        _actionResult.value = Result.success(Unit)
-                        loadList(forceRefresh = true)
-                    }
-                    .onFailure { _actionResult.value = Result.failure(it) }
-            } catch (e: CancellationException) {
-                throw e
-            }
+            startMaintenanceUseCase(id)
+                .onSuccess {
+                    _detailState.value = UiState.Success(it)
+                    _actionResult.value = Result.success(Unit)
+                    loadList(forceRefresh = true)
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
     fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long) {
         viewModelScope.launch {
-            try {
-                completeMaintenanceUseCase(id, laborCostPhp, partsCostPhp)
-                    .onSuccess {
-                        _detailState.value = UiState.Success(it)
-                        _actionResult.value = Result.success(Unit)
-                        loadList(forceRefresh = true)
-                    }
-                    .onFailure { _actionResult.value = Result.failure(it) }
-            } catch (e: CancellationException) {
-                throw e
-            }
+            completeMaintenanceUseCase(id, laborCostPhp, partsCostPhp)
+                .onSuccess {
+                    _detailState.value = UiState.Success(it)
+                    _actionResult.value = Result.success(Unit)
+                    loadList(forceRefresh = true)
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
     fun cancelJob(id: String) {
         viewModelScope.launch {
-            try {
-                cancelMaintenanceUseCase(id)
-                    .onSuccess {
-                        _detailState.value = UiState.Success(it)
-                        _actionResult.value = Result.success(Unit)
-                        loadList(forceRefresh = true)
-                    }
-                    .onFailure { _actionResult.value = Result.failure(it) }
-            } catch (e: CancellationException) {
-                throw e
-            }
+            cancelMaintenanceUseCase(id)
+                .onSuccess {
+                    _detailState.value = UiState.Success(it)
+                    _actionResult.value = Result.success(Unit)
+                    loadList(forceRefresh = true)
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
     fun scheduleJob(request: CreateMaintenanceRequest) {
         viewModelScope.launch {
-            try {
-                scheduleMaintenanceUseCase(request)
-                    .onSuccess {
-                        _actionResult.value = Result.success(Unit)
-                        loadList(forceRefresh = true)
-                    }
-                    .onFailure { _actionResult.value = Result.failure(it) }
-            } catch (e: CancellationException) {
-                throw e
-            }
+            scheduleMaintenanceUseCase(request)
+                .onSuccess {
+                    _actionResult.value = Result.success(Unit)
+                    loadList(forceRefresh = true)
+                }
+                .onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -216,12 +194,8 @@ class MaintenanceViewModel(
 
     private fun loadVehicles() {
         viewModelScope.launch {
-            try {
-                getVehiclesUseCase(limit = 100)
-                    .onSuccess { _vehicles.value = it.items }
-            } catch (e: CancellationException) {
-                throw e
-            }
+            getVehiclesUseCase(limit = 100)
+                .onSuccess { _vehicles.value = it.items }
         }
     }
 }

@@ -153,7 +153,6 @@ val viewModelModule = module {
             assignDriverUseCase = get(),
             releaseDriverUseCase = get(),
             getVehiclesUseCase = get(),
-            getVehicleUseCase = get(),
             driverRepository = get(),
             authState = get(),
         )

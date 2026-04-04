@@ -11,19 +11,24 @@ import org.solodev.fleet.mngt.api.dto.vehicle.VehicleStateRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface VehicleRepository {
-    suspend fun getVehicles(page: Int = 1, limit: Int = 20, state: VehicleState? = null, forceRefresh: Boolean = false): Result<PagedResponse<VehicleDto>>
+    suspend fun getVehicles(
+        page: Int = 1,
+        limit: Int = 20,
+        state: VehicleState? = null,
+        forceRefresh: Boolean = false,
+    ): Result<PagedResponse<VehicleDto>>
     suspend fun getVehicle(id: String): Result<VehicleDto>
     suspend fun createVehicle(request: CreateVehicleRequest): Result<VehicleDto>
     suspend fun updateVehicle(id: String, request: UpdateVehicleRequest): Result<VehicleDto>
-    suspend fun updateVehicleState(id: String, state: VehicleState): Result<VehicleDto>
-    suspend fun updateOdometer(id: String, readingKm: Long): Result<VehicleDto>
     suspend fun deleteVehicle(id: String): Result<Unit>
+    suspend fun updateVehicleState(id: String, state: VehicleState): Result<VehicleDto>
+    suspend fun updateOdometer(id: String, odometerKm: Long): Result<VehicleDto>
 }
 
 class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository {
 
-    // 2-minute TTL — vehicles change infrequently within a session
-    private val listCache = InMemoryCache<String, PagedResponse<VehicleDto>>(ttlMs = 120_000L)
+    // 1-minute TTL — vehicle metadata is relatively stable but state changes regularly.
+    private val listCache = InMemoryCache<String, PagedResponse<VehicleDto>>(ttlMs = 60_000L)
 
     override suspend fun getVehicles(
         page: Int,
@@ -31,8 +36,12 @@ class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository
         state: VehicleState?,
         forceRefresh: Boolean,
     ): Result<PagedResponse<VehicleDto>> {
-        val key = "v:$page:$limit:${state?.name}"
-        if (!forceRefresh) listCache.get(key)?.let { return Result.success(it) }
+        val key = "v:$page:$limit:$state"
+        if (!forceRefresh) {
+            listCache.get(key)?.let {
+                return Result.success(it)
+            }
+        }
         return api.getVehicles(page, limit, state?.name).onSuccess { listCache.put(key, it) }
     }
 
@@ -44,7 +53,7 @@ class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository
 
     override suspend fun updateVehicleState(id: String, state: VehicleState) = api.updateVehicleState(id, VehicleStateRequest(state)).onSuccess { listCache.clear() }
 
-    override suspend fun updateOdometer(id: String, readingKm: Long) = api.updateOdometer(id, OdometerRequest(mileageKm = readingKm))
+    override suspend fun updateOdometer(id: String, odometerKm: Long) = api.updateOdometer(id, OdometerRequest(odometerKm)).onSuccess { listCache.clear() }
 
     override suspend fun deleteVehicle(id: String) = api.deleteVehicle(id).onSuccess { listCache.clear() }
 }

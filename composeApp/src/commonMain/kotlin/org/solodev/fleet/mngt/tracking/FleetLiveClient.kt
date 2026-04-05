@@ -59,6 +59,7 @@ class FleetLiveClient(
         _connectionState.tryEmit(ConnectionState.Disconnected)
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun connectWithRetry() {
         var attempts = 0
         while (attempts < MAX_RECONNECT_ATTEMPTS) {

@@ -153,7 +153,6 @@ class VehiclesViewModel(
         )
 
         // Maintenance Stats
-        val currentMileage = items.map { it.mileageKm ?: 0L }
         val overdueCount = items.count {
             val next = it.nextServiceMileage ?: 0
             val current = it.mileageKm ?: 0L

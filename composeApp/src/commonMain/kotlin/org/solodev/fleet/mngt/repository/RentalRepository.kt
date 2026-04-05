@@ -10,7 +10,12 @@ import org.solodev.fleet.mngt.api.dto.rental.UpdateRentalRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface RentalRepository {
-    suspend fun getRentals(page: Int = 1, limit: Int = 20, status: RentalStatus? = null, forceRefresh: Boolean = false): Result<PagedResponse<RentalDto>>
+    suspend fun getRentals(
+        page: Int = 1,
+        limit: Int = 20,
+        status: RentalStatus? = null,
+        forceRefresh: Boolean = false,
+    ): Result<PagedResponse<RentalDto>>
     suspend fun getRental(id: String): Result<RentalDto>
     suspend fun createRental(request: CreateRentalRequest): Result<RentalDto>
     suspend fun updateRental(id: String, request: UpdateRentalRequest): Result<RentalDto>
@@ -45,5 +50,6 @@ class RentalRepositoryImpl(private val api: FleetApiClient) : RentalRepository {
 
     override suspend fun cancelRental(id: String) = api.cancelRental(id).onSuccess { listCache.clear() }
 
-    override suspend fun completeRental(id: String, finalOdometerKm: Long) = api.completeRental(id, CompleteRentalRequest(finalOdometerKm)).onSuccess { listCache.clear() }
+    override suspend fun completeRental(id: String, finalOdometerKm: Long) = api.completeRental(id, CompleteRentalRequest(finalOdometerKm))
+        .onSuccess { listCache.clear() }
 }

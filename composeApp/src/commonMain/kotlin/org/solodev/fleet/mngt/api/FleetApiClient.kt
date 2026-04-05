@@ -11,7 +11,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
-import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -21,14 +20,13 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.serializer
 import org.solodev.fleet.mngt.api.dto.accounting.AccountDto
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.DriverCollectionRequest
@@ -79,6 +77,8 @@ import org.solodev.fleet.mngt.api.dto.vehicle.VehicleStateRequest
 import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.TokenProvider
 
+class ApiException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+
 @Serializable
 private data class ApiWrapper<T>(
     val success: Boolean,
@@ -105,15 +105,21 @@ class FleetApiClient(
     private val tokenProvider: TokenProvider,
     private val authState: AuthState,
 ) {
+    private companion object {
+        const val REQUEST_TIMEOUT_MS = 30_000L
+        const val CONNECT_TIMEOUT_MS = 10_000L
+        const val MAX_RETRIES = 2
+    }
+
     private val client = HttpClient {
         install(ContentNegotiation) { json(FleetJson) }
         install(HttpTimeout) {
-            requestTimeoutMillis = 30_000
-            connectTimeoutMillis = 10_000
+            requestTimeoutMillis = REQUEST_TIMEOUT_MS
+            connectTimeoutMillis = CONNECT_TIMEOUT_MS
         }
         install(HttpRequestRetry) {
-            maxRetries = 2
-            retryOnServerErrors(maxRetries = 2)
+            maxRetries = MAX_RETRIES
+            retryOnServerErrors(maxRetries = MAX_RETRIES)
             exponentialDelay()
         }
         defaultRequest {
@@ -203,7 +209,10 @@ class FleetApiClient(
 
     // ── Customers ─────────────────────────────────────────────────────────────
 
-    suspend fun getCustomers(cursor: String? = null, limit: Int = 20): Result<PagedResponse<CustomerDto>> = getAsPaged("/v1/customers") {
+    suspend fun getCustomers(
+        cursor: String? = null,
+        limit: Int = 20,
+    ): Result<PagedResponse<CustomerDto>> = getAsPaged("/v1/customers") {
         cursor?.let { append("cursor", it) }
         append("limit", limit.toString())
     }
@@ -236,7 +245,10 @@ class FleetApiClient(
 
     suspend fun createMaintenanceJob(request: CreateMaintenanceRequest): Result<MaintenanceJobDto> = post("/v1/maintenance/jobs", request)
 
-    suspend fun completeMaintenanceJob(id: String, request: CompleteMaintenanceRequest): Result<MaintenanceJobDto> = post("/v1/maintenance/jobs/$id/complete", request)
+    suspend fun completeMaintenanceJob(
+        id: String,
+        request: CompleteMaintenanceRequest,
+    ): Result<MaintenanceJobDto> = post("/v1/maintenance/jobs/$id/complete", request)
 
     suspend fun startMaintenanceJob(id: String): Result<MaintenanceJobDto> = postEmpty("/v1/maintenance/jobs/$id/start")
 
@@ -258,7 +270,10 @@ class FleetApiClient(
 
     // ── Accounting ────────────────────────────────────────────────────────────
 
-    suspend fun getInvoices(cursor: String? = null, limit: Int = 20): Result<PagedResponse<InvoiceDto>> = getAsPaged("/v1/accounting/invoices") {
+    suspend fun getInvoices(
+        cursor: String? = null,
+        limit: Int = 20,
+    ): Result<PagedResponse<InvoiceDto>> = getAsPaged("/v1/accounting/invoices") {
         cursor?.let { append("cursor", it) }
         append("limit", limit.toString())
     }
@@ -269,17 +284,26 @@ class FleetApiClient(
 
     suspend fun createInvoice(request: CreateInvoiceRequest): Result<InvoiceDto> = post("/v1/accounting/invoices", request)
 
-    suspend fun payInvoice(id: String, request: PayInvoiceRequest, idempotencyKey: String): Result<PaymentDto> = safeCall {
-        client.post("/v1/accounting/invoices/$id/pay") {
-            headers {
-                tokenProvider.token?.let { append("Authorization", "Bearer $it") }
-                append("Idempotency-Key", idempotencyKey)
+    suspend fun payInvoice(
+        id: String,
+        request: PayInvoiceRequest,
+        idempotencyKey: String,
+    ): Result<PaymentDto> = safeCall {
+        client
+            .post("/v1/accounting/invoices/$id/pay") {
+                headers {
+                    tokenProvider.token?.let { append("Authorization", "Bearer $it") }
+                    append("Idempotency-Key", idempotencyKey)
+                }
+                setBody(request)
             }
-            setBody(request)
-        }.guardStatus()
+            .guardStatus()
     }
 
-    suspend fun getPayments(cursor: String? = null, limit: Int = 20): Result<PagedResponse<PaymentDto>> = getAsPaged("/v1/accounting/payments") {
+    suspend fun getPayments(
+        cursor: String? = null,
+        limit: Int = 20,
+    ): Result<PagedResponse<PaymentDto>> = getAsPaged("/v1/accounting/payments") {
         cursor?.let { append("cursor", it) }
         append("limit", limit.toString())
     }
@@ -308,7 +332,10 @@ class FleetApiClient(
 
     suspend fun getVehicleState(vehicleId: String): Result<VehicleStateDto> = getItem("/v1/tracking/$vehicleId/state")
 
-    suspend fun getLocationHistory(vehicleId: String, limit: Int = 50): Result<List<LocationHistoryEntry>> = get("/v1/tracking/$vehicleId/history") { append("limit", limit.toString()) }
+    suspend fun getLocationHistory(
+        vehicleId: String,
+        limit: Int = 50,
+    ): Result<List<LocationHistoryEntry>> = get("/v1/tracking/$vehicleId/history") { parameters.append("limit", limit.toString()) }
 
     suspend fun getActiveRoutes(): Result<List<RouteDto>> = getList("/v1/tracking/routes/active")
 
@@ -328,11 +355,11 @@ class FleetApiClient(
 
     suspend fun createDriver(request: CreateDriverRequest): Result<DriverDto> = post("/v1/drivers", request)
 
+    suspend fun updateDriver(id: String, request: UpdateDriverRequest): Result<DriverDto> = patch("/v1/drivers/$id", request)
+
     suspend fun deactivateDriver(id: String): Result<DriverDto> = postEmpty("/v1/drivers/$id/deactivate")
 
     suspend fun activateDriver(id: String): Result<DriverDto> = postEmpty("/v1/drivers/$id/activate")
-
-    suspend fun updateDriver(id: String, request: UpdateDriverRequest): Result<DriverDto> = patch("/v1/drivers/$id", request)
 
     suspend fun assignDriver(driverId: String, request: AssignDriverRequest): Result<AssignmentDto> = post("/v1/drivers/$driverId/assign", request)
 
@@ -344,137 +371,132 @@ class FleetApiClient(
 
     suspend fun getVehicleDriverHistory(vehicleId: String): Result<List<AssignmentDto>> = getList("/v1/vehicles/$vehicleId/driver/history")
 
-    // ── Driver Shifts ────────────────────────────────────────────────────────
-
     suspend fun startDriverShift(request: StartShiftRequest): Result<ShiftResponse> = post("/v1/drivers/shifts/start", request)
 
     suspend fun endDriverShift(request: EndShiftRequest): Result<ShiftResponse> = post("/v1/drivers/shifts/end", request)
 
-    suspend fun getActiveDriverShift(): Result<ShiftResponse?> = getItem("/v1/drivers/shifts/active")
+    suspend fun getActiveDriverShift(): Result<ShiftResponse?> = get("/v1/drivers/shifts/active")
 
-    // ── Private helpers ───────────────────────────────────────────────────────
+    // ── Internal Helpers ──────────────────────────────────────────────────────
 
-    /**
-     * For endpoints that return ApiWrapper<List<T>> instead of ApiWrapper<PagedResponse<T>>.
-     * Deserializes the list and wraps it in a PagedResponse so callers stay uniform.
-     */
-    private suspend inline fun <reified R> getAsPaged(
+    private suspend inline fun <reified T> get(
         path: String,
-        crossinline params: io.ktor.http.ParametersBuilder.() -> Unit = {},
-    ): Result<PagedResponse<R>> = safeCall {
-        val response = client.get(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-            url { parameters.apply(params) }
-        }
-        if (response.status == HttpStatusCode.Unauthorized) {
-            authState.signOut()
-            throw UnauthorizedException()
-        }
-        if (response.status == HttpStatusCode.TooManyRequests) throw RateLimitException()
-        if (!response.status.isSuccess()) {
-            val text = runCatching { response.bodyAsText() }.getOrDefault(response.status.description)
-            throw ApiException(response.status.value, text)
-        }
-        val responseText = response.bodyAsText()
-        val jsonElement = FleetJson.decodeFromString<JsonElement>(responseText)
-        val success = jsonElement.jsonObject["success"]?.jsonPrimitive?.content == "true"
-
-        if (!success) {
-            val errorElement = jsonElement.jsonObject["error"]
-            val msg = if (errorElement != null) {
-                FleetJson.decodeFromJsonElement<ApiWrapperError>(errorElement).message
-            } else {
-                "Request failed"
+        noinline query: (io.ktor.http.URLBuilder.() -> Unit)? = null,
+    ): Result<T> = safeCall {
+        client
+            .get(path) {
+                headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
+                query?.let { url.apply(it) }
             }
-            throw ApiException(response.status.value, msg)
+            .guardStatus()
+    }
+
+    private suspend inline fun <reified T> getList(path: String): Result<List<T>> = get(path)
+
+    private suspend inline fun <reified T> getItem(path: String): Result<T> = get(path)
+
+    private suspend inline fun <reified T> getAsPaged(
+        path: String,
+        noinline query: (io.ktor.http.ParametersBuilder.() -> Unit)? = null,
+    ): Result<PagedResponse<T>> = safeCall {
+        val response = client
+            .get(path) {
+                headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
+                query?.let { url.parameters.apply(it) }
+            }
+
+        if (!response.status.isSuccess()) {
+            if (response.status == HttpStatusCode.Unauthorized) {
+                authState.signOut()
+            }
+            val errorBody = response.bodyAsText()
+            val error = try {
+                FleetJson.decodeFromString<ApiWrapper<Unit>>(errorBody).error
+            } catch (_: Exception) {
+                null
+            }
+            throw ApiException(error?.message ?: "API Error: ${response.status.value} $errorBody")
         }
 
-        val data = jsonElement.jsonObject["data"] ?: throw ApiException(response.status.value, "Empty response data")
+        val jsonElement = response.body<JsonElement>()
+        val success = jsonElement.jsonObject["success"]?.jsonPrimitive?.content == "true"
+        if (!success) {
+            val msg = jsonElement.jsonObject["error"]?.jsonObject?.get("message")?.jsonPrimitive?.content ?: "Request failed"
+            throw ApiException(msg)
+        }
+
+        val data = jsonElement.jsonObject["data"] ?: throw ApiException("Empty response data")
 
         if (data is JsonArray) {
-            val items = FleetJson.decodeFromJsonElement<List<R>>(data)
+            val items = FleetJson.decodeFromJsonElement<List<T>>(data)
             PagedResponse(items = items)
         } else {
-            FleetJson.decodeFromJsonElement<PagedResponse<R>>(data)
+            FleetJson.decodeFromJsonElement<PagedResponse<T>>(data)
         }
     }
 
-    private suspend inline fun <reified R> get(
-        path: String,
-        crossinline params: io.ktor.http.ParametersBuilder.() -> Unit = {},
-    ): Result<R> = safeCall {
-        client.get(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-            url { parameters.apply(params) }
-        }.guardStatus()
+    private suspend inline fun <reified R, reified T> post(path: String, body: R): Result<T> = safeCall {
+        client
+            .post(path) {
+                headers {
+                    tokenProvider.token?.let { append("Authorization", "Bearer $it") }
+                }
+                setBody(body)
+            }
+            .guardStatus()
     }
 
-    private suspend inline fun <reified R> getItem(path: String): Result<R> = get(path)
-
-    @Suppress("UNCHECKED_CAST")
-    private suspend inline fun <reified R> getList(path: String): Result<List<R>> = get(path)
-
-    private suspend inline fun <reified B : Any, reified R> post(path: String, body: B): Result<R> = safeCall {
-        client.post(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-            setBody(body)
-        }.guardStatus()
+    private suspend inline fun <reified T> postEmpty(path: String): Result<T> = safeCall {
+        client
+            .post(path) {
+                headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
+            }
+            .guardStatus()
     }
 
-    private suspend inline fun <reified R> postEmpty(path: String): Result<R> = safeCall {
-        client.post(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-        }.guardStatus()
+    private suspend inline fun <reified R, reified T> patch(path: String, body: R): Result<T> = safeCall {
+        client
+            .patch(path) {
+                headers {
+                    tokenProvider.token?.let { append("Authorization", "Bearer $it") }
+                }
+                setBody(body)
+            }
+            .guardStatus()
+    }
+    private suspend inline fun delete(path: String): Result<Unit> = safeCall {
+        client
+            .delete(path) {
+                headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
+            }
+            .guardStatus()
     }
 
-    private suspend inline fun <reified B : Any, reified R> put(path: String, body: B): Result<R> = safeCall {
-        client.put(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-            setBody(body)
-        }.guardStatus()
-    }
-
-    private suspend inline fun <reified B : Any, reified R> patch(path: String, body: B): Result<R> = safeCall {
-        client.patch(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-            setBody(body)
-        }.guardStatus()
-    }
-
-    private suspend inline fun <reified R> delete(path: String): Result<R> = safeCall {
-        client.delete(path) {
-            headers { tokenProvider.token?.let { append("Authorization", "Bearer $it") } }
-        }.guardStatus()
-    }
-
-    private suspend inline fun <reified R> HttpResponse.guardStatus(): R {
-        if (status == HttpStatusCode.Unauthorized) {
-            authState.signOut()
-            throw UnauthorizedException()
-        }
-        if (status == HttpStatusCode.TooManyRequests) throw RateLimitException()
+    private suspend inline fun <reified T> HttpResponse.guardStatus(): T {
         if (!status.isSuccess()) {
-            val raw = runCatching { bodyAsText() }.getOrDefault(status.description)
-            val message = runCatching {
-                FleetJson.decodeFromString<ApiWrapper<Unit>>(raw).error?.message
-            }.getOrNull() ?: raw
-            throw ApiException(status.value, message)
+            if (status == HttpStatusCode.Unauthorized) {
+                authState.signOut()
+            }
+            val errorBody = bodyAsText()
+            val error =
+                try {
+                    FleetJson.decodeFromString<ApiWrapper<T>>(errorBody).error
+                } catch (@Suppress("SwallowedException") e: SerializationException) {
+                    null
+                }
+            throw ApiException(error?.message ?: "API Error: ${status.value} $errorBody")
         }
-        @Suppress("UNCHECKED_CAST")
-        if (R::class == Unit::class) return Unit as R
-        val wrapper = body<ApiWrapper<R>>()
-        if (!wrapper.success || wrapper.data == null) {
-            val msg = wrapper.error?.message ?: "Empty response data"
-            throw ApiException(status.value, msg)
-        }
-        return wrapper.data
+        val wrapper = body<ApiWrapper<T>>()
+        return wrapper.data ?: throw ApiException("Empty data response")
     }
 
-    private suspend inline fun <R> safeCall(block: suspend () -> R): Result<R> = runCatching { block() }
-
-    fun close() = client.close()
+    @Suppress("TooGenericExceptionCaught")
+    private suspend inline fun <T> safeCall(block: () -> T): Result<T> = try {
+        Result.success(block())
+    } catch (e: Exception) {
+        if (e.message?.contains("401") == true) {
+            authState.signOut()
+        }
+        Result.failure(e)
+    }
 }
-
-class UnauthorizedException : Exception("Session expired — please log in again")
-class RateLimitException : Exception("Too many requests — slow down")
-class ApiException(val statusCode: Int, message: String) : Exception(message)

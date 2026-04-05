@@ -17,16 +17,32 @@ interface VehicleRepository {
         state: VehicleState? = null,
         forceRefresh: Boolean = false,
     ): Result<PagedResponse<VehicleDto>>
+
     suspend fun getVehicle(id: String): Result<VehicleDto>
+
     suspend fun createVehicle(request: CreateVehicleRequest): Result<VehicleDto>
-    suspend fun updateVehicle(id: String, request: UpdateVehicleRequest): Result<VehicleDto>
+
+    suspend fun updateVehicle(
+        id: String,
+        request: UpdateVehicleRequest,
+    ): Result<VehicleDto>
+
     suspend fun deleteVehicle(id: String): Result<Unit>
-    suspend fun updateVehicleState(id: String, state: VehicleState): Result<VehicleDto>
-    suspend fun updateOdometer(id: String, odometerKm: Long): Result<VehicleDto>
+
+    suspend fun updateVehicleState(
+        id: String,
+        state: VehicleState,
+    ): Result<VehicleDto>
+
+    suspend fun updateOdometer(
+        id: String,
+        odometerKm: Long,
+    ): Result<VehicleDto>
 }
 
-class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository {
-
+class VehicleRepositoryImpl(
+    private val api: FleetApiClient,
+) : VehicleRepository {
     // 1-minute TTL — vehicle metadata is relatively stable but state changes regularly.
     private val listCache = InMemoryCache<String, PagedResponse<VehicleDto>>(ttlMs = 60_000L)
 
@@ -49,11 +65,26 @@ class VehicleRepositoryImpl(private val api: FleetApiClient) : VehicleRepository
 
     override suspend fun createVehicle(request: CreateVehicleRequest) = api.createVehicle(request).onSuccess { listCache.clear() }
 
-    override suspend fun updateVehicle(id: String, request: UpdateVehicleRequest) = api.updateVehicle(id, request).onSuccess { listCache.clear() }
+    override suspend fun updateVehicle(
+        id: String,
+        request: UpdateVehicleRequest,
+    ) = api.updateVehicle(id, request).onSuccess {
+        listCache.clear()
+    }
 
-    override suspend fun updateVehicleState(id: String, state: VehicleState) = api.updateVehicleState(id, VehicleStateRequest(state)).onSuccess { listCache.clear() }
+    override suspend fun updateVehicleState(
+        id: String,
+        state: VehicleState,
+    ) = api.updateVehicleState(id, VehicleStateRequest(state)).onSuccess {
+        listCache.clear()
+    }
 
-    override suspend fun updateOdometer(id: String, odometerKm: Long) = api.updateOdometer(id, OdometerRequest(odometerKm)).onSuccess { listCache.clear() }
+    override suspend fun updateOdometer(
+        id: String,
+        odometerKm: Long,
+    ) = api.updateOdometer(id, OdometerRequest(odometerKm)).onSuccess {
+        listCache.clear()
+    }
 
     override suspend fun deleteVehicle(id: String) = api.deleteVehicle(id).onSuccess { listCache.clear() }
 }

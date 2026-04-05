@@ -26,16 +26,17 @@ import org.solodev.fleet.mngt.theme.ThemeState
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    val koin = startKoin {
-        logger(PrintLogger(Level.ERROR))
-        properties(
-            mapOf(
-                "fleet.api.baseUrl" to PlatformConfig.apiBaseUrl,
-                "fleet.ws.baseUrl" to PlatformConfig.wsBaseUrl,
-            ),
-        )
-        modules(storageModule, networkModule, trackingModule, repositoryModule, useCaseModule, viewModelModule)
-    }.koin
+    val koin =
+        startKoin {
+            logger(PrintLogger(Level.ERROR))
+            properties(
+                mapOf(
+                    "fleet.api.baseUrl" to PlatformConfig.apiBaseUrl,
+                    "fleet.ws.baseUrl" to PlatformConfig.wsBaseUrl,
+                ),
+            )
+            modules(storageModule, networkModule, trackingModule, repositoryModule, useCaseModule, viewModelModule)
+        }.koin
 
     ComposeViewport {
         KoinContext {

@@ -21,9 +21,13 @@ import kotlin.time.Clock
  *
  * @param ttlMs Time-to-live in milliseconds.
  */
-class InMemoryCache<K : Any, V : Any>(private val ttlMs: Long = 60_000L) {
-
-    private data class Entry<V>(val value: V, val cachedAt: Long)
+class InMemoryCache<K : Any, V : Any>(
+    private val ttlMs: Long = 60_000L,
+) {
+    private data class Entry<V>(
+        val value: V,
+        val cachedAt: Long,
+    )
 
     private val store = LinkedHashMap<K, Entry<V>>()
 
@@ -46,7 +50,10 @@ class InMemoryCache<K : Any, V : Any>(private val ttlMs: Long = 60_000L) {
         return age(entry) > ttlMs
     }
 
-    fun put(key: K, value: V) {
+    fun put(
+        key: K,
+        value: V,
+    ) {
         store[key] = Entry(value, Clock.System.now().toEpochMilliseconds())
     }
 

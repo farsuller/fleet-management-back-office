@@ -43,7 +43,6 @@ class CustomersViewModel(
     private val getCustomerPaymentsUseCase: GetCustomerPaymentsUseCase,
     private val authState: AuthState,
 ) : ViewModel() {
-
     // ── List state ────────────────────────────────────────────────────────────
 
     private val _listState = MutableStateFlow<UiState<PagedResponse<CustomerDto>>>(UiState.Loading)
@@ -90,8 +89,7 @@ class CustomersViewModel(
                 .onSuccess {
                     _listState.value = UiState.Success(it)
                     _isRefreshing.value = false
-                }
-                .onFailure {
+                }.onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load customers")
                     _isRefreshing.value = false
                 }
@@ -122,8 +120,7 @@ class CustomersViewModel(
                                 _detailState.value = UiState.Success(current.copy(payments = payments))
                             }
                     }
-                }
-                .onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load customer") }
+                }.onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load customer") }
         }
     }
 
@@ -147,24 +144,29 @@ class CustomersViewModel(
                     if (current?.customer?.id == customerId) {
                         _detailState.value = UiState.Success(current.copy(customer = it))
                     }
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun createCustomer(request: CreateCustomerRequest, onCreated: (String) -> Unit) {
+    fun createCustomer(
+        request: CreateCustomerRequest,
+        onCreated: (String) -> Unit,
+    ) {
         viewModelScope.launch {
             createCustomerUseCase(request)
                 .onSuccess { customer ->
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     customer.id?.let { onCreated(it) }
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun updateCustomer(customerId: String, request: UpdateCustomerRequest, onUpdated: () -> Unit) {
+    fun updateCustomer(
+        customerId: String,
+        request: UpdateCustomerRequest,
+        onUpdated: () -> Unit,
+    ) {
         viewModelScope.launch {
             updateCustomerUseCase(customerId, request)
                 .onSuccess { customer ->
@@ -178,8 +180,7 @@ class CustomersViewModel(
                     }
 
                     onUpdated()
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 

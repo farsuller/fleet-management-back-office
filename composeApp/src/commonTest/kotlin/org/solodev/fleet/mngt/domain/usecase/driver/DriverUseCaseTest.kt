@@ -18,14 +18,15 @@ class DriverUseCaseTest {
     @Test
     fun shouldRejectCreate_WhenEmailIsInvalid() = runTest {
         // // Arrange
-        val request = CreateDriverRequest(
-            email = "invalid-email",
-            firstName = "John",
-            lastName = "Doe",
-            phone = "1234567890",
-            licenseNumber = "ABC-123",
-            licenseExpiry = "2025-12-31",
-        )
+        val request =
+            CreateDriverRequest(
+                email = "invalid-email",
+                firstName = "John",
+                lastName = "Doe",
+                phone = "1234567890",
+                licenseNumber = "ABC-123",
+                licenseExpiry = "2025-12-31",
+            )
 
         // // Act
         val result = createDriverUseCase(request)
@@ -39,14 +40,15 @@ class DriverUseCaseTest {
     fun shouldRejectCreate_WhenLicenseIsExpired() = runTest {
         // // Arrange
         val yesterday = "2023-01-01"
-        val request = CreateDriverRequest(
-            email = "john@example.com",
-            firstName = "John",
-            lastName = "Doe",
-            phone = "1234567890",
-            licenseNumber = "ABC-123",
-            licenseExpiry = yesterday,
-        )
+        val request =
+            CreateDriverRequest(
+                email = "john@example.com",
+                firstName = "John",
+                lastName = "Doe",
+                phone = "1234567890",
+                licenseNumber = "ABC-123",
+                licenseExpiry = yesterday,
+            )
 
         // // Act
         val result = createDriverUseCase(request)

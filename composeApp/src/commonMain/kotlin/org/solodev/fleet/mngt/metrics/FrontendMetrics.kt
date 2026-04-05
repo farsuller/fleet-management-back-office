@@ -12,11 +12,13 @@ package org.solodev.fleet.mngt.metrics
  *   FrontendMetrics.recordAnimationFps(60.0)
  */
 object FrontendMetrics {
-
     // Set to false in production via BuildConfig / compile-time constant
     private const val ENABLED = true
 
-    fun recordRenderTime(vehicleId: String, durationMs: Double) {
+    fun recordRenderTime(
+        vehicleId: String,
+        durationMs: Double,
+    ) {
         if (!ENABLED) return
         recordMeasure("vehicle_render", mapOf("vehicleId" to vehicleId, "durationMs" to durationMs))
     }
@@ -31,7 +33,10 @@ object FrontendMetrics {
         recordMeasure("animation_fps", mapOf("fps" to fps))
     }
 
-    private fun recordMeasure(name: String, detail: Map<String, Any>) {
+    private fun recordMeasure(
+        name: String,
+        detail: Map<String, Any>,
+    ) {
         // Delegates to the platform-specific Performance API implementation.
         // In WASM/JS this calls window.performance.measure(); the expect/actual
         // binding is resolved in wasmJsMain.
@@ -43,4 +48,7 @@ object FrontendMetrics {
  * Platform bridge — implemented via `expect`/`actual` so that WASM/JS can call
  * `window.performance.measure()` while other targets (e.g. Android) are no-ops.
  */
-internal expect fun performanceMeasure(name: String, detail: Map<String, Any>)
+internal expect fun performanceMeasure(
+    name: String,
+    detail: Map<String, Any>,
+)

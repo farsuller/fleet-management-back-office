@@ -21,7 +21,6 @@ class DriverPaymentsViewModel(
     private val getAllDriverPaymentsUseCase: GetAllDriverPaymentsUseCase,
     private val recordDriverCollectionUseCase: RecordDriverCollectionUseCase,
 ) : ViewModel() {
-
     private val _driversState = MutableStateFlow<UiState<List<DriverDto>>>(UiState.Loading)
     val driversState: StateFlow<UiState<List<DriverDto>>> = _driversState.asStateFlow()
 
@@ -68,8 +67,7 @@ class DriverPaymentsViewModel(
             .onSuccess { payment ->
                 _collectionResult.value = Result.success(payment)
                 _selectedDriverId.value?.let { loadDriverPayments(it) }
-            }
-            .onFailure { _collectionResult.value = Result.failure(it) }
+            }.onFailure { _collectionResult.value = Result.failure(it) }
     }
 
     fun clearCollectionResult() {

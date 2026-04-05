@@ -44,7 +44,10 @@ class FakeDriverRepository : DriverRepository {
         request: UpdateDriverRequest,
     ): Result<DriverDto> = driverResult ?: Result.failure(Exception("Update failed"))
 
-    override suspend fun assignToVehicle(driverId: String, request: AssignDriverRequest): Result<AssignmentDto> {
+    override suspend fun assignToVehicle(
+        driverId: String,
+        request: AssignDriverRequest,
+    ): Result<AssignmentDto> {
         lastAssignRequest = request
         return assignmentResult ?: Result.failure(Exception("Assignment failed"))
     }

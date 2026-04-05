@@ -73,7 +73,9 @@ data class VehicleRouteState(
 )
 
 @Serializable
-data class CoordinateReceptionRequest(val enabled: Boolean)
+data class CoordinateReceptionRequest(
+    val enabled: Boolean,
+)
 
 @Serializable
 data class CoordinateReceptionStatus(

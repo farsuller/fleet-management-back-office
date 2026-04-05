@@ -68,7 +68,6 @@ class VehiclesViewModel(
     private val getVehicleIncidentsUseCase: GetVehicleIncidentsUseCase,
     private val authState: AuthState,
 ) : ViewModel() {
-
     // ── List state ────────────────────────────────────────────────────────────
 
     private val _listState = MutableStateFlow<UiState<PagedResponse<VehicleDto>>>(UiState.Loading)
@@ -130,8 +129,7 @@ class VehiclesViewModel(
                     _listState.value = UiState.Success(it)
                     _isRefreshing.value = false
                     calculateStats(it.items)
-                }
-                .onFailure {
+                }.onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load vehicles")
                     _isRefreshing.value = false
                 }
@@ -144,35 +142,39 @@ class VehiclesViewModel(
         val damagedCount = items.count { it.state == VehicleState.RETIRED }
         val goodCount = totalCount - maintenanceCount - damagedCount
 
-        _stats.value = VehicleStats(
-            total = totalCount,
-            good = goodCount,
-            needsService = maintenanceCount,
-            damaged = damagedCount,
-            trend = "+5%",
-        )
+        _stats.value =
+            VehicleStats(
+                total = totalCount,
+                good = goodCount,
+                needsService = maintenanceCount,
+                damaged = damagedCount,
+                trend = "+5%",
+            )
 
         // Maintenance Stats
-        val overdueCount = items.count {
-            val next = it.nextServiceMileage ?: 0
-            val current = it.mileageKm ?: 0L
-            current >= next && next > 0
-        }
-        val upcomingCount = items.count {
-            val next = it.nextServiceMileage ?: 0
-            val current = it.mileageKm ?: 0L
-            val diff = next - current
-            diff in 1..500
-        }
+        val overdueCount =
+            items.count {
+                val next = it.nextServiceMileage ?: 0
+                val current = it.mileageKm ?: 0L
+                current >= next && next > 0
+            }
+        val upcomingCount =
+            items.count {
+                val next = it.nextServiceMileage ?: 0
+                val current = it.mileageKm ?: 0L
+                val diff = next - current
+                diff in 1..500
+            }
         val onTrackCount = totalCount - overdueCount - upcomingCount
 
-        _maintenanceStats.value = MaintenanceStats(
-            totalInMaintenance = maintenanceCount,
-            overdue = overdueCount,
-            upcoming = upcomingCount,
-            onTrack = onTrackCount,
-            total = totalCount,
-        )
+        _maintenanceStats.value =
+            MaintenanceStats(
+                totalInMaintenance = maintenanceCount,
+                overdue = overdueCount,
+                upcoming = upcomingCount,
+                onTrack = onTrackCount,
+                total = totalCount,
+            )
     }
 
     // ── Detail actions ────────────────────────────────────────────────────────
@@ -201,8 +203,7 @@ class VehiclesViewModel(
                                 _detailState.value = UiState.Success(current.copy(incidents = incidents))
                             }
                     }
-                }
-                .onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load vehicle") }
+                }.onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load vehicle") }
         }
     }
 
@@ -244,63 +245,73 @@ class VehiclesViewModel(
         }
     }
 
-    fun changeState(vehicleId: String, state: VehicleState) {
+    fun changeState(
+        vehicleId: String,
+        state: VehicleState,
+    ) {
         viewModelScope.launch {
             updateVehicleStateUseCase(vehicleId, state)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadVehicle(vehicleId)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun recordOdometer(vehicleId: String, readingKm: Long) {
+    fun recordOdometer(
+        vehicleId: String,
+        readingKm: Long,
+    ) {
         viewModelScope.launch {
             updateOdometerUseCase(vehicleId, readingKm)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadVehicle(vehicleId)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun updateVehicle(vehicleId: String, request: UpdateVehicleRequest) {
+    fun updateVehicle(
+        vehicleId: String,
+        request: UpdateVehicleRequest,
+    ) {
         viewModelScope.launch {
             updateVehicleUseCase(vehicleId, request)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadVehicle(vehicleId)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun createVehicle(request: CreateVehicleRequest, onCreated: (String) -> Unit) {
+    fun createVehicle(
+        request: CreateVehicleRequest,
+        onCreated: (String) -> Unit,
+    ) {
         viewModelScope.launch {
             createVehicleUseCase(request)
                 .onSuccess { vehicle ->
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     vehicle.id?.let { onCreated(it) }
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun deleteVehicle(vehicleId: String, onDeleted: () -> Unit) {
+    fun deleteVehicle(
+        vehicleId: String,
+        onDeleted: () -> Unit,
+    ) {
         viewModelScope.launch {
             deleteVehicleUseCase(vehicleId)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     onDeleted()
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 

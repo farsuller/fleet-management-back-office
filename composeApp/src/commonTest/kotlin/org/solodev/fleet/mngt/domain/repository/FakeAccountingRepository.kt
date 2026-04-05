@@ -43,7 +43,11 @@ class FakeAccountingRepository : AccountingRepository {
 
     override suspend fun createInvoice(request: CreateInvoiceRequest): Result<InvoiceDto> = invoiceResult ?: Result.failure(Exception("Creation failed"))
 
-    override suspend fun payInvoice(id: String, request: PayInvoiceRequest, idempotencyKey: String): Result<PaymentDto> {
+    override suspend fun payInvoice(
+        id: String,
+        request: PayInvoiceRequest,
+        idempotencyKey: String,
+    ): Result<PaymentDto> {
         lastId = id
         lastPaymentRequest = request
         return paymentResult ?: Result.failure(Exception("Payment failed"))

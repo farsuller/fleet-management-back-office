@@ -31,7 +31,8 @@ class RentalUseCaseTest {
 
         // // Assert
         assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull()?.message?.contains("Vehicle is not available") == true)
+        val message = result.exceptionOrNull()?.message ?: ""
+        assertTrue(message.contains("Vehicle is not available"), "Expected 'Vehicle is not available' in '$message'")
     }
 
     @Test
@@ -49,8 +50,8 @@ class RentalUseCaseTest {
 
         // // Assert
         assertTrue(result.isFailure)
-        val message = result.exceptionOrNull()?.message
-        assertTrue(message?.contains("greater than last recorded reading") == true)
+        val message = result.exceptionOrNull()?.message ?: ""
+        assertTrue(message.contains("greater than last recorded reading"), "Expected 'greater than last recorded reading' in '$message'")
     }
 
     @Test

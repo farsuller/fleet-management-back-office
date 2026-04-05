@@ -57,7 +57,9 @@ data class CreateRentalRequest(
 )
 
 @Serializable
-data class CompleteRentalRequest(val finalOdometerKm: Long)
+data class CompleteRentalRequest(
+    val finalOdometerKm: Long,
+)
 
 @Serializable
 data class UpdateRentalRequest(

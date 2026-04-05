@@ -70,7 +70,11 @@ data class UpdateVehicleRequest(
 )
 
 @Serializable
-data class VehicleStateRequest(val state: VehicleState)
+data class VehicleStateRequest(
+    val state: VehicleState,
+)
 
 @Serializable
-data class OdometerRequest(val mileageKm: Long)
+data class OdometerRequest(
+    val mileageKm: Long,
+)

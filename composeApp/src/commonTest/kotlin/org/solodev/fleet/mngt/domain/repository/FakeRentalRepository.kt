@@ -43,5 +43,8 @@ class FakeRentalRepository : RentalRepository {
         return rentalResult ?: Result.success(RentalDto(id = id)) // Default success for cleanup
     }
 
-    override suspend fun completeRental(id: String, odometer: Long): Result<RentalDto> = completeResult ?: Result.failure(Exception("Completion failed"))
+    override suspend fun completeRental(
+        id: String,
+        finalOdometerKm: Long,
+    ): Result<RentalDto> = completeResult ?: Result.failure(Exception("Completion failed"))
 }

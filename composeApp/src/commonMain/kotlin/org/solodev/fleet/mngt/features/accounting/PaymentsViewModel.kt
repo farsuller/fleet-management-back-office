@@ -13,7 +13,6 @@ import org.solodev.fleet.mngt.ui.UiState
 class PaymentsViewModel(
     private val getPaymentsUseCase: GetPaymentsUseCase,
 ) : ViewModel() {
-
     private val _listState = MutableStateFlow<UiState<List<PaymentDto>>>(UiState.Loading)
     val listState: StateFlow<UiState<List<PaymentDto>>> = _listState.asStateFlow()
 
@@ -36,8 +35,7 @@ class PaymentsViewModel(
                 .onSuccess {
                     _listState.value = UiState.Success(it.items)
                     _isRefreshing.value = false
-                }
-                .onFailure {
+                }.onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load payments")
                     _isRefreshing.value = false
                 }

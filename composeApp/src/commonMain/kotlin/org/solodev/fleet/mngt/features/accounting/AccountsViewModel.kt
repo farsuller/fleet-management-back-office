@@ -13,7 +13,6 @@ import org.solodev.fleet.mngt.ui.UiState
 class AccountsViewModel(
     private val getAccountsUseCase: GetAccountsUseCase,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<UiState<List<AccountDto>>>(UiState.Loading)
     val uiState: StateFlow<UiState<List<AccountDto>>> = _uiState.asStateFlow()
 
@@ -34,8 +33,7 @@ class AccountsViewModel(
             .onSuccess {
                 _uiState.value = UiState.Success(it)
                 _isRefreshing.value = false
-            }
-            .onFailure {
+            }.onFailure {
                 _uiState.value = UiState.Error(it.message ?: "Failed to load accounts")
                 _isRefreshing.value = false
             }

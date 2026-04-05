@@ -8,15 +8,27 @@ import org.solodev.fleet.mngt.api.dto.customer.UpdateCustomerRequest
 import org.solodev.fleet.mngt.cache.InMemoryCache
 
 interface CustomerRepository {
-    suspend fun getCustomers(cursor: String? = null, limit: Int = 20, forceRefresh: Boolean = false): Result<PagedResponse<CustomerDto>>
+    suspend fun getCustomers(
+        cursor: String? = null,
+        limit: Int = 20,
+        forceRefresh: Boolean = false,
+    ): Result<PagedResponse<CustomerDto>>
+
     suspend fun getCustomer(id: String): Result<CustomerDto>
+
     suspend fun createCustomer(request: CreateCustomerRequest): Result<CustomerDto>
-    suspend fun updateCustomer(id: String, request: UpdateCustomerRequest): Result<CustomerDto>
+
+    suspend fun updateCustomer(
+        id: String,
+        request: UpdateCustomerRequest,
+    ): Result<CustomerDto>
+
     suspend fun deactivateCustomer(id: String): Result<CustomerDto>
 }
 
-class CustomerRepositoryImpl(private val api: FleetApiClient) : CustomerRepository {
-
+class CustomerRepositoryImpl(
+    private val api: FleetApiClient,
+) : CustomerRepository {
     // 120-second TTL — customer records change infrequently within a session
     private val listCache = InMemoryCache<String, PagedResponse<CustomerDto>>(ttlMs = 120_000L)
 
@@ -34,7 +46,12 @@ class CustomerRepositoryImpl(private val api: FleetApiClient) : CustomerReposito
 
     override suspend fun createCustomer(request: CreateCustomerRequest) = api.createCustomer(request).onSuccess { listCache.clear() }
 
-    override suspend fun updateCustomer(id: String, request: UpdateCustomerRequest) = api.updateCustomer(id, request).onSuccess { listCache.clear() }
+    override suspend fun updateCustomer(
+        id: String,
+        request: UpdateCustomerRequest,
+    ) = api.updateCustomer(id, request).onSuccess {
+        listCache.clear()
+    }
 
     override suspend fun deactivateCustomer(id: String) = api.deactivateCustomer(id).onSuccess { listCache.clear() }
 }

@@ -22,18 +22,19 @@ import org.solodev.fleet.mngt.repository.UserRepositoryImpl
 import org.solodev.fleet.mngt.repository.VehicleRepository
 import org.solodev.fleet.mngt.repository.VehicleRepositoryImpl
 
-val repositoryModule = module {
-    // Auth dispatcher acts as AuthState
-    single { AppDependencyDispatcher(tokenProvider = get(), secureStorage = get()) }
-    single<AuthState> { get<AppDependencyDispatcher>() }
+val repositoryModule =
+    module {
+        // Auth dispatcher acts as AuthState
+        single { AppDependencyDispatcher(tokenProvider = get(), secureStorage = get()) }
+        single<AuthState> { get<AppDependencyDispatcher>() }
 
-    single<AuthRepository> { AuthRepositoryImpl(api = get(), dispatcher = get()) }
-    single<VehicleRepository> { VehicleRepositoryImpl(api = get()) }
-    single<RentalRepository> { RentalRepositoryImpl(api = get()) }
-    single<CustomerRepository> { CustomerRepositoryImpl(api = get()) }
-    single<DriverRepository> { DriverRepositoryImpl(api = get()) }
-    single<MaintenanceRepository> { MaintenanceRepositoryImpl(api = get()) }
-    single<AccountingRepository> { AccountingRepositoryImpl(api = get()) }
-    single<TrackingRepository> { TrackingRepositoryImpl(api = get()) }
-    single<UserRepository> { UserRepositoryImpl(api = get()) }
-}
+        single<AuthRepository> { AuthRepositoryImpl(api = get(), dispatcher = get()) }
+        single<VehicleRepository> { VehicleRepositoryImpl(api = get()) }
+        single<RentalRepository> { RentalRepositoryImpl(api = get()) }
+        single<CustomerRepository> { CustomerRepositoryImpl(api = get()) }
+        single<DriverRepository> { DriverRepositoryImpl(api = get()) }
+        single<MaintenanceRepository> { MaintenanceRepositoryImpl(api = get()) }
+        single<AccountingRepository> { AccountingRepositoryImpl(api = get()) }
+        single<TrackingRepository> { TrackingRepositoryImpl(api = get()) }
+        single<UserRepository> { UserRepositoryImpl(api = get()) }
+    }

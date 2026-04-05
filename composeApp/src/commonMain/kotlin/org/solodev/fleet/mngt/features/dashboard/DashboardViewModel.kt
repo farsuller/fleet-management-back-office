@@ -18,7 +18,6 @@ class DashboardViewModel(
     private val getDashboardUseCase: GetDashboardUseCase,
     private val authState: AuthState,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<UiState<DashboardSnapshot>>(UiState.Loading)
     val uiState: StateFlow<UiState<DashboardSnapshot>> = _uiState.asStateFlow()
 
@@ -52,8 +51,7 @@ class DashboardViewModel(
                 .onSuccess {
                     _uiState.value = UiState.Success(it)
                     _isRefreshing.value = false
-                }
-                .onFailure {
+                }.onFailure {
                     _uiState.value = UiState.Error(it.message ?: "Failed to load dashboard")
                     _isRefreshing.value = false
                 }

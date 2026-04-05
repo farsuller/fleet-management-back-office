@@ -24,7 +24,6 @@ class InvoicesViewModel(
     private val payInvoiceUseCase: PayInvoiceUseCase,
     private val createInvoiceUseCase: CreateInvoiceUseCase,
 ) : ViewModel() {
-
     private val _listState = MutableStateFlow<UiState<List<InvoiceDto>>>(UiState.Loading)
     val listState: StateFlow<UiState<List<InvoiceDto>>> = _listState.asStateFlow()
 
@@ -60,8 +59,7 @@ class InvoicesViewModel(
                 .onSuccess {
                     _listState.value = UiState.Success(it.items)
                     _isRefreshing.value = false
-                }
-                .onFailure {
+                }.onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load invoices")
                     _isRefreshing.value = false
                 }
@@ -77,13 +75,16 @@ class InvoicesViewModel(
         getPaymentMethodsUseCase().onSuccess { _paymentMethods.value = it }
     }
 
-    fun payInvoice(invoiceId: String, paymentMethod: String, amount: Long) = viewModelScope.launch {
+    fun payInvoice(
+        invoiceId: String,
+        paymentMethod: String,
+        amount: Long,
+    ) = viewModelScope.launch {
         payInvoiceUseCase(invoiceId, paymentMethod, amount)
             .onSuccess { payment ->
                 _actionResult.value = Result.success(payment)
                 loadList(forceRefresh = true)
-            }
-            .onFailure { _actionResult.value = Result.failure(it) }
+            }.onFailure { _actionResult.value = Result.failure(it) }
     }
 
     fun clearActionResult() {
@@ -95,8 +96,7 @@ class InvoicesViewModel(
             .onSuccess { invoice ->
                 _createResult.value = Result.success(invoice)
                 loadList(forceRefresh = true)
-            }
-            .onFailure { _createResult.value = Result.failure(it) }
+            }.onFailure { _createResult.value = Result.failure(it) }
     }
 
     fun clearCreateResult() {

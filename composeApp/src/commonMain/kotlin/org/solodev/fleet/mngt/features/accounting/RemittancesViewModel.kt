@@ -22,7 +22,6 @@ class RemittancesViewModel(
     private val getRemittancesByDriverUseCase: GetRemittancesByDriverUseCase,
     private val submitRemittanceUseCase: SubmitRemittanceUseCase,
 ) : ViewModel() {
-
     private val _driversState = MutableStateFlow<UiState<List<DriverDto>>>(UiState.Loading)
     val driversState: StateFlow<UiState<List<DriverDto>>> = _driversState.asStateFlow()
 
@@ -67,8 +66,7 @@ class RemittancesViewModel(
             .onSuccess { r ->
                 _submitResult.value = Result.success(r)
                 _selectedDriverId.value?.let { selectDriver(it) }
-            }
-            .onFailure { _submitResult.value = Result.failure(it) }
+            }.onFailure { _submitResult.value = Result.failure(it) }
     }
 
     fun clearSubmitResult() {

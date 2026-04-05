@@ -10,20 +10,19 @@ A modern **Kotlin Multiplatform** application designed for comprehensive fleet m
 - **Networking**: [Ktor Client](https://ktor.io/) (with OkHttp, JS, and Darwin engines)
 - **Serialization**: [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization)
 - **Concurrency**: [Kotlinx Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
-- **Date/Time**:- **Date/Time**: [Kotlinx Datetime](https://github.com/Kotlin/kotlinx-datetime)
+- **Date/Time**: [Kotlinx Datetime](https://github.com/Kotlin/kotlinx-datetime)
 - **Image Loading**: [Coil 3](https://coil-kt.github.io/coil/)
 - **Static Analysis**: [Detekt](https://detekt.dev/)
 - **Security Scanning**: [Trivy](https://aquasecurity.github.io/trivy/)
 
 ## 🏗️ Architecture
 
-The project follows **Clean Architecture** principles combined with the **MVVM** (Model-View-ViewModel) pattern in the `commonMain` module.
+The project follows **Clean Architecture** principles combined with the **MVVM** (Model-View-ViewModel) pattern. We use a **Modular Split** architecture to ensure long-term compatibility with future Android Gradle Plugin (AGP 9.0+) standards.
 
-### Layer Breakdown
+### Modular Structure
 
-- **UI Layer**: Built with **Compose Multiplatform**. It consists of Screens and lifecycle-aware **ViewModels** that manage UI state.
-- **Domain Layer**: Contains **Use Cases** that encapsulate specific business logic and rules (e.g., `ActivateRentalUseCase`, `AssignDriverUseCase`). This layer is independent of any data source.
-- **Data Layer**: Implements **Repositories**. It coordinates data from the **Ktor API Client** and local storage/cache.
+- **`:composeApp`**: A **Pure Kotlin Multiplatform** library containing all shared UI (Compose), ViewModels, Domain logic, and Data repositories. It supports JVM and WasmJs targets.
+- **`:androidApp`**: The platform-specific Android application. It depends on `:composeApp` and handles Android-only concerns like Intents, Services, and Previews.
 
 ### Visual Architecture
 
@@ -35,91 +34,80 @@ graph TD
     REPO --> API[Ktor API Client]
     REPO --> CACHE[Local Cache / Persistence]
     
-    subgraph "Shared Core (commonMain)"
+    subgraph "Shared Core Library (:composeApp)"
         UC
         REPO
         API
         CACHE
         VM
+        UI
     end
     
-    subgraph "Platform Targets"
-        AND[Android App]
-        DSK[Desktop App]
-        WASM[Web/Wasm App]
+    subgraph "Platform Apps"
+        AND[Android App :androidApp]
+        DSK[Desktop App :composeApp:jvm]
+        WASM[Web/Wasm App :composeApp:wasmJs]
     end
     
-    AND -.-> UI
+    AND --> UI
     DSK -.-> UI
     WASM -.-> UI
 ```
 
 ---
 
-## 🧪 Testing Stack
+# 🧪 Testing & Quality
 
-We maintain high code quality through a robust testing suite:
+We maintain high code quality through a robust testing and analysis suite:
 
-- **Runner**: **JUnit 5 (Jupiter)** for modern testing features.
-- **Mocking**: **MockK** for powerful multiplatform mocking.
-- **Assertions**: **AssertJ** for fluent and readable assertions.
-- **Coverage**: **Kotlinx Kover** for comprehensive coverage measurement (HTML/XML).
-- **Coroutines**: `kotlinx-coroutines-test` for virtual time testing.
+### Unit Testing
+- **Hierarchical Logs**: Optimized `jvmTest` output providing a detailed class and method-level breakdown.
+- **Mocking**: Fake Repositories and `kotlinx-coroutines-test` for virtual time testing.
+- **Command**: `./gradlew :composeApp:jvmTest`
+
+### Code Coverage (Jacoco)
+- **Visual Table**: A custom reporter prints a per-class coverage table directly in your terminal.
+- **Threshold**: Enforced at **40%** minimum for the core business logic.
+- **Report**: `./gradlew :composeApp:jacocoJvmTestReport` (Generates HTML in `build/reports`)
+- **Verify**: `./gradlew :composeApp:jacocoJvmTestCoverageVerification`
+
+### Static Analysis
+- **Detekt**: Analyzes code smells and architectural debt.
+- **Spotless**: Enforces consistent formatting across all modules (excluding `:androidApp`).
+- **Command**: `./gradlew detekt` or `./gradlew spotlessCheck`
 
 ---
 
-## 🛡️ Quality & Security
+## 🏗️ Architecture
 
-The project maintains high standards through automated pipelines:
+The project follows **Clean Architecture** principles combined with the **MVVM** pattern.
 
-- **Code Quality**: **Detekt** analyzes code smells, complexity, and potential bugs.
-- **Security Scan**: **Trivy** scans the filesystem and dependencies for known vulnerabilities.
-- **Formatting**: **Spotless** enforces a consistent code style across the entire project.
+### Modular Breakout
+To ensure compatibility with future **Android Gradle Plugin (AGP 9.0+)** standards, we use a **Modular Split** architecture:
 
----
-
-## 🛠️ Essential Libraries
-
-| Category | Library | Purpose |
-| :--- | :--- | :--- |
-| **DI** | `Koin` | Dependency Injection for KMP. |
-| **Networking** | `Ktor` | Multi-engine HTTP client. |
-| **UI Components** | `Material 3` | Modern Material Design components. |
-| **Charts** | `Charty` | Declarative charts for Compose. |
-| **Security** | `KSafe` | Simplified secure storage. |
-| **Validation** | `Internal` | Custom field and business rule validation. |
+1. **`:composeApp`**: A **Pure Kotlin Multiplatform** library. Contains all shared UI (Compose), ViewModels, Domain, and Data logic. Targets JVM and WasmJs.
+2. **`:androidApp`**: The platform-specific Android application shell. Handles Android-only concerns like Intents and Manifests.
 
 ---
 
 ## 📂 Project Structure
 
 - `composeApp/src/commonMain`: Shared UI and business logic.
-- `composeApp/src/androidMain`: Android-specific entry point and implementation.
-- `composeApp/src/wasmJsMain`: Web/Wasm specific wiring.
-- `iosApp`: iOS application entry point (SwiftUI).
-
----
-
-## 🤖 CI/CD Pipeline
-
-We use **GitHub Actions** for our automated pipeline (`.github/workflows/ci.yml`):
-1. **Linting**: Runs Spotless to ensure formatting.
-2. **Testing**: Executes all unit tests and generates coverage reports via Kover.
-3. **Code Quality**: Runs Detekt analysis to identify architectural debt.
-4. **Security Scan**: Executes Trivy to find vulnerabilities (results in the Security tab).
+- `androidApp/src/main/kotlin`: Android application entry point.
+- `composeApp/src/commonTest`: Shared unit tests and fake repositories.
 
 ---
 
 ## ⚡ Build and Run
 
 ### Run Options
-- **Android**: `./gradlew :composeApp:assembleDebug`
+- **Android**: `./gradlew :androidApp:installDebug`
 - **Desktop**: `./gradlew :composeApp:run`
 - **Web (Wasm)**: `./gradlew :composeApp:wasmJsBrowserDevelopmentRun`
-- **Lint Check**: `./gradlew spotlessCheck`
-- **Code Quality**: `./gradlew detekt`
-- **Unit Tests**: `./gradlew test`
-- **Coverage**: `./gradlew koverHtmlReport`
+
+### Maintenance
+- **Force Format**: `./gradlew spotlessApply`
+- **Full Quality Check**: `./gradlew detekt spotlessCheck jvmTest jacocoJvmTestReport`
 
 ---
 

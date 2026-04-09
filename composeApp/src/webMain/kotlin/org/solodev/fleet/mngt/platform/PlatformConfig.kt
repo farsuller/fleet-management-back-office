@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package org.solodev.fleet.mngt.platform
 
 private const val defaultApiBaseUrl = "http://localhost:8080"
@@ -15,12 +17,11 @@ private fun readRuntimeWsBaseUrl(): String? = js("globalThis.__FLEET_CONFIG__?.w
 
 private fun normalizeBaseUrl(value: String): String = value.trim().removeSuffix("/")
 
-private fun deriveWsBaseUrl(apiBaseUrl: String): String =
-    when {
-        apiBaseUrl.startsWith("https://") -> "wss://${apiBaseUrl.removePrefix("https://")}"
-        apiBaseUrl.startsWith("http://") -> "ws://${apiBaseUrl.removePrefix("http://")}"
-        else -> apiBaseUrl
-    }.removeSuffix("/")
+private fun deriveWsBaseUrl(apiBaseUrl: String): String = when {
+    apiBaseUrl.startsWith("https://") -> "wss://${apiBaseUrl.removePrefix("https://")}"
+    apiBaseUrl.startsWith("http://") -> "ws://${apiBaseUrl.removePrefix("http://")}"
+    else -> apiBaseUrl
+}.removeSuffix("/")
 
 actual object PlatformConfig {
     actual val apiBaseUrl: String = readRuntimeApiBaseUrl()?.let(::normalizeBaseUrl) ?: defaultApiBaseUrl

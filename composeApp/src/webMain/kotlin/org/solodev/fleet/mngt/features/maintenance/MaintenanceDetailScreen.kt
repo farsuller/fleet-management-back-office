@@ -46,6 +46,7 @@ import org.solodev.fleet.mngt.components.common.MaintenanceStatusBadge
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Clock
 import org.solodev.fleet.mngt.components.common.MaintenanceStatus as UiMaintenanceStatus
 
 @Composable
@@ -111,6 +112,7 @@ private fun MaintenanceDetailContent(
     val colors = fleetColors
     var showCancelConfirm by remember { mutableStateOf(false) }
     var showCompleteDialog by remember { mutableStateOf(false) }
+    val canStartJob = (job.scheduledDate ?: 0L) <= Clock.System.now().toEpochMilliseconds()
 
     fun statusToUi(s: MaintenanceStatus?) = when (s) {
         MaintenanceStatus.SCHEDULED -> UiMaintenanceStatus.SCHEDULED
@@ -166,12 +168,21 @@ private fun MaintenanceDetailContent(
 
     // Action buttons
     when (job.status) {
-        MaintenanceStatus.SCHEDULED -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = onStart) { Text("Start Job") }
-            OutlinedButton(
-                onClick = { showCancelConfirm = true },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-            ) { Text("Cancel Job") }
+        MaintenanceStatus.SCHEDULED -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = onStart, enabled = canStartJob) { Text("Start Job") }
+                OutlinedButton(
+                    onClick = { showCancelConfirm = true },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) { Text("Cancel Job") }
+            }
+            if (!canStartJob) {
+                Text(
+                    "Start Job is available on the scheduled date.",
+                    color = colors.onBackground.copy(alpha = 0.6f),
+                    fontSize = 12.sp,
+                )
+            }
         }
         MaintenanceStatus.IN_PROGRESS -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = { showCompleteDialog = true }) { Text("Complete Job") }

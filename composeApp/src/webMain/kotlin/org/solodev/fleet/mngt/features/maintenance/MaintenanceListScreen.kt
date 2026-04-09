@@ -1,9 +1,11 @@
 package org.solodev.fleet.mngt.features.maintenance
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,14 +15,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,6 +53,9 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceJobDto
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenancePriority
 import org.solodev.fleet.mngt.api.dto.maintenance.MaintenanceStatus
+import org.solodev.fleet.mngt.components.common.KpiCard
+import org.solodev.fleet.mngt.components.common.KpiLegendItem
+import org.solodev.fleet.mngt.components.common.KpiSegment
 import org.solodev.fleet.mngt.components.common.MaintenanceStatusBadge
 import org.solodev.fleet.mngt.components.common.PaginatedTable
 import org.solodev.fleet.mngt.components.common.PriorityBadge
@@ -54,6 +64,7 @@ import org.solodev.fleet.mngt.components.common.TableSkeleton
 import org.solodev.fleet.mngt.navigation.AppRouter
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Clock
 import kotlin.time.Instant
 import org.solodev.fleet.mngt.components.common.MaintenanceStatus as UiMaintenanceStatus
 import org.solodev.fleet.mngt.components.common.Priority as UiPriority
@@ -79,6 +90,24 @@ internal fun formatMaintenanceDate(epochMs: Long): String {
     return "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
 }
 
+private data class MaintenanceOverviewStats(
+    val totalJobs: Int,
+    val scheduled: Int,
+    val inProgress: Int,
+    val completed: Int,
+    val cancelled: Int,
+    val vehiclesCovered: Int,
+)
+
+private fun List<MaintenanceJobDto>.toOverviewStats(): MaintenanceOverviewStats = MaintenanceOverviewStats(
+    totalJobs = size,
+    scheduled = count { it.status == MaintenanceStatus.SCHEDULED },
+    inProgress = count { it.status == MaintenanceStatus.IN_PROGRESS },
+    completed = count { it.status == MaintenanceStatus.COMPLETED },
+    cancelled = count { it.status == MaintenanceStatus.CANCELLED },
+    vehiclesCovered = mapNotNull { it.vehicleId }.distinct().size,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaintenanceListScreen(router: AppRouter) {
@@ -93,6 +122,7 @@ fun MaintenanceListScreen(router: AppRouter) {
     var showSheet by remember { mutableStateOf(false) }
     var editingJob by remember { mutableStateOf<MaintenanceJobDto?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val overviewStats = (state as? UiState.Success)?.data?.items?.toOverviewStats()
 
     var showErrorDialog by remember { mutableStateOf(false) }
 
@@ -158,6 +188,16 @@ fun MaintenanceListScreen(router: AppRouter) {
                 }
             }
 
+            overviewStats?.let { overview ->
+                MaintenanceOverviewSection(
+                    stats = overview,
+                    onShowAll = {
+                        vm.setStatusFilter(null)
+                        vm.setPriorityFilter(null)
+                    },
+                )
+            }
+
             // Filters
             Surface(
                 color = colors.surfaceVariant.copy(alpha = 0.3f),
@@ -167,58 +207,117 @@ fun MaintenanceListScreen(router: AppRouter) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.Top,
                 ) {
                     Icon(
                         Icons.Default.FilterList,
                         null,
                         tint = colors.onBackground.copy(alpha = 0.4f),
+                        modifier = Modifier.padding(top = 6.dp),
                     )
 
-                    // Status Filters
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val statuses =
-                            listOf(
-                                null,
-                                MaintenanceStatus.SCHEDULED,
-                                MaintenanceStatus.IN_PROGRESS,
-                                MaintenanceStatus.COMPLETED,
-                            )
-                        statuses.forEach { s ->
-                            FilterChip(
-                                selected = s == statusFilter,
-                                onClick = { vm.setStatusFilter(s) },
-                                label = {
-                                    Text(s?.name?.lowercase()?.capitalize() ?: "All Status")
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                            )
-                        }
-                    }
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = "Status Filter",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.onBackground,
+                                )
+                                Text(
+                                    text = "Use these chips to focus on where each maintenance job is in its workflow.",
+                                    fontSize = 12.sp,
+                                    color = colors.onBackground.copy(alpha = 0.62f),
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    val statuses =
+                                        listOf(
+                                            null,
+                                            MaintenanceStatus.SCHEDULED,
+                                            MaintenanceStatus.IN_PROGRESS,
+                                            MaintenanceStatus.COMPLETED,
+                                        )
+                                    statuses.forEach { s ->
+                                        FilterChip(
+                                            selected = s == statusFilter,
+                                            onClick = { vm.setStatusFilter(s) },
+                                            label = {
+                                                Text(s?.name?.lowercase()?.capitalize() ?: "All Status")
+                                            },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = colors.primary.copy(alpha = 0.12f),
+                                                selectedLabelColor = colors.primary,
+                                                selectedLeadingIconColor = colors.primary,
+                                                containerColor = colors.surface,
+                                                labelColor = colors.text2,
+                                            ),
+                                            shape = RoundedCornerShape(8.dp),
+                                        )
+                                    }
+                                }
+                            }
 
-                    VerticalDivider(modifier = Modifier.height(24.dp), color = colors.border)
+                            VerticalDivider(
+                                modifier = Modifier.height(92.dp),
+                                color = colors.border.copy(alpha = 0.55f),
+                            )
 
-                    // Priority Filters
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val priorities =
-                            listOf(
-                                null,
-                                MaintenancePriority.NORMAL,
-                                MaintenancePriority.HIGH,
-                                MaintenancePriority.URGENT,
-                            )
-                        priorities.forEach { p ->
-                            FilterChip(
-                                selected = p == priorityFilter,
-                                onClick = { vm.setPriorityFilter(p) },
-                                label = {
-                                    Text(
-                                        p?.name?.lowercase()?.capitalize()
-                                            ?: "All Priority",
-                                    )
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                            )
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = "Priority Filter",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.onBackground,
+                                )
+                                Text(
+                                    text = "Use priority to separate routine work from higher-urgency maintenance jobs.",
+                                    fontSize = 12.sp,
+                                    color = colors.onBackground.copy(alpha = 0.62f),
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    val priorities =
+                                        listOf(
+                                            null,
+                                            MaintenancePriority.NORMAL,
+                                            MaintenancePriority.HIGH,
+                                            MaintenancePriority.URGENT,
+                                        )
+                                    priorities.forEach { p ->
+                                        FilterChip(
+                                            selected = p == priorityFilter,
+                                            onClick = { vm.setPriorityFilter(p) },
+                                            label = {
+                                                Text(
+                                                    p?.name?.lowercase()?.capitalize()
+                                                        ?: "All Priority",
+                                                )
+                                            },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = colors.primary.copy(alpha = 0.12f),
+                                                selectedLabelColor = colors.primary,
+                                                selectedLeadingIconColor = colors.primary,
+                                                containerColor = colors.surface,
+                                                labelColor = colors.text2,
+                                            ),
+                                            shape = RoundedCornerShape(8.dp),
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -248,7 +347,7 @@ fun MaintenanceListScreen(router: AppRouter) {
                             "Description",
                         ),
                         items = filtered,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         rowContent = { job, _ ->
                             Text(
                                 job.id?.take(8) ?: "-",
@@ -342,6 +441,158 @@ fun MaintenanceListScreen(router: AppRouter) {
 
 private fun String.capitalize() = replaceFirstChar {
     if (it.isLowerCase()) it.titlecase() else it.toString()
+}
+
+@Composable
+private fun MaintenanceOverviewSection(
+    stats: MaintenanceOverviewStats,
+    onShowAll: () -> Unit,
+) {
+    val colors = fleetColors
+    val total = stats.totalJobs.coerceAtLeast(1)
+    val activeTotal = (stats.scheduled + stats.inProgress).coerceAtLeast(1)
+    val closedTotal = (stats.completed + stats.cancelled).coerceAtLeast(1)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Max),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        KpiCard(
+            label = "Active Maintenance",
+            value = (stats.scheduled + stats.inProgress).toString(),
+            icon = Icons.Default.Build,
+            iconTint = colors.maintenance,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            segments = listOf(
+                KpiSegment(stats.scheduled.toFloat() / activeTotal, colors.reserved),
+                KpiSegment(stats.inProgress.toFloat() / activeTotal, colors.available),
+            ).filter { it.weight > 0f },
+            legend = listOf(
+                KpiLegendItem("Scheduled", colors.reserved),
+                KpiLegendItem("In Progress", colors.available),
+            ),
+            onSeeAllClick = onShowAll,
+        )
+
+        KpiCard(
+            label = "Closed Jobs",
+            value = (stats.completed + stats.cancelled).toString(),
+            icon = Icons.Default.CheckCircle,
+            iconTint = colors.primary,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            segments = listOf(
+                KpiSegment(stats.completed.toFloat() / closedTotal, colors.available),
+                KpiSegment(stats.cancelled.toFloat() / closedTotal, colors.cancelled),
+            ).filter { it.weight > 0f },
+            legend = listOf(
+                KpiLegendItem("Completed", colors.available),
+                KpiLegendItem("Cancelled", colors.cancelled),
+            ),
+            onSeeAllClick = onShowAll,
+        )
+
+        KpiCard(
+            label = "Vehicles Covered",
+            value = stats.vehiclesCovered.toString(),
+            icon = Icons.Default.DirectionsCar,
+            iconTint = colors.primary,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            segments = listOf(
+                KpiSegment((stats.scheduled + stats.inProgress).toFloat() / total, colors.maintenance),
+                KpiSegment((stats.completed + stats.cancelled).toFloat() / total, colors.border),
+            ).filter { it.weight > 0f },
+            legend = listOf(
+                KpiLegendItem("Open workload", colors.maintenance),
+                KpiLegendItem("History", colors.text2),
+            ),
+            onSeeAllClick = onShowAll,
+        )
+    }
+
+    Surface(
+        color = colors.surface,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text(
+                text = "What This Page Is For",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.onBackground,
+            )
+            Text(
+                text = "Use Maintenance Management to schedule service work, monitor vehicles currently being worked on, and keep a clean history of completed or cancelled jobs.",
+                fontSize = 14.sp,
+                color = colors.onBackground.copy(alpha = 0.72f),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                PurposeItem(
+                    color = colors.reserved,
+                    title = "Scheduled",
+                    description = "Queued work that is planned but not yet started.",
+                    modifier = Modifier.weight(1f),
+                )
+                PurposeItem(
+                    color = colors.available,
+                    title = "In Progress",
+                    description = "Vehicles currently inside the maintenance workflow.",
+                    modifier = Modifier.weight(1f),
+                )
+                PurposeItem(
+                    color = colors.primary,
+                    title = "Completed / Cancelled",
+                    description = "Closed records kept for audit trail and reporting.",
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PurposeItem(
+    color: Color,
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier,
+) {
+    val colors = fleetColors
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .width(10.dp)
+                .height(10.dp)
+                .background(color, CircleShape),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.onBackground,
+            )
+            Text(
+                text = description,
+                fontSize = 12.sp,
+                color = colors.onBackground.copy(alpha = 0.66f),
+            )
+        }
+    }
 }
 
 @Composable

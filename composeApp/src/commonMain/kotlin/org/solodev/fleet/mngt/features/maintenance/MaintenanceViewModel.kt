@@ -191,9 +191,9 @@ class MaintenanceViewModel(
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun loadVehicles() {
+    fun loadVehicles(forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            getVehiclesUseCase(limit = 100)
+            getVehiclesUseCase(limit = 100, forceRefresh = forceRefresh)
                 .onSuccess { _vehicles.value = it.items }
         }
     }

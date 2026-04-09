@@ -74,6 +74,7 @@ import org.solodev.fleet.mngt.api.dto.maintenance.VehicleIncidentDto
 import org.solodev.fleet.mngt.api.dto.maintenance.VehicleUsageHistoryDto
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Composable
@@ -152,6 +153,7 @@ private fun MaintenanceDetailContent(
 ) {
     val colors = fleetColors
     var showCompleteDialog by remember { mutableStateOf(false) }
+    val canStartJob = (job.scheduledDate ?: 0L) <= Clock.System.now().toEpochMilliseconds()
 
     Column(Modifier.fillMaxSize()) {
         // Header
@@ -258,20 +260,36 @@ private fun MaintenanceDetailContent(
             ) {
                 when (job.status) {
                     MaintenanceStatus.SCHEDULED -> {
-                        Button(
-                            onClick = { job.id?.let { vm.startJob(it) } },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                        ) {
-                            Text("Start Work")
-                        }
-                        OutlinedButton(
-                            onClick = { job.id?.let { vm.cancelJob(it) } },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.cancelled),
-                        ) {
-                            Text("Cancel")
+                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Button(
+                                    onClick = { job.id?.let { vm.startJob(it) } },
+                                    enabled = canStartJob,
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                ) {
+                                    Text("Start Work")
+                                }
+                                OutlinedButton(
+                                    onClick = { job.id?.let { vm.cancelJob(it) } },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.cancelled),
+                                ) {
+                                    Text("Cancel")
+                                }
+                            }
+
+                            if (!canStartJob) {
+                                Text(
+                                    text = "Start Work is available on the scheduled date.",
+                                    color = colors.onBackground.copy(alpha = 0.6f),
+                                    fontSize = 12.sp,
+                                )
+                            }
                         }
                     }
 

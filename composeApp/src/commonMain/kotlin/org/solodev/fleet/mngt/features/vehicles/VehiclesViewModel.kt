@@ -44,6 +44,8 @@ data class VehicleStats(
     val good: Int = 0,
     val needsService: Int = 0,
     val damaged: Int = 0,
+    val rented: Int = 0,
+    val retired: Int = 0,
     val trend: String = "+0%",
 )
 
@@ -139,15 +141,18 @@ class VehiclesViewModel(
     private fun calculateStats(items: List<VehicleDto>) {
         val totalCount = items.size
         val maintenanceCount = items.count { it.state == VehicleState.MAINTENANCE }
-        val damagedCount = items.count { it.state == VehicleState.RETIRED }
-        val goodCount = totalCount - maintenanceCount - damagedCount
+        val retiredCount = items.count { it.state == VehicleState.RETIRED }
+        val rentedCount = items.count { it.state == VehicleState.RENTED }
+        val goodCount = totalCount - maintenanceCount - retiredCount - rentedCount
 
         _stats.value =
             VehicleStats(
                 total = totalCount,
                 good = goodCount,
                 needsService = maintenanceCount,
-                damaged = damagedCount,
+                damaged = retiredCount,
+                rented = rentedCount,
+                retired = retiredCount,
                 trend = "+5%",
             )
 

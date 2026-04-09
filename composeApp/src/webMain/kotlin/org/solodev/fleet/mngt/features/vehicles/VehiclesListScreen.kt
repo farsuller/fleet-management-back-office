@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.delete_icon
 import fleetmanagementbackoffice.composeapp.generated.resources.edit_icon
+import fleetmanagementbackoffice.composeapp.generated.resources.ic_car
+import fleetmanagementbackoffice.composeapp.generated.resources.ic_service
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,11 +52,12 @@ import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.auth.UserRole
 import org.solodev.fleet.mngt.components.common.ConfirmDialog
 import org.solodev.fleet.mngt.components.common.EmptyState
-import org.solodev.fleet.mngt.components.common.MaintenanceHealthCard
+import org.solodev.fleet.mngt.components.common.KpiCard
+import org.solodev.fleet.mngt.components.common.KpiLegendItem
+import org.solodev.fleet.mngt.components.common.KpiSegment
 import org.solodev.fleet.mngt.components.common.PaginatedTable
 import org.solodev.fleet.mngt.components.common.ServerErrorDialog
 import org.solodev.fleet.mngt.components.common.TableSkeleton
-import org.solodev.fleet.mngt.components.common.VehicleHealthCard
 import org.solodev.fleet.mngt.components.common.VehicleStatus
 import org.solodev.fleet.mngt.components.common.VehicleStatusBadge
 import org.solodev.fleet.mngt.navigation.AppRouter
@@ -144,26 +147,75 @@ fun VehiclesListScreen(router: AppRouter) {
             // Fleet Health Overview & Maintenance Cards
             val stats by vm.stats.collectAsState()
             val maintenanceStats by vm.maintenanceStats.collectAsState()
+            val totalVehicles = stats.total.coerceAtLeast(1)
+            val serviceTotal = maintenanceStats.total.coerceAtLeast(1)
 
             Row(
                 Modifier.fillMaxWidth().height(IntrinsicSize.Max).padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Box(Modifier.weight(1f)) {
-                    VehicleHealthCard(
-                        modifier = Modifier.fillMaxHeight(),
-                        stats = stats,
-                        onSeeAllClick = { vm.setStateFilter(null) },
-                        onFilterClick = { vm.setStateFilter(it) },
-                    )
-                }
-                Box(Modifier.weight(1f)) {
-                    MaintenanceHealthCard(
-                        modifier = Modifier.fillMaxHeight(),
-                        stats = maintenanceStats,
-                        onSeeAllClick = { /* Optional: Navigate to maintenance tab or filter */ },
-                    )
-                }
+                KpiCard(
+                    label = "Total Vehicles",
+                    value = stats.total.toString(),
+                    icon = painterResource(Res.drawable.ic_car),
+                    iconTint = colors.primary,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    segments = listOf(
+                        KpiSegment(stats.good.toFloat() / totalVehicles, colors.available),
+                        KpiSegment(stats.needsService.toFloat() / totalVehicles, colors.maintenance),
+                        KpiSegment(stats.rented.toFloat() / totalVehicles, colors.primary),
+                        KpiSegment(stats.retired.toFloat() / totalVehicles, colors.cancelled),
+                    ).filter { it.weight > 0f },
+                    legend = listOf(
+                        KpiLegendItem("Available", colors.available),
+                        KpiLegendItem("In Service", colors.maintenance),
+                        KpiLegendItem("Rented", colors.primary),
+                        KpiLegendItem("Retired", colors.cancelled),
+                    ),
+                    onSeeAllClick = { vm.setStateFilter(null) },
+                )
+                KpiCard(
+                    label = "Maintenance Status",
+                    value = maintenanceStats.totalInMaintenance.toString(),
+                    icon = painterResource(Res.drawable.ic_service),
+                    iconTint = colors.maintenance,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    segments = listOf(
+                        KpiSegment(maintenanceStats.overdue.toFloat() / serviceTotal, colors.cancelled),
+                        KpiSegment(maintenanceStats.upcoming.toFloat() / serviceTotal, colors.maintenance),
+                        KpiSegment(maintenanceStats.onTrack.toFloat() / serviceTotal, colors.available),
+                    ).filter { it.weight > 0f },
+                    legend = listOf(
+                        KpiLegendItem("Overdue", colors.cancelled),
+                        KpiLegendItem("Upcoming", colors.maintenance),
+                        KpiLegendItem("On Track", colors.available),
+                    ),
+                    onSeeAllClick = { vm.setStateFilter(VehicleState.MAINTENANCE) },
+                )
+                KpiCard(
+                    label = "Rented Vehicles",
+                    value = stats.rented.toString(),
+                    icon = painterResource(Res.drawable.ic_car),
+                    iconTint = colors.primary,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    segments = if (stats.rented > 0) listOf(KpiSegment(1f, colors.primary)) else emptyList(),
+                    legend = listOf(
+                        KpiLegendItem("Currently rented", colors.primary),
+                    ),
+                    onSeeAllClick = { vm.setStateFilter(VehicleState.RENTED) },
+                )
+                KpiCard(
+                    label = "Retired Vehicles",
+                    value = stats.retired.toString(),
+                    icon = painterResource(Res.drawable.ic_car),
+                    iconTint = colors.cancelled,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    segments = if (stats.retired > 0) listOf(KpiSegment(1f, colors.cancelled)) else emptyList(),
+                    legend = listOf(
+                        KpiLegendItem("Out of active fleet", colors.cancelled),
+                    ),
+                    onSeeAllClick = { vm.setStateFilter(VehicleState.RETIRED) },
+                )
             }
 
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {

@@ -127,12 +127,14 @@ fun KpiCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.text2,
                             fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp,
                         )
                         Text(
                             text = value,
                             style = MaterialTheme.typography.headlineSmall,
                             color = colors.onSurface,
                             fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
                         )
                     }
 
@@ -142,7 +144,7 @@ fun KpiCard(
                                 "See All",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = colors.text2,
-                                fontSize = 11.sp,
+                                fontSize = 12.sp,
                             )
                         }
                     }
@@ -171,7 +173,7 @@ fun KpiCard(
                             text = "since last week",
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.text2,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                         )
                     }
                 }
@@ -221,7 +223,7 @@ fun KpiCard(
                                     text = item.label,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = colors.text2,
-                                    fontSize = 10.sp,
+                                    fontSize = 12.sp,
                                 )
                             }
                         }

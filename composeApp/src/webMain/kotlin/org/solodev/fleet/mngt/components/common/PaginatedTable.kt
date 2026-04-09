@@ -72,7 +72,7 @@ fun <T> PaginatedTable(
         shape = RoundedCornerShape(12.dp),
         modifier = modifier,
     ) {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxWidth()) {
             // Filter slot
             filterSlot?.let { slot ->
                 Box(Modifier.padding(horizontal = FleetSpacing.md, vertical = 12.dp)) { slot() }

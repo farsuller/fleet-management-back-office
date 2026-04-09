@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
@@ -111,7 +113,10 @@ fun DriversListScreen(
 
     Box(Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Header / Search Area
@@ -223,7 +228,7 @@ fun DriversListScreen(
             }
 
             // Driver Table
-            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 when (val currentListState = listState) {
                     is UiState.Loading -> TableSkeleton(rows = 8, columnCount = 5)
                     is UiState.Error -> TableSkeleton(rows = 8, columnCount = 5)
@@ -311,31 +316,43 @@ fun DriversListScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     if (canManage) {
-                                        IconButton(
-                                            onClick = {
-                                                driverToEdit = driver
-                                                showCreateSheet = true
-                                            },
-                                            modifier = Modifier.size(28.dp),
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                                            verticalAlignment = Alignment.CenterVertically,
                                         ) {
-                                            Icon(
-                                                painter = painterResource(Res.drawable.edit_icon),
-                                                contentDescription = "Edit",
-                                                tint = colors.primary,
-                                                modifier = Modifier.size(16.dp),
-                                            )
-                                        }
-                                        if (driver.currentAssignment?.isActive != true && driver.isActive == true) {
                                             IconButton(
-                                                onClick = { assigningDriver = driver },
+                                                onClick = {
+                                                    driverToEdit = driver
+                                                    showCreateSheet = true
+                                                },
                                                 modifier = Modifier.size(28.dp),
                                             ) {
                                                 Icon(
-                                                    Icons.Default.Link,
-                                                    "Assign",
-                                                    tint = colors.available,
+                                                    painter = painterResource(Res.drawable.edit_icon),
+                                                    contentDescription = "Edit",
+                                                    tint = colors.primary,
                                                     modifier = Modifier.size(16.dp),
                                                 )
+                                            }
+                                            if (driver.currentAssignment?.isActive != true && driver.isActive == true) {
+                                                IconButton(
+                                                    onClick = { assigningDriver = driver },
+                                                    modifier = Modifier.size(28.dp),
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Link,
+                                                        "Assign",
+                                                        tint = colors.available,
+                                                        modifier = Modifier.size(16.dp),
+                                                    )
+                                                }
+                                            } else {
+                                                Box (
+                                                    modifier = Modifier.size(28.dp),
+                                                    contentAlignment = Alignment.Center,
+                                                ) {
+                                                    Spacer(modifier = Modifier.size(16.dp))
+                                                }
                                             }
                                         }
                                     }

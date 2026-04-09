@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fleetmanagementbackoffice.composeapp.generated.resources.Res
 import fleetmanagementbackoffice.composeapp.generated.resources.info_icon
+import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -67,7 +68,6 @@ import org.solodev.fleet.mngt.components.common.LabeledInfo
 import org.solodev.fleet.mngt.components.common.VehicleSelectionCard
 import org.solodev.fleet.mngt.theme.fleetColors
 import org.solodev.fleet.mngt.ui.UiState
-import kotlinx.coroutines.launch
 import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)

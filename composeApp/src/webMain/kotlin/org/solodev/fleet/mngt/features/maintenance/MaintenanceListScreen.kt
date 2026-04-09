@@ -99,15 +99,14 @@ private data class MaintenanceOverviewStats(
     val vehiclesCovered: Int,
 )
 
-private fun List<MaintenanceJobDto>.toOverviewStats(): MaintenanceOverviewStats =
-    MaintenanceOverviewStats(
-        totalJobs = size,
-        scheduled = count { it.status == MaintenanceStatus.SCHEDULED },
-        inProgress = count { it.status == MaintenanceStatus.IN_PROGRESS },
-        completed = count { it.status == MaintenanceStatus.COMPLETED },
-        cancelled = count { it.status == MaintenanceStatus.CANCELLED },
-        vehiclesCovered = mapNotNull { it.vehicleId }.distinct().size,
-    )
+private fun List<MaintenanceJobDto>.toOverviewStats(): MaintenanceOverviewStats = MaintenanceOverviewStats(
+    totalJobs = size,
+    scheduled = count { it.status == MaintenanceStatus.SCHEDULED },
+    inProgress = count { it.status == MaintenanceStatus.IN_PROGRESS },
+    completed = count { it.status == MaintenanceStatus.COMPLETED },
+    cancelled = count { it.status == MaintenanceStatus.CANCELLED },
+    vehiclesCovered = mapNotNull { it.vehicleId }.distinct().size,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

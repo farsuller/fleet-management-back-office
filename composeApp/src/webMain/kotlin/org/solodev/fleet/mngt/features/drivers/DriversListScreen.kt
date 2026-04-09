@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
@@ -347,7 +347,7 @@ fun DriversListScreen(
                                                     )
                                                 }
                                             } else {
-                                                Box (
+                                                Box(
                                                     modifier = Modifier.size(28.dp),
                                                     contentAlignment = Alignment.Center,
                                                 ) {

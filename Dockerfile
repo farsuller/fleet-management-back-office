@@ -10,8 +10,8 @@ COPY . .
 
 RUN chmod +x ./gradlew && ./gradlew :composeApp:wasmJsBrowserDistribution \
 	--no-daemon \
-	--max-workers=2 \
-	-Dorg.gradle.jvmargs="-Xmx2G -Dfile.encoding=UTF8 -Dkotlin.daemon.jvm.options=-Xmx1G" \
+	--max-workers=1 \
+	-Dorg.gradle.jvmargs="-Xmx6G -Dfile.encoding=UTF8 -Dkotlin.daemon.jvm.options=-Xmx3G" \
 	-Dorg.gradle.parallel=false
 
 FROM node:20-alpine AS runtime

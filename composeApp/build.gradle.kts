@@ -41,7 +41,7 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
     description = "Generate Jacoco coverage reports for JVM unit tests."
 
     dependsOn("jvmTest")
-    
+
     // Ensure the console summary table is printed even if the task is technically Up-To-Date.
     outputs.upToDateWhen { false }
 
@@ -51,23 +51,24 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
     }
 
     // Exclude UI, DI, and platform-specific generated code from coverage metrics
-    val excludes = listOf(
-        "**/features/**",
-        "**/ui/**",
-        "**/navigation/**",
-        "**/components/**",
-        "**/App*",
-        "**/Platform*",
-        "**/Greeting*",
-        "**/BuildConfig*",
-        "**/di/**",
-        "**/*ViewModel*",
-        "**/*Composable*"
-    )
+    val excludes =
+        listOf(
+            "**/features/**",
+            "**/ui/**",
+            "**/navigation/**",
+            "**/components/**",
+            "**/App*",
+            "**/Platform*",
+            "**/Greeting*",
+            "**/BuildConfig*",
+            "**/di/**",
+            "**/*ViewModel*",
+            "**/*Composable*",
+        )
 
     classDirectories.setFrom(
-                fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(excludes) },
-                fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(excludes) }
+        fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(excludes) },
+        fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(excludes) },
     )
 
     sourceDirectories.setFrom(files("src/commonMain/kotlin", "src/jvmMain/kotlin"))
@@ -77,7 +78,10 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
     // Parses the resulting XML and prints a formatted summary table to the terminal,
     // providing immediate visibility into test coverage levels for each class.
     doLast {
-        val xmlFile = reports.xml.outputLocation.get().asFile
+        val xmlFile =
+            reports.xml.outputLocation
+                .get()
+                .asFile
         if (xmlFile.exists()) {
             logger.quiet("\n--- Code Coverage Summary (JVM) ---")
             logger.quiet(String.format("%-60s | %-10s", "Class", "Coverage"))
@@ -85,8 +89,12 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
 
             try {
                 val xml = xmlFile.readText()
+
                 // Helper to extract missed and covered attributes
-                fun extract(counterBlock: String, attr: String): Double {
+                fun extract(
+                    counterBlock: String,
+                    attr: String,
+                ): Double {
                     val search = "$attr=\""
                     if (!counterBlock.contains(search)) return 0.0
                     return counterBlock.substringAfter(search).substringBefore("\"").toDoubleOrNull() ?: 0.0
@@ -95,18 +103,20 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
                 // Robust parsing: Split XML into class blocks and iterate
                 xml.split("<class ").drop(1).forEach { classBlock ->
                     val name = classBlock.substringAfter("name=\"").substringBefore("\"").replace("/", ".")
-                    
+
                     // Extract aggregate class-level counters (ignoring method-level counters if present)
-                    val lastCounters = classBlock.substringAfterLast("</method>")
-                        .ifEmpty { classBlock.substringAfter(">") }
-                        .substringBefore("</class>")
-                    
+                    val lastCounters =
+                        classBlock
+                            .substringAfterLast("</method>")
+                            .ifEmpty { classBlock.substringAfter(">") }
+                            .substringBefore("</class>")
+
                     // Prioritize LINE coverage, fallback to INSTRUCTION
                     val lineBlock = lastCounters.substringAfter("type=\"LINE\"", "")
                     val instrBlock = lastCounters.substringAfter("type=\"INSTRUCTION\"", "")
-                    
+
                     val activeBlock = if (lineBlock.isNotEmpty()) lineBlock else instrBlock
-                    
+
                     if (activeBlock.isNotEmpty()) {
                         val missed = extract(activeBlock, "missed")
                         val covered = extract(activeBlock, "covered")
@@ -127,11 +137,11 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
                     val covered = extract(finalBlock, "covered")
                     val total = missed + covered
                     val ratio = if (total > 0) (covered / total) * 100 else 0.0
-                    
+
                     logger.quiet("-".repeat(75))
                     logger.quiet(String.format("%-60s | %6.2f%%", "OVERALL PROJECT COVERAGE", ratio))
                     logger.quiet(String.format("%-60s | %6s%%", "EXPECTED MINIMUM TARGET", "40.00"))
-                    
+
                     if (ratio < 40.0) {
                         logger.quiet("\n[WARNING] Coverage is below the required 40% threshold. Build verification may fail.")
                     } else {
@@ -163,23 +173,24 @@ tasks.register<JacocoCoverageVerification>("jacocoJvmTestCoverageVerification") 
         }
     }
 
-    val excludes = listOf(
-        "**/features/**",
-        "**/ui/**",
-        "**/navigation/**",
-        "**/components/**",
-        "**/App*",
-        "**/Platform*",
-        "**/Greeting*",
-        "**/BuildConfig*",
-        "**/di/**",
-        "**/*ViewModel*",
-        "**/*Composable*"
-    )
+    val excludes =
+        listOf(
+            "**/features/**",
+            "**/ui/**",
+            "**/navigation/**",
+            "**/components/**",
+            "**/App*",
+            "**/Platform*",
+            "**/Greeting*",
+            "**/BuildConfig*",
+            "**/di/**",
+            "**/*ViewModel*",
+            "**/*Composable*",
+        )
 
     classDirectories.setFrom(
-                fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(excludes) },
-                fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(excludes) }
+        fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(excludes) },
+        fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(excludes) },
     )
 
     sourceDirectories.setFrom(files("src/commonMain/kotlin", "src/jvmMain/kotlin"))
@@ -189,8 +200,8 @@ tasks.register<JacocoCoverageVerification>("jacocoJvmTestCoverageVerification") 
 kotlin {
     // Shared Compiler Options
     // -Xexpect-actual-classes: Enables the stable usage of expect/actual naming without Beta warnings.
-    compilerOptions { 
-        freeCompilerArgs.addAll("-Xexpect-actual-classes") 
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xexpect-actual-classes")
     }
 
     // Web/Wasm Target Configuration
@@ -217,7 +228,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewmodel)
-            @Suppress("DEPRECATION") implementation(compose.materialIconsExtended)
+            @Suppress("DEPRECATION")
+            implementation(compose.materialIconsExtended)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
@@ -281,11 +293,11 @@ tasks.withType<Test>().configureEach {
                 currentSuite.clear().append(className)
                 println("\n> Executing: $className")
             }
-            
+
             // Print function name and its success/failure status
             val status = result.resultType.toString()
             println("  $status: ${desc.name}")
-            
+
             if (result.resultType == TestResult.ResultType.FAILURE) {
                 failedClasses += className
                 result.exception?.let { println("         Error: ${it.message}") }
@@ -303,7 +315,7 @@ tasks.withType<Test>().configureEach {
                 val skip = result.skippedTestCount
                 val total = result.testCount
                 val outcome = if (result.resultType == TestResult.ResultType.SUCCESS) "PASSED" else "FAILED"
-                
+
                 println("\n-----------------------------------------------------------------------")
                 if (failedClasses.isNotEmpty()) {
                     println("Failed files: ${failedClasses.sorted().joinToString(", ")}")

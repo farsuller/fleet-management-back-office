@@ -1,5 +1,6 @@
 package org.solodev.fleet.mngt.domain.repository
 
+import kotlinx.coroutines.yield
 import org.solodev.fleet.mngt.api.dto.driver.AssignDriverRequest
 import org.solodev.fleet.mngt.api.dto.driver.AssignmentDto
 import org.solodev.fleet.mngt.api.dto.driver.CreateDriverRequest
@@ -21,44 +22,87 @@ class FakeDriverRepository : DriverRepository {
     var activeShiftResult: Result<ShiftResponse?> = Result.success(null)
 
     // Tracking properties for manual verification (replacing MockK verify)
+    var lastForceRefresh: Boolean? = null
+    var lastDriverId: String? = null
+    var lastVehicleId: String? = null
+    var lastCreateRequest: CreateDriverRequest? = null
+    var lastUpdateRequest: UpdateDriverRequest? = null
     var lastAssignRequest: AssignDriverRequest? = null
     var lastStartShiftRequest: StartShiftRequest? = null
     var lastEndShiftRequest: EndShiftRequest? = null
     var wasDeactivateCalled = false
+    var suspendOnCreateDriver = false
+    var suspendOnUpdateDriver = false
 
-    override suspend fun getDrivers(forceRefresh: Boolean): Result<List<DriverDto>> = driversResult ?: Result.success(emptyList())
+    override suspend fun getDrivers(forceRefresh: Boolean): Result<List<DriverDto>> {
+        lastForceRefresh = forceRefresh
+        return driversResult ?: Result.success(emptyList())
+    }
 
-    override suspend fun getDriver(id: String): Result<DriverDto> = driverResult ?: Result.failure(Exception("Driver not found"))
+    override suspend fun getDriver(id: String): Result<DriverDto> {
+        lastDriverId = id
+        return driverResult ?: Result.failure(Exception("Driver not found"))
+    }
 
-    override suspend fun createDriver(request: CreateDriverRequest): Result<DriverDto> = createResult ?: Result.failure(Exception("Creation failed"))
+    override suspend fun createDriver(request: CreateDriverRequest): Result<DriverDto> {
+        lastCreateRequest = request
+        if (suspendOnCreateDriver) {
+            yield()
+        }
+        return createResult ?: Result.failure(Exception("Creation failed"))
+    }
 
     override suspend fun deactivateDriver(id: String): Result<DriverDto> {
+        lastDriverId = id
         wasDeactivateCalled = true
         return driverResult ?: Result.failure(Exception("Deactivation failed"))
     }
 
-    override suspend fun activateDriver(id: String): Result<DriverDto> = driverResult ?: Result.failure(Exception("Activation failed"))
+    override suspend fun activateDriver(id: String): Result<DriverDto> {
+        lastDriverId = id
+        return driverResult ?: Result.failure(Exception("Activation failed"))
+    }
 
     override suspend fun updateDriver(
         id: String,
         request: UpdateDriverRequest,
-    ): Result<DriverDto> = driverResult ?: Result.failure(Exception("Update failed"))
+    ): Result<DriverDto> {
+        lastDriverId = id
+        lastUpdateRequest = request
+        if (suspendOnUpdateDriver) {
+            yield()
+        }
+        return driverResult ?: Result.failure(Exception("Update failed"))
+    }
 
     override suspend fun assignToVehicle(
         driverId: String,
         request: AssignDriverRequest,
     ): Result<AssignmentDto> {
+        lastDriverId = driverId
         lastAssignRequest = request
         return assignmentResult ?: Result.failure(Exception("Assignment failed"))
     }
 
-    override suspend fun releaseFromVehicle(driverId: String): Result<AssignmentDto> = assignmentResult ?: Result.failure(Exception("Release failed"))
+    override suspend fun releaseFromVehicle(driverId: String): Result<AssignmentDto> {
+        lastDriverId = driverId
+        return assignmentResult ?: Result.failure(Exception("Release failed"))
+    }
 
-    override suspend fun getAssignmentHistory(driverId: String): Result<List<AssignmentDto>> = assignmentsResult ?: Result.success(emptyList())
+    override suspend fun getAssignmentHistory(driverId: String): Result<List<AssignmentDto>> {
+        lastDriverId = driverId
+        return assignmentsResult ?: Result.success(emptyList())
+    }
 
-    override suspend fun getVehicleActiveDriver(vehicleId: String): Result<DriverDto> = driverResult ?: Result.failure(Exception("No active driver found"))
+    override suspend fun getVehicleActiveDriver(vehicleId: String): Result<DriverDto> {
+        lastVehicleId = vehicleId
+        return driverResult ?: Result.failure(Exception("No active driver found"))
+    }
 
-    override suspend fun getVehicleDriverHistory(vehicleId: String): Result<List<AssignmentDto>> = assignmentsResult ?: Result.success(emptyList())
+    override suspend fun getVehicleDriverHistory(vehicleId: String): Result<List<AssignmentDto>> {
+        lastVehicleId = vehicleId
+        return assignmentsResult ?: Result.success(emptyList())
+    }
 
     override suspend fun startShift(request: StartShiftRequest): Result<ShiftResponse> {
         lastStartShiftRequest = request

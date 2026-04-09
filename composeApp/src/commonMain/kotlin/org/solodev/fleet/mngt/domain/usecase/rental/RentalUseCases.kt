@@ -54,13 +54,7 @@ class ActivateRentalUseCase(
         val rentalResult = repository.getRental(id)
         val rental = rentalResult.getOrNull() ?: return rentalResult
 
-        val vehicleResult = vehicleRepository.getVehicle(rental.vehicleId!!)
-        val vehicle =
-            vehicleResult.getOrNull()
-                ?: return Result.failure(
-                    vehicleResult.exceptionOrNull()
-                        ?: IllegalStateException("Vehicle not found"),
-                )
+        val vehicle = vehicleRepository.getVehicle(rental.vehicleId!!).getOrElse { return Result.failure(it) }
 
         if (vehicle.state != org.solodev.fleet.mngt.api.dto.vehicle.VehicleState.AVAILABLE) {
             return Result.failure(
@@ -92,13 +86,7 @@ class CompleteRentalUseCase(
         val rentalResult = repository.getRental(id)
         val rental = rentalResult.getOrNull() ?: return rentalResult
 
-        val vehicleResult = vehicleRepository.getVehicle(rental.vehicleId!!)
-        val vehicle =
-            vehicleResult.getOrNull()
-                ?: return Result.failure(
-                    vehicleResult.exceptionOrNull()
-                        ?: IllegalStateException("Vehicle not found"),
-                )
+        val vehicle = vehicleRepository.getVehicle(rental.vehicleId!!).getOrElse { return Result.failure(it) }
 
         val startOdometer = vehicle.mileageKm ?: 0L
         FieldValidator.validateOdometer(finalOdometerKm, startOdometer)?.let {

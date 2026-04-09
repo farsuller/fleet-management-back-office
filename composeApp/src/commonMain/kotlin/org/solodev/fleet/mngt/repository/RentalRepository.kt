@@ -30,6 +30,8 @@ interface RentalRepository {
 
     suspend fun cancelRental(id: String): Result<RentalDto>
 
+    suspend fun deleteRental(id: String): Result<Unit>
+
     suspend fun completeRental(
         id: String,
         finalOdometerKm: Long,
@@ -65,6 +67,8 @@ class RentalRepositoryImpl(
     override suspend fun activateRental(id: String) = api.activateRental(id).onSuccess { listCache.clear() }
 
     override suspend fun cancelRental(id: String) = api.cancelRental(id).onSuccess { listCache.clear() }
+
+    override suspend fun deleteRental(id: String) = api.deleteRental(id).onSuccess { listCache.clear() }
 
     override suspend fun completeRental(
         id: String,

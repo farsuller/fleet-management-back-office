@@ -24,9 +24,11 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.reflect.typeOf
 import org.solodev.fleet.mngt.api.dto.accounting.AccountDto
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.DriverCollectionRequest
@@ -469,7 +471,10 @@ class FleetApiClient(
             throw ApiException(msg)
         }
 
-        val data = jsonElement.jsonObject["data"] ?: throw ApiException("Empty response data")
+        val data = jsonElement.jsonObject["data"]
+        if (data == null || data is JsonNull) {
+            throw ApiException("Empty response data")
+        }
 
         if (data is JsonArray) {
             val items = FleetJson.decodeFromJsonElement<List<T>>(data)
@@ -519,6 +524,7 @@ class FleetApiClient(
             }.guardStatus()
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private suspend inline fun <reified T> HttpResponse.guardStatus(): T {
         if (!status.isSuccess()) {
             if (status == HttpStatusCode.Unauthorized) {
@@ -536,7 +542,12 @@ class FleetApiClient(
             throw ApiException(error?.message ?: "API Error: ${status.value} $errorBody")
         }
         val wrapper = body<ApiWrapper<T>>()
-        return wrapper.data ?: throw ApiException("Empty data response")
+        val data = wrapper.data
+        if (data != null || typeOf<T>().isMarkedNullable) {
+            @Suppress("UNCHECKED_CAST")
+            return data as T
+        }
+        throw ApiException("Empty data response")
     }
 
     @Suppress("TooGenericExceptionCaught")

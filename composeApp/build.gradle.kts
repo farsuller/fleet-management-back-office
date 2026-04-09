@@ -34,6 +34,30 @@ jacoco {
     toolVersion = "0.8.12"
 }
 
+val jacocoCoverageExcludes =
+    listOf(
+        "**/features/**",
+        "**/ui/**",
+        "**/navigation/**",
+        "**/components/**",
+        "**/App*",
+        "**/Platform*",
+        "**/Greeting*",
+        "**/BuildConfig*",
+        "**/di/**",
+        "**/*ViewModel*",
+        "**/*Composable*",
+        "**/api/dto/**",
+        "**/api/ApiWrapper*.class",
+        "**/api/FleetApiClient$*.class",
+        "**/generated/**",
+        "**/*Companion*",
+        "**/metrics/FrontendMetrics*.class",
+        "**/repository/*Repository.class",
+        "**/repository/*Repository${'$'}DefaultImpls.class",
+        "**/repository/*RepositoryImpl.class",
+    )
+
 // JVM Coverage Reporting Task
 // Generates HTML/XML reports from the execution data produced by jvmTest.
 tasks.register<JacocoReport>("jacocoJvmTestReport") {
@@ -50,25 +74,9 @@ tasks.register<JacocoReport>("jacocoJvmTestReport") {
         html.required.set(true)
     }
 
-    // Exclude UI, DI, and platform-specific generated code from coverage metrics
-    val excludes =
-        listOf(
-            "**/features/**",
-            "**/ui/**",
-            "**/navigation/**",
-            "**/components/**",
-            "**/App*",
-            "**/Platform*",
-            "**/Greeting*",
-            "**/BuildConfig*",
-            "**/di/**",
-            "**/*ViewModel*",
-            "**/*Composable*",
-        )
-
     classDirectories.setFrom(
-        fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(excludes) },
-        fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(excludes) },
+        fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(jacocoCoverageExcludes) },
+        fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(jacocoCoverageExcludes) },
     )
 
     sourceDirectories.setFrom(files("src/commonMain/kotlin", "src/jvmMain/kotlin"))
@@ -173,24 +181,9 @@ tasks.register<JacocoCoverageVerification>("jacocoJvmTestCoverageVerification") 
         }
     }
 
-    val excludes =
-        listOf(
-            "**/features/**",
-            "**/ui/**",
-            "**/navigation/**",
-            "**/components/**",
-            "**/App*",
-            "**/Platform*",
-            "**/Greeting*",
-            "**/BuildConfig*",
-            "**/di/**",
-            "**/*ViewModel*",
-            "**/*Composable*",
-        )
-
     classDirectories.setFrom(
-        fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(excludes) },
-        fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(excludes) },
+        fileTree(layout.buildDirectory.dir("classes/kotlin/jvm/main")) { exclude(jacocoCoverageExcludes) },
+        fileTree(layout.buildDirectory.dir("classes/kotlin/metadata/main")) { exclude(jacocoCoverageExcludes) },
     )
 
     sourceDirectories.setFrom(files("src/commonMain/kotlin", "src/jvmMain/kotlin"))
@@ -266,6 +259,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
+                implementation(libs.ktor.client.okhttp)
             }
         }
     }

@@ -2,6 +2,10 @@ FROM gradle:8.14.3-jdk21 AS build
 
 WORKDIR /app
 
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends libatomic1 \
+	&& rm -rf /var/lib/apt/lists/*
+
 COPY . .
 
 RUN chmod +x ./gradlew && ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon

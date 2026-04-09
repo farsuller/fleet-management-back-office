@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: fleet-management-backoffice
+    runtime: static
+    plan: free
+    autoDeploy: true
+    buildCommand: |
+      chmod +x gradlew
+      ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon
+      test -n "$FLEET_API_BASE_URL"
+      test -n "$FLEET_WS_BASE_URL"
+      cat > composeApp/build/dist/wasmJs/productionExecutable/config.js <<EOF
+      window.__FLEET_CONFIG__ = {
+        apiBaseUrl: "${FLEET_API_BASE_URL}",
+        wsBaseUrl: "${FLEET_WS_BASE_URL}"
+      };
+      EOF
+    staticPublishPath: composeApp/build/dist/wasmJs/productionExecutable
+    envVars:
+      - key: FLEET_API_BASE_URL
+        sync: false
+      - key: FLEET_WS_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

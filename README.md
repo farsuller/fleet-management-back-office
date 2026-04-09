@@ -109,15 +109,11 @@ To ensure compatibility with future **Android Gradle Plugin (AGP 9.0+)** standar
 ### Web Environment Setup
 - Local web development uses `http://localhost:8080` and `ws://localhost:8080` by default.
 - Production web deployments read runtime values from `composeApp/src/webMain/resources/config.js`.
-- GitHub Actions production bundle builds read these repository secrets:
-    - `FLEET_API_BASE_URL_PROD`
-    - `FLEET_WS_BASE_URL_PROD`
-- Automatic Render deployment after the production build also requires:
-    - `RENDER_DEPLOY_HOOK_URL`
-- Render deployment is configured in `render.yaml` and expects these environment variables to be set in Render:
-    - `FLEET_API_BASE_URL`
-    - `FLEET_WS_BASE_URL`
-- The generated static site is published from `composeApp/build/dist/wasmJs/productionExecutable`.
+- On `push` to `main`, GitHub Actions builds the Docker image from `Dockerfile` and publishes it to GitHub Container Registry as `ghcr.io/farsuller/fleet-management-backoffice:latest`.
+- Automatic Render deployment after the image publish requires the `RENDER_DEPLOY_HOOK_URL` repository secret.
+- Render must be configured to pull the prebuilt GHCR image using a registry credential named `ghcr-read-credentials`.
+- Render deployment is configured in `render.yaml` and expects the `FLEET_API_BASE_URL` and `FLEET_WS_BASE_URL` runtime environment variables to be set in Render.
+- Render no longer builds the frontend from source; it only deploys the prebuilt image after the deploy hook is triggered.
 
 ### Maintenance
 - **Force Format**: `./gradlew spotlessApply`

@@ -8,7 +8,7 @@ RUN apt-get update \
 
 COPY . .
 
-RUN chmod +x ./gradlew && ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon
+RUN chmod +x ./gradlew && ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon --max-workers=2
 
 FROM node:20-alpine AS runtime
 

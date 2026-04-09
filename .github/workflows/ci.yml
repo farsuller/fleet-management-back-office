@@ -167,7 +167,7 @@ jobs:
   build-web-production:
     name: Build Web Production Bundle
     runs-on: ubuntu-latest
-    needs: [security-scan]
+    needs: [measure-coverage, code-quality, security-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
       FLEET_API_BASE_URL: ${{ secrets.FLEET_API_BASE_URL_PROD }}

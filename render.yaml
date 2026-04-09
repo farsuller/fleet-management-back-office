@@ -2,8 +2,7 @@ services:
   - type: web
     name: fleet-management-backoffice
     runtime: static
-    plan: free
-    autoDeploy: true
+    autoDeployTrigger: off
     buildCommand: |
       chmod +x gradlew
       ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon

@@ -63,7 +63,6 @@ class RentalsViewModel(
     private val deleteRentalUseCase: DeleteRentalUseCase,
     private val authState: AuthState,
 ) : ViewModel() {
-
     // ── List state ────────────────────────────────────────────────────────────
 
     private val _listState = MutableStateFlow<UiState<PagedResponse<RentalDto>>>(UiState.Loading)
@@ -129,8 +128,7 @@ class RentalsViewModel(
                     _listState.value = UiState.Success(it)
                     _isRefreshing.value = false
                     calculateStats(it.items)
-                }
-                .onFailure {
+                }.onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load rentals")
                     _isRefreshing.value = false
                 }
@@ -138,13 +136,14 @@ class RentalsViewModel(
     }
 
     private fun calculateStats(items: List<RentalDto>) {
-        _stats.value = RentalStats(
-            total = items.size,
-            active = items.count { it.status == RentalStatus.ACTIVE },
-            reserved = items.count { it.status == RentalStatus.RESERVED },
-            completed = items.count { it.status == RentalStatus.COMPLETED },
-            revenuePhp = items.filter { it.status == RentalStatus.COMPLETED }.sumOf { it.totalCost?.toLong() ?: 0L },
-        )
+        _stats.value =
+            RentalStats(
+                total = items.size,
+                active = items.count { it.status == RentalStatus.ACTIVE },
+                reserved = items.count { it.status == RentalStatus.RESERVED },
+                completed = items.count { it.status == RentalStatus.COMPLETED },
+                revenuePhp = items.filter { it.status == RentalStatus.COMPLETED }.sumOf { it.totalCost?.toLong() ?: 0L },
+            )
     }
 
     // ── Detail actions ────────────────────────────────────────────────────────
@@ -170,8 +169,7 @@ class RentalsViewModel(
                     _actionResult.value = Result.success(Unit)
                     _detailState.value = UiState.Success(it)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -182,24 +180,29 @@ class RentalsViewModel(
                     _actionResult.value = Result.success(Unit)
                     _detailState.value = UiState.Success(it)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun completeRental(rentalId: String, finalOdometerKm: Long) {
+    fun completeRental(
+        rentalId: String,
+        finalOdometerKm: Long,
+    ) {
         viewModelScope.launch {
             completeRentalUseCase(rentalId, finalOdometerKm)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     _detailState.value = UiState.Success(it)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun payInvoice(invoiceId: String, paymentMethodId: String, amountPhp: Long) {
+    fun payInvoice(
+        invoiceId: String,
+        paymentMethodId: String,
+        amountPhp: Long,
+    ) {
         viewModelScope.launch {
             payInvoiceUseCase(invoiceId, paymentMethodId, amountPhp)
                 .onSuccess { _actionResult.value = Result.success(Unit) }
@@ -207,31 +210,39 @@ class RentalsViewModel(
         }
     }
 
-    fun createRental(request: CreateRentalRequest, onCreated: (String) -> Unit) {
+    fun createRental(
+        request: CreateRentalRequest,
+        onCreated: (String) -> Unit,
+    ) {
         viewModelScope.launch {
             createRentalUseCase(request)
                 .onSuccess { rental ->
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     rental.id?.let { onCreated(it) }
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun updateRental(id: String, request: UpdateRentalRequest, onUpdated: () -> Unit) {
+    fun updateRental(
+        id: String,
+        request: UpdateRentalRequest,
+        onUpdated: () -> Unit,
+    ) {
         viewModelScope.launch {
             updateRentalUseCase(id, request)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     onUpdated()
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun loadCreationResources(includeVehicleId: String? = null, includeCustomerId: String? = null) {
+    fun loadCreationResources(
+        includeVehicleId: String? = null,
+        includeCustomerId: String? = null,
+    ) {
         _availableVehicles.value = UiState.Loading
         _customers.value = UiState.Loading
         viewModelScope.launch {
@@ -263,7 +274,10 @@ class RentalsViewModel(
         }
     }
 
-    fun quickCreateCustomer(request: CreateCustomerRequest, onCreated: (String) -> Unit) {
+    fun quickCreateCustomer(
+        request: CreateCustomerRequest,
+        onCreated: (String) -> Unit,
+    ) {
         viewModelScope.launch {
             createCustomerUseCase(request)
                 .onSuccess { customer ->
@@ -271,8 +285,7 @@ class RentalsViewModel(
                     // Refresh customers list after creation
                     getCustomersUseCase(limit = 100, forceRefresh = true)
                         .onSuccess { _customers.value = UiState.Success(it.items) }
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -282,8 +295,7 @@ class RentalsViewModel(
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 

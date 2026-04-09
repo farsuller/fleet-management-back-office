@@ -50,7 +50,6 @@ class DriversViewModel(
     private val driverRepository: DriverRepository,
     private val authState: AuthState,
 ) : ViewModel() {
-
     private val _listState = MutableStateFlow<UiState<List<DriverDto>>>(UiState.Loading)
     val listState: StateFlow<UiState<List<DriverDto>>> = _listState.asStateFlow()
 
@@ -85,7 +84,8 @@ class DriversViewModel(
 
     fun loadActiveShift() {
         viewModelScope.launch {
-            driverRepository.getActiveShift()
+            driverRepository
+                .getActiveShift()
                 .onSuccess { _activeShift.value = UiState.Success(it) }
                 .onFailure { _activeShift.value = UiState.Error(it.message ?: "Failed to load active shift") }
         }
@@ -93,23 +93,23 @@ class DriversViewModel(
 
     fun startShift(vehicleId: String) {
         viewModelScope.launch {
-            driverRepository.startShift(StartShiftRequest(vehicleId))
+            driverRepository
+                .startShift(StartShiftRequest(vehicleId))
                 .onSuccess {
                     _activeShift.value = UiState.Success(it)
                     _actionResult.value = Result.success(Unit)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
     fun endShift(notes: String? = null) {
         viewModelScope.launch {
-            driverRepository.endShift(EndShiftRequest(notes))
+            driverRepository
+                .endShift(EndShiftRequest(notes))
                 .onSuccess {
                     _activeShift.value = UiState.Success(null)
                     _actionResult.value = Result.success(Unit)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -119,7 +119,8 @@ class DriversViewModel(
         _selectedDriverId.value = id
         _detailState.value = UiState.Loading
         viewModelScope.launch {
-            driverRepository.getDriver(id)
+            driverRepository
+                .getDriver(id)
                 .onSuccess { _detailState.value = UiState.Success(it) }
                 .onFailure { _detailState.value = UiState.Error(it.message ?: "Failed to load driver") }
         }
@@ -145,8 +146,7 @@ class DriversViewModel(
                     _listState.value = UiState.Success(it)
                     _isRefreshing.value = false
                     calculateStats(it)
-                }
-                .onFailure {
+                }.onFailure {
                     _listState.value = UiState.Error(it.message ?: "Failed to load drivers")
                     _isRefreshing.value = false
                 }
@@ -168,24 +168,27 @@ class DriversViewModel(
         val disabled = items.count { it.isActive != true }
         val available = maxOf(0, total - active - disabled)
 
-        _stats.value = DriverStats(
-            total = total,
-            active = active,
-            available = available,
-            disabled = disabled,
-            trend = "+2%",
-        )
+        _stats.value =
+            DriverStats(
+                total = total,
+                active = active,
+                available = available,
+                disabled = disabled,
+                trend = "+2%",
+            )
     }
 
-    fun createDriver(request: CreateDriverRequest, onCreated: () -> Unit) {
+    fun createDriver(
+        request: CreateDriverRequest,
+        onCreated: () -> Unit,
+    ) {
         viewModelScope.launch {
             createDriverUseCase(request)
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     onCreated()
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -196,8 +199,7 @@ class DriversViewModel(
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     if (_selectedDriverId.value == driverId) loadDriver(driverId)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -208,12 +210,15 @@ class DriversViewModel(
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
                     if (_selectedDriverId.value == driverId) loadDriver(driverId)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun assignToVehicle(driverId: String, vehicleId: String, notes: String?) {
+    fun assignToVehicle(
+        driverId: String,
+        vehicleId: String,
+        notes: String?,
+    ) {
         viewModelScope.launch {
             assignDriverUseCase(
                 driverId,
@@ -221,16 +226,18 @@ class DriversViewModel(
                     vehicleId = vehicleId,
                     notes = notes?.takeIf { it.isNotBlank() },
                 ),
-            )
-                .onSuccess {
-                    _actionResult.value = Result.success(Unit)
-                    loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+            ).onSuccess {
+                _actionResult.value = Result.success(Unit)
+                loadList(forceRefresh = true)
+            }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun updateDriver(id: String, request: UpdateDriverRequest, onUpdated: () -> Unit) {
+    fun updateDriver(
+        id: String,
+        request: UpdateDriverRequest,
+        onUpdated: () -> Unit,
+    ) {
         viewModelScope.launch {
             updateDriverUseCase(id, request)
                 .onSuccess {
@@ -241,8 +248,7 @@ class DriversViewModel(
                         loadDriver(id)
                     }
                     onUpdated()
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -252,8 +258,7 @@ class DriversViewModel(
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 

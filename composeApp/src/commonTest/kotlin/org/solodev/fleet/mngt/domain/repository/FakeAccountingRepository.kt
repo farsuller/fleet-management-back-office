@@ -26,26 +26,52 @@ class FakeAccountingRepository : AccountingRepository {
     var paymentMethodsResult: Result<List<PaymentMethodDto>>? = null
 
     // Tracking for manual verification (replacing MockK verify)
+    var lastCursor: String? = null
+    var lastLimit: Int? = null
+    var lastForceRefresh: Boolean? = null
+    var lastCustomerId: String? = null
+    var lastDriverId: String? = null
     var lastPaymentRequest: PayInvoiceRequest? = null
+    var lastCreateInvoiceRequest: CreateInvoiceRequest? = null
     var lastCollectionRequest: DriverCollectionRequest? = null
     var lastRemittanceRequest: DriverRemittanceRequest? = null
     var lastId: String? = null
+    var lastPaymentIdempotencyKey: String? = null
 
     override suspend fun getInvoices(
         cursor: String?,
         limit: Int,
         forceRefresh: Boolean,
-    ): Result<PagedResponse<InvoiceDto>> = pagedInvoicesResult ?: Result.failure(Exception("Paged invoices not configured"))
+    ): Result<PagedResponse<InvoiceDto>> {
+        lastCursor = cursor
+        lastLimit = limit
+        lastForceRefresh = forceRefresh
+        return pagedInvoicesResult ?: Result.failure(Exception("Paged invoices not configured"))
+    }
 
-    override suspend fun getInvoice(id: String): Result<InvoiceDto> = invoiceResult ?: Result.failure(Exception("Invoice not found"))
+    override suspend fun getInvoice(id: String): Result<InvoiceDto> {
+        lastId = id
+        return invoiceResult ?: Result.failure(Exception("Invoice not found"))
+    }
 
-    override suspend fun getInvoicesByCustomer(customerId: String): Result<List<InvoiceDto>> = invoicesResult ?: Result.success(emptyList())
+    override suspend fun getInvoicesByCustomer(customerId: String): Result<List<InvoiceDto>> {
+        lastCustomerId = customerId
+        return invoicesResult ?: Result.success(emptyList())
+    }
 
-    override suspend fun createInvoice(request: CreateInvoiceRequest): Result<InvoiceDto> = invoiceResult ?: Result.failure(Exception("Creation failed"))
+    override suspend fun createInvoice(request: CreateInvoiceRequest): Result<InvoiceDto> {
+        lastCreateInvoiceRequest = request
+        return invoiceResult ?: Result.failure(Exception("Creation failed"))
+    }
 
-    override suspend fun payInvoice(id: String, request: PayInvoiceRequest, idempotencyKey: String): Result<PaymentDto> {
+    override suspend fun payInvoice(
+        id: String,
+        request: PayInvoiceRequest,
+        idempotencyKey: String,
+    ): Result<PaymentDto> {
         lastId = id
         lastPaymentRequest = request
+        lastPaymentIdempotencyKey = idempotencyKey
         return paymentResult ?: Result.failure(Exception("Payment failed"))
     }
 
@@ -53,27 +79,47 @@ class FakeAccountingRepository : AccountingRepository {
         cursor: String?,
         limit: Int,
         forceRefresh: Boolean,
-    ): Result<PagedResponse<PaymentDto>> = pagedPaymentsResult ?: Result.failure(Exception("Paged payments not configured"))
+    ): Result<PagedResponse<PaymentDto>> {
+        lastCursor = cursor
+        lastLimit = limit
+        lastForceRefresh = forceRefresh
+        return pagedPaymentsResult ?: Result.failure(Exception("Paged payments not configured"))
+    }
 
-    override suspend fun getPaymentsByCustomer(customerId: String): Result<List<PaymentDto>> = paymentsResult ?: Result.success(emptyList())
+    override suspend fun getPaymentsByCustomer(customerId: String): Result<List<PaymentDto>> {
+        lastCustomerId = customerId
+        return paymentsResult ?: Result.success(emptyList())
+    }
 
     override suspend fun recordDriverCollection(request: DriverCollectionRequest): Result<PaymentDto> {
         lastCollectionRequest = request
         return paymentResult ?: Result.failure(Exception("Collection failed"))
     }
 
-    override suspend fun getDriverPendingPayments(driverId: String): Result<List<PaymentDto>> = paymentsResult ?: Result.success(emptyList())
+    override suspend fun getDriverPendingPayments(driverId: String): Result<List<PaymentDto>> {
+        lastDriverId = driverId
+        return paymentsResult ?: Result.success(emptyList())
+    }
 
-    override suspend fun getAllDriverPayments(driverId: String): Result<List<PaymentDto>> = paymentsResult ?: Result.success(emptyList())
+    override suspend fun getAllDriverPayments(driverId: String): Result<List<PaymentDto>> {
+        lastDriverId = driverId
+        return paymentsResult ?: Result.success(emptyList())
+    }
 
     override suspend fun submitRemittance(request: DriverRemittanceRequest): Result<DriverRemittanceDto> {
         lastRemittanceRequest = request
         return remittanceResult ?: Result.failure(Exception("Remittance failed"))
     }
 
-    override suspend fun getRemittancesByDriver(driverId: String): Result<List<DriverRemittanceDto>> = remittancesResult ?: Result.success(emptyList())
+    override suspend fun getRemittancesByDriver(driverId: String): Result<List<DriverRemittanceDto>> {
+        lastDriverId = driverId
+        return remittancesResult ?: Result.success(emptyList())
+    }
 
-    override suspend fun getRemittance(id: String): Result<DriverRemittanceDto> = remittanceResult ?: Result.failure(Exception("Remittance not found"))
+    override suspend fun getRemittance(id: String): Result<DriverRemittanceDto> {
+        lastId = id
+        return remittanceResult ?: Result.failure(Exception("Remittance not found"))
+    }
 
     override suspend fun getAccounts(): Result<List<AccountDto>> = accountsResult ?: Result.success(emptyList())
 

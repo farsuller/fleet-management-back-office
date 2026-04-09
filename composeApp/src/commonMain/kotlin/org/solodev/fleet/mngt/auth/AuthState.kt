@@ -21,13 +21,21 @@ data class UserSession(
 
 sealed interface AuthStatus {
     data object Loading : AuthStatus
+
     data object Unauthenticated : AuthStatus
-    data class Authenticated(val session: UserSession) : AuthStatus
+
+    data class Authenticated(
+        val session: UserSession,
+    ) : AuthStatus
 }
 
 interface AuthState {
     val status: StateFlow<AuthStatus>
 
-    fun signIn(token: String, session: UserSession)
+    fun signIn(
+        token: String,
+        session: UserSession,
+    )
+
     fun signOut()
 }

@@ -8,7 +8,10 @@ import org.solodev.fleet.mngt.api.dto.tracking.VehicleStateDelta
  * Fields that are null in the delta retain their existing values.
  */
 object DeltaDecoder {
-    fun merge(current: VehicleRouteState, delta: VehicleStateDelta): VehicleRouteState = current.copy(
+    fun merge(
+        current: VehicleRouteState,
+        delta: VehicleStateDelta,
+    ): VehicleRouteState = current.copy(
         latitude = delta.latitude ?: current.latitude,
         longitude = delta.longitude ?: current.longitude,
         speedKph = delta.speedKph ?: current.speedKph,

@@ -13,7 +13,9 @@ import kotlin.Result
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class GetRentalsUseCase(private val repository: RentalRepository) {
+class GetRentalsUseCase(
+    private val repository: RentalRepository,
+) {
     suspend operator fun invoke(
         page: Int = 1,
         limit: Int = 20,
@@ -22,16 +24,25 @@ class GetRentalsUseCase(private val repository: RentalRepository) {
     ) = repository.getRentals(page, limit, status, forceRefresh)
 }
 
-class GetRentalUseCase(private val repository: RentalRepository) {
+class GetRentalUseCase(
+    private val repository: RentalRepository,
+) {
     suspend operator fun invoke(id: String) = repository.getRental(id)
 }
 
-class CreateRentalUseCase(private val repository: RentalRepository) {
+class CreateRentalUseCase(
+    private val repository: RentalRepository,
+) {
     suspend operator fun invoke(request: CreateRentalRequest) = repository.createRental(request)
 }
 
-class UpdateRentalUseCase(private val repository: RentalRepository) {
-    suspend operator fun invoke(id: String, request: UpdateRentalRequest) = repository.updateRental(id, request)
+class UpdateRentalUseCase(
+    private val repository: RentalRepository,
+) {
+    suspend operator fun invoke(
+        id: String,
+        request: UpdateRentalRequest,
+    ) = repository.updateRental(id, request)
 }
 
 class ActivateRentalUseCase(
@@ -43,13 +54,7 @@ class ActivateRentalUseCase(
         val rentalResult = repository.getRental(id)
         val rental = rentalResult.getOrNull() ?: return rentalResult
 
-        val vehicleResult = vehicleRepository.getVehicle(rental.vehicleId!!)
-        val vehicle =
-            vehicleResult.getOrNull()
-                ?: return Result.failure(
-                    vehicleResult.exceptionOrNull()
-                        ?: IllegalStateException("Vehicle not found"),
-                )
+        val vehicle = vehicleRepository.getVehicle(rental.vehicleId!!).getOrElse { return Result.failure(it) }
 
         if (vehicle.state != org.solodev.fleet.mngt.api.dto.vehicle.VehicleState.AVAILABLE) {
             return Result.failure(
@@ -63,7 +68,9 @@ class ActivateRentalUseCase(
     }
 }
 
-class CancelRentalUseCase(private val repository: RentalRepository) {
+class CancelRentalUseCase(
+    private val repository: RentalRepository,
+) {
     suspend operator fun invoke(id: String): Result<RentalDto> = repository.cancelRental(id)
 }
 
@@ -71,18 +78,15 @@ class CompleteRentalUseCase(
     private val repository: RentalRepository,
     private val vehicleRepository: VehicleRepository,
 ) {
-    suspend operator fun invoke(id: String, finalOdometerKm: Long): Result<RentalDto> {
+    suspend operator fun invoke(
+        id: String,
+        finalOdometerKm: Long,
+    ): Result<RentalDto> {
         // // Logic: Validate odometer reading against start odometer
         val rentalResult = repository.getRental(id)
         val rental = rentalResult.getOrNull() ?: return rentalResult
 
-        val vehicleResult = vehicleRepository.getVehicle(rental.vehicleId!!)
-        val vehicle =
-            vehicleResult.getOrNull()
-                ?: return Result.failure(
-                    vehicleResult.exceptionOrNull()
-                        ?: IllegalStateException("Vehicle not found"),
-                )
+        val vehicle = vehicleRepository.getVehicle(rental.vehicleId!!).getOrElse { return Result.failure(it) }
 
         val startOdometer = vehicle.mileageKm ?: 0L
         FieldValidator.validateOdometer(finalOdometerKm, startOdometer)?.let {
@@ -93,11 +97,15 @@ class CompleteRentalUseCase(
     }
 }
 
-class GetPaymentMethodsUseCase(private val repository: AccountingRepository) {
+class GetPaymentMethodsUseCase(
+    private val repository: AccountingRepository,
+) {
     suspend operator fun invoke() = repository.getPaymentMethods()
 }
 
-class PayInvoiceUseCase(private val repository: AccountingRepository) {
+class PayInvoiceUseCase(
+    private val repository: AccountingRepository,
+) {
     @OptIn(ExperimentalUuidApi::class)
     suspend operator fun invoke(
         invoiceId: String,

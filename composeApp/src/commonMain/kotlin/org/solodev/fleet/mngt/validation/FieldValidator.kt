@@ -24,7 +24,10 @@ object FieldValidator {
         return null
     }
 
-    fun validateOdometer(newReading: Long, lastReading: Long): String? {
+    fun validateOdometer(
+        newReading: Long,
+        lastReading: Long,
+    ): String? {
         if (newReading <= lastReading) return "New reading must be greater than last recorded reading ($lastReading km)"
         return null
     }

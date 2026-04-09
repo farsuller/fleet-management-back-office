@@ -17,7 +17,6 @@ class AppDependencyDispatcher(
     private val tokenProvider: TokenProvider,
     private val secureStorage: SecureStorage,
 ) : AuthState {
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _status = MutableStateFlow<AuthStatus>(AuthStatus.Loading)
@@ -27,7 +26,10 @@ class AppDependencyDispatcher(
         scope.launch { restoreSession() }
     }
 
-    override fun signIn(token: String, session: UserSession) {
+    override fun signIn(
+        token: String,
+        session: UserSession,
+    ) {
         tokenProvider.setToken(token)
         secureStorage.saveToken(token)
         secureStorage.saveSession(SessionJson.encodeToString(session))
@@ -41,15 +43,22 @@ class AppDependencyDispatcher(
         _status.value = AuthStatus.Unauthenticated
     }
 
-    fun sessionFromUserDto(token: String, dto: UserDto) {
-        val session = UserSession(
-            userId = dto.id.orEmpty(),
-            email = dto.email.orEmpty(),
-            fullName = "${dto.firstName.orEmpty()} ${dto.lastName.orEmpty()}",
-            roles = dto.roles.orEmpty().mapNotNull { roleName ->
-                runCatching { UserRole.valueOf(roleName) }.getOrNull()
-            }.toSet(),
-        )
+    fun sessionFromUserDto(
+        token: String,
+        dto: UserDto,
+    ) {
+        val session =
+            UserSession(
+                userId = dto.id.orEmpty(),
+                email = dto.email.orEmpty(),
+                fullName = "${dto.firstName.orEmpty()} ${dto.lastName.orEmpty()}",
+                roles =
+                dto.roles
+                    .orEmpty()
+                    .mapNotNull { roleName ->
+                        runCatching { UserRole.valueOf(roleName) }.getOrNull()
+                    }.toSet(),
+            )
         signIn(token, session)
     }
 

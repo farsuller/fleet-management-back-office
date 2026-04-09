@@ -75,10 +75,15 @@ data class AssignDriverRequest(
 )
 
 @Serializable
-data class StartShiftRequest(val vehicleId: String, val notes: String? = null)
+data class StartShiftRequest(
+    val vehicleId: String,
+    val notes: String? = null,
+)
 
 @Serializable
-data class EndShiftRequest(val notes: String? = null)
+data class EndShiftRequest(
+    val notes: String? = null,
+)
 
 @Serializable
 data class ShiftResponse(

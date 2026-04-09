@@ -26,7 +26,6 @@ class UsersViewModel(
     private val deleteUserUseCase: DeleteUserUseCase,
     private val getRolesUseCase: GetRolesUseCase,
 ) : ViewModel() {
-
     private val _listState = MutableStateFlow<UiState<List<UserDto>>>(UiState.Loading)
     val listState: StateFlow<UiState<List<UserDto>>> = _listState.asStateFlow()
 
@@ -62,8 +61,7 @@ class UsersViewModel(
                 .onSuccess { users ->
                     _listState.value = UiState.Success(users.items)
                     _isRefreshing.value = false
-                }
-                .onFailure { ex ->
+                }.onFailure { ex ->
                     _listState.value = UiState.Error(ex.message ?: "Failed to load users")
                     _isRefreshing.value = false
                 }
@@ -95,33 +93,37 @@ class UsersViewModel(
         department: String? = null,
         position: String? = null,
     ) = viewModelScope.launch {
-        val request = org.solodev.fleet.mngt.api.dto.auth.UserUpdateRequest(
-            firstName = firstName,
-            lastName = lastName,
-            phone = phone,
-            isActive = isActive,
-            staffProfile = if (department != null || position != null) {
-                org.solodev.fleet.mngt.api.dto.auth.StaffProfileUpdateRequest(
-                    department = department,
-                    position = position,
-                )
-            } else {
-                null
-            },
-        )
+        val request =
+            org.solodev.fleet.mngt.api.dto.auth.UserUpdateRequest(
+                firstName = firstName,
+                lastName = lastName,
+                phone = phone,
+                isActive = isActive,
+                staffProfile =
+                if (department != null || position != null) {
+                    org.solodev.fleet.mngt.api.dto.auth.StaffProfileUpdateRequest(
+                        department = department,
+                        position = position,
+                    )
+                } else {
+                    null
+                },
+            )
         updateUserUseCase(id, request)
             .onSuccess { updatedUser ->
                 _selectedUser.value = updatedUser
                 loadList(forceRefresh = true)
                 _actionResult.value = Result.success(Unit)
-            }
-            .onFailure { ex ->
+            }.onFailure { ex ->
                 val msg = ex.message ?: "Failed to update user"
                 _actionResult.value = Result.failure(Exception(msg))
             }
     }
 
-    fun assignRole(userId: String, roleName: String) = viewModelScope.launch {
+    fun assignRole(
+        userId: String,
+        roleName: String,
+    ) = viewModelScope.launch {
         assignRoleUseCase(userId, roleName)
             .onSuccess {
                 // Update selected user roles
@@ -131,14 +133,14 @@ class UsersViewModel(
                 // Update list state
                 _listState.value.let { s ->
                     if (s is UiState.Success) {
-                        _listState.value = UiState.Success(
-                            s.data.map { u -> if (u.id == userId) u.copy(roles = updatedRoles) else u },
-                        )
+                        _listState.value =
+                            UiState.Success(
+                                s.data.map { u -> if (u.id == userId) u.copy(roles = updatedRoles) else u },
+                            )
                     }
                 }
                 _actionResult.value = Result.success(Unit)
-            }
-            .onFailure {
+            }.onFailure {
                 val msg = it.message ?: "Failed to assign role"
                 _actionResult.value = Result.failure(Exception(msg))
             }
@@ -150,8 +152,7 @@ class UsersViewModel(
                 _selectedUser.value = null
                 loadList(forceRefresh = true)
                 _actionResult.value = Result.success(Unit)
-            }
-            .onFailure {
+            }.onFailure {
                 val msg = it.message ?: "Failed to delete user"
                 _actionResult.value = Result.failure(Exception(msg))
             }
@@ -165,19 +166,19 @@ class UsersViewModel(
         phone: String?,
     ) {
         viewModelScope.launch {
-            val request = org.solodev.fleet.mngt.api.dto.auth.UserRegistrationRequest(
-                email = email,
-                passwordRaw = passwordRaw,
-                firstName = firstName,
-                lastName = lastName,
-                phone = phone,
-            )
+            val request =
+                org.solodev.fleet.mngt.api.dto.auth.UserRegistrationRequest(
+                    email = email,
+                    passwordRaw = passwordRaw,
+                    firstName = firstName,
+                    lastName = lastName,
+                    phone = phone,
+                )
             registerUserUseCase(request)
                 .onSuccess { _ ->
                     loadList(forceRefresh = true)
                     _actionResult.value = Result.success(Unit)
-                }
-                .onFailure { ex ->
+                }.onFailure { ex ->
                     val msg = ex.message ?: "Failed to register user"
                     _actionResult.value = Result.failure(Exception(msg))
                 }

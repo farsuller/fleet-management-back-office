@@ -13,7 +13,6 @@ import kotlin.math.tan
  * All coordinates are in **logical pixels** (= CSS pixels on web, where 1 dp ≈ 1 px).
  */
 object MapProjection {
-
     const val TILE_PX = 256.0 // OSM tile size in pixels
 
     /** World pixel width/height at a given zoom (= TILE_PX * 2^zoom). */
@@ -27,10 +26,16 @@ object MapProjection {
     private const val CANVAS_FIT_FACTOR = 0.85
 
     /** Longitude → world-pixel X (unclamped). */
-    fun lonToWorldX(lon: Double, zoom: Int): Double = (lon + LONGITUDE_OFFSET) / LONGITUDE_RANGE * worldSize(zoom)
+    fun lonToWorldX(
+        lon: Double,
+        zoom: Int,
+    ): Double = (lon + LONGITUDE_OFFSET) / LONGITUDE_RANGE * worldSize(zoom)
 
     /** Latitude → world-pixel Y. Uses Web Mercator formula; clamped to ≈ ±85.05°. */
-    fun latToWorldY(lat: Double, zoom: Int): Double {
+    fun latToWorldY(
+        lat: Double,
+        zoom: Int,
+    ): Double {
         val latRad = lat.coerceIn(-MAX_LATITUDE, MAX_LATITUDE) * PI / 180.0
         return (1.0 - ln(tan(latRad) + 1.0 / cos(latRad)) / PI) / 2.0 * worldSize(zoom)
     }
@@ -58,10 +63,16 @@ object MapProjection {
     // ── Tile coordinate helpers ───────────────────────────────────────────────
 
     /** OSM tile X index containing [lon] at [zoom]. */
-    fun tileX(lon: Double, zoom: Int): Int = floor(lonToWorldX(lon, zoom) / TILE_PX).toInt().coerceIn(0, (1 shl zoom) - 1)
+    fun tileX(
+        lon: Double,
+        zoom: Int,
+    ): Int = floor(lonToWorldX(lon, zoom) / TILE_PX).toInt().coerceIn(0, (1 shl zoom) - 1)
 
     /** OSM tile Y index containing [lat] at [zoom]. */
-    fun tileY(lat: Double, zoom: Int): Int = floor(latToWorldY(lat, zoom) / TILE_PX).toInt().coerceIn(0, (1 shl zoom) - 1)
+    fun tileY(
+        lat: Double,
+        zoom: Int,
+    ): Int = floor(latToWorldY(lat, zoom) / TILE_PX).toInt().coerceIn(0, (1 shl zoom) - 1)
 
     /**
      * Canvas pixel position for the top-left corner of tile ([tx], [ty]) given the viewport.
@@ -119,21 +130,26 @@ data class MapViewState(
     val zoom: Int = 10, // city-level default; auto-adjusted by fitZoom when routes load
 ) {
     fun zoomedIn() = copy(zoom = (zoom + 1).coerceAtMost(MAX_ZOOM))
+
     fun zoomedOut() = copy(zoom = (zoom - 1).coerceAtLeast(MIN_ZOOM))
 
     /**
      * Returns a new state panned by [dxPx]/[dyPx] logical pixels.
      * Dragging right (positive dx) moves the center left (west), and vice-versa.
      */
-    fun panned(dxPx: Float, dyPx: Float): MapViewState {
+    fun panned(
+        dxPx: Float,
+        dyPx: Float,
+    ): MapViewState {
         val ws = MapProjection.worldSize(zoom)
         val wx = (MapProjection.lonToWorldX(centerLon, zoom) - dxPx).coerceIn(0.0, ws)
         val wy = (MapProjection.latToWorldY(centerLat, zoom) - dyPx).coerceIn(0.0, ws)
         val newLon = wx / ws * MapProjection.LONGITUDE_RANGE - MapProjection.LONGITUDE_OFFSET
         // Inverse Web Mercator for latitude
-        val newLat = kotlin.math.atan(
-            kotlin.math.sinh(kotlin.math.PI * (1.0 - 2.0 * wy / ws)),
-        ) * 180.0 / kotlin.math.PI
+        val newLat =
+            kotlin.math.atan(
+                kotlin.math.sinh(kotlin.math.PI * (1.0 - 2.0 * wy / ws)),
+            ) * 180.0 / kotlin.math.PI
         return copy(
             centerLat = newLat.coerceIn(-MapProjection.MAX_LATITUDE, MapProjection.MAX_LATITUDE),
             centerLon = newLon,

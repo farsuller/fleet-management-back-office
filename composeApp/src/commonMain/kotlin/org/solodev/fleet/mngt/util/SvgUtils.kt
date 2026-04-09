@@ -9,17 +9,17 @@ package org.solodev.fleet.mngt.util
  * [MapProjection] or equivalent viewport transform.
  */
 object SvgUtils {
-
     /**
      * Converts a WKT LINESTRING into a list of (x=lng, y=lat) pairs.
      *
      * Input example: `LINESTRING(121.1037 14.7021, 121.1036 14.7024)`
      */
     fun wktToPoints(lineString: String): List<Pair<Double, Double>> {
-        val inner = lineString
-            .removePrefix("LINESTRING(")
-            .removeSuffix(")")
-            .trim()
+        val inner =
+            lineString
+                .removePrefix("LINESTRING(")
+                .removeSuffix(")")
+                .trim()
         if (inner.isEmpty()) return emptyList()
         return inner.split(",").mapNotNull { token ->
             val parts = token.trim().split("\\s+".toRegex())
@@ -40,7 +40,10 @@ object SvgUtils {
      * segment lengths (great-circle approximation via Euclidean distance in degree space — accurate
      * enough for short routes spanning a few kilometres).
      */
-    fun getPointAtProgress(lineString: String, progress: Double): Pair<Double, Double>? {
+    fun getPointAtProgress(
+        lineString: String,
+        progress: Double,
+    ): Pair<Double, Double>? {
         val pts = wktToPoints(lineString)
         if (pts.isEmpty()) return null
         if (pts.size == 1) return pts.first()
@@ -89,12 +92,22 @@ object SvgUtils {
         )
     }
 
-    data class BoundingBox(val minLng: Double, val minLat: Double, val maxLng: Double, val maxLat: Double) {
+    data class BoundingBox(
+        val minLng: Double,
+        val minLat: Double,
+        val maxLng: Double,
+        val maxLat: Double,
+    ) {
         val width: Double get() = maxLng - minLng
         val height: Double get() = maxLat - minLat
 
         /** Maps a (lng, lat) pair into normalised canvas (x, y) pixels given a canvas [canvasW] × [canvasH]. */
-        fun project(lng: Double, lat: Double, canvasW: Float, canvasH: Float): Pair<Float, Float> {
+        fun project(
+            lng: Double,
+            lat: Double,
+            canvasW: Float,
+            canvasH: Float,
+        ): Pair<Float, Float> {
             val padding = 0.05 // 5% padding on each side
             val x = ((lng - minLng) / (width.takeIf { it > 0.0 } ?: 1.0)).toFloat()
             val y = ((maxLat - lat) / (height.takeIf { it > 0.0 } ?: 1.0)).toFloat() // flip Y

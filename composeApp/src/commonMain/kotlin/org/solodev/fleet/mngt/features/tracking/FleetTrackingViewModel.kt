@@ -27,7 +27,6 @@ class FleetTrackingViewModel(
     private val fleetLiveClient: FleetLiveClient,
     private val trackingRepository: TrackingRepository,
 ) : ViewModel() {
-
     // ── Routes ────────────────────────────────────────────────────────────────
     private val _routesState = MutableStateFlow<UiState<List<RouteDto>>>(UiState.Loading)
     val routesState: StateFlow<UiState<List<RouteDto>>> = _routesState.asStateFlow()
@@ -75,7 +74,8 @@ class FleetTrackingViewModel(
 
     fun loadReceptionStatus() {
         viewModelScope.launch {
-            trackingRepository.getCoordinateReceptionStatus()
+            trackingRepository
+                .getCoordinateReceptionStatus()
                 .onSuccess { _receptionStatus.value = UiState.Success(it) }
                 .onFailure { _receptionStatus.value = UiState.Error(it.message ?: "Failed to load reception status") }
         }
@@ -83,7 +83,8 @@ class FleetTrackingViewModel(
 
     fun toggleReception(enabled: Boolean) {
         viewModelScope.launch {
-            trackingRepository.setCoordinateReceptionEnabled(enabled)
+            trackingRepository
+                .setCoordinateReceptionEnabled(enabled)
                 .onSuccess { _receptionStatus.value = UiState.Success(it) }
                 .onFailure { /* error handled by UI observing current state */ }
         }
@@ -101,8 +102,7 @@ class FleetTrackingViewModel(
                     _routesState.value = UiState.Success(routes)
                     _isRefreshing.value = false
                     autoCenterOnRoutes(routes)
-                }
-                .onFailure {
+                }.onFailure {
                     _routesState.value = UiState.Error(it.message ?: "Failed to load routes")
                     _isRefreshing.value = false
                 }
@@ -112,19 +112,21 @@ class FleetTrackingViewModel(
                 .onSuccess { status ->
                     _fleetStatus.value = status
                     // Seed fleetState with REST positions for any vehicle not yet seen on WebSocket
-                    val snapshots = status.vehicles
-                        .filter { it.latitude != 0.0 || it.longitude != 0.0 }
-                        .associate { summary ->
-                            summary.vehicleId to VehicleRouteState(
-                                vehicleId = summary.vehicleId,
-                                latitude = summary.latitude,
-                                longitude = summary.longitude,
-                                headingDeg = summary.heading,
-                                speedKph = summary.speed,
-                                routeId = summary.routeId,
-                                routeProgress = summary.progress,
-                            )
-                        }
+                    val snapshots =
+                        status.vehicles
+                            .filter { it.latitude != 0.0 || it.longitude != 0.0 }
+                            .associate { summary ->
+                                summary.vehicleId to
+                                    VehicleRouteState(
+                                        vehicleId = summary.vehicleId,
+                                        latitude = summary.latitude,
+                                        longitude = summary.longitude,
+                                        headingDeg = summary.heading,
+                                        speedKph = summary.speed,
+                                        routeId = summary.routeId,
+                                        routeProgress = summary.progress,
+                                    )
+                            }
                     if (snapshots.isNotEmpty()) {
                         // Merge: WebSocket deltas take priority over REST snapshots
                         _fleetState.value = snapshots + _fleetState.value
@@ -144,25 +146,34 @@ class FleetTrackingViewModel(
     fun zoomIn() {
         _mapState.value = _mapState.value.zoomedIn()
     }
+
     fun zoomOut() {
         _mapState.value = _mapState.value.zoomedOut()
     }
-    fun pan(dx: Float, dy: Float) {
+
+    fun pan(
+        dx: Float,
+        dy: Float,
+    ) {
         _mapState.value = _mapState.value.panned(dx, dy)
     }
 
     // ── Route import ──────────────────────────────────────────────────────────
 
-    fun importRoute(name: String, description: String?, geojson: String) {
+    fun importRoute(
+        name: String,
+        description: String?,
+        geojson: String,
+    ) {
         viewModelScope.launch {
-            trackingRepository.createRoute(name, description, geojson)
+            trackingRepository
+                .createRoute(name, description, geojson)
                 .onSuccess { newRoute ->
                     _importResult.value = ImportResult.Success
                     // Append the new route to the current list immediately
                     val current = (_routesState.value as? UiState.Success)?.data ?: emptyList()
                     _routesState.value = UiState.Success(current + newRoute)
-                }
-                .onFailure {
+                }.onFailure {
                     _importResult.value = ImportResult.Error(it.message ?: "Import failed")
                 }
         }
@@ -180,19 +191,21 @@ class FleetTrackingViewModel(
         val centerLon = (bbox.minLng + bbox.maxLng) / 2.0
         // Fit zoom using a reference viewport of 1024×640 dp so routes are fully visible
         // on first load without the user having to manually zoom in or out.
-        val fitZ = MapProjection.fitZoom(
-            minLat = bbox.minLat,
-            minLon = bbox.minLng,
-            maxLat = bbox.maxLat,
-            maxLon = bbox.maxLng,
-            canvasW = 1024f,
-            canvasH = 640f,
-        )
-        _mapState.value = _mapState.value.copy(
-            centerLat = centerLat,
-            centerLon = centerLon,
-            zoom = fitZ,
-        )
+        val fitZ =
+            MapProjection.fitZoom(
+                minLat = bbox.minLat,
+                minLon = bbox.minLng,
+                maxLat = bbox.maxLat,
+                maxLon = bbox.maxLng,
+                canvasW = 1024f,
+                canvasH = 640f,
+            )
+        _mapState.value =
+            _mapState.value.copy(
+                centerLat = centerLat,
+                centerLon = centerLon,
+                zoom = fitZ,
+            )
     }
 
     private fun collectConnectionState() {
@@ -206,11 +219,12 @@ class FleetTrackingViewModel(
             fleetLiveClient.deltas.collect { delta ->
                 val current = _fleetState.value
                 val existing = current[delta.vehicleId]
-                val updated = if (existing != null) {
-                    DeltaDecoder.merge(existing, delta)
-                } else {
-                    DeltaDecoder.fromDelta(delta)
-                }
+                val updated =
+                    if (existing != null) {
+                        DeltaDecoder.merge(existing, delta)
+                    } else {
+                        DeltaDecoder.fromDelta(delta)
+                    }
                 _fleetState.value = current + (delta.vehicleId to updated)
             }
         }
@@ -223,6 +237,9 @@ class FleetTrackingViewModel(
 
     sealed interface ImportResult {
         data object Success : ImportResult
-        data class Error(val message: String) : ImportResult
+
+        data class Error(
+            val message: String,
+        ) : ImportResult
     }
 }

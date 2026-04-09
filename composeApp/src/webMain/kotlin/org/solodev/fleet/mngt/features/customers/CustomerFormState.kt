@@ -19,7 +19,8 @@ data class CustomerFormState(
         email = customer?.email ?: "",
         phone = customer?.phone ?: "",
         driverLicenseNumber = customer?.driverLicenseNumber ?: "",
-        licenseExpiry = customer?.licenseExpiryMs?.let { ms ->
+        licenseExpiry =
+        customer?.licenseExpiryMs?.let { ms ->
             val dt = Instant.fromEpochMilliseconds(ms).toLocalDateTime(TimeZone.UTC)
             "${dt.year}-${(dt.month.ordinal + 1).toString().padStart(2, '0')}-${dt.day.toString().padStart(2, '0')}"
         } ?: "",

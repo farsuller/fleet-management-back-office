@@ -28,23 +28,26 @@ class FleetLiveClient(
     private val wsBaseUrl: String,
     private val tokenProvider: TokenProvider,
 ) {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        coerceInputValues = true
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+        }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val client = HttpClient {
-        install(WebSockets)
-    }
+    private val client =
+        HttpClient {
+            install(WebSockets)
+        }
 
     private val _deltas = MutableSharedFlow<VehicleStateDelta>(extraBufferCapacity = 128)
     val deltas: SharedFlow<VehicleStateDelta> = _deltas.asSharedFlow()
 
-    private val _connectionState = MutableSharedFlow<ConnectionState>(
-        replay = 1,
-        extraBufferCapacity = 8,
-    )
+    private val _connectionState =
+        MutableSharedFlow<ConnectionState>(
+            replay = 1,
+            extraBufferCapacity = 8,
+        )
     val connectionState: SharedFlow<ConnectionState> = _connectionState.asSharedFlow()
 
     private var connectJob: Job? = null
@@ -67,10 +70,11 @@ class FleetLiveClient(
                 if (attempts == 0) ConnectionState.Connecting else ConnectionState.Reconnecting(attempts),
             )
             try {
-                val token = tokenProvider.token ?: run {
-                    _connectionState.emit(ConnectionState.Error("No auth token"))
-                    return
-                }
+                val token =
+                    tokenProvider.token ?: run {
+                        _connectionState.emit(ConnectionState.Error("No auth token"))
+                        return
+                    }
                 client.webSocket(
                     urlString = "$wsBaseUrl/v1/fleet/live?token=$token",
                 ) {
@@ -106,8 +110,16 @@ class FleetLiveClient(
 
 sealed interface ConnectionState {
     data object Connecting : ConnectionState
+
     data object Connected : ConnectionState
-    data class Reconnecting(val attempt: Int) : ConnectionState
+
+    data class Reconnecting(
+        val attempt: Int,
+    ) : ConnectionState
+
     data object Disconnected : ConnectionState
-    data class Error(val message: String) : ConnectionState
+
+    data class Error(
+        val message: String,
+    ) : ConnectionState
 }

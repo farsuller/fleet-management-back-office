@@ -37,7 +37,6 @@ class MaintenanceViewModel(
     private val getVehiclesUseCase: GetVehiclesUseCase,
     private val authState: AuthState,
 ) : ViewModel() {
-
     // ── List state ────────────────────────────────────────────────────────────
 
     private val _listState = MutableStateFlow<UiState<PagedResponse<MaintenanceJobDto>>>(UiState.Loading)
@@ -146,20 +145,22 @@ class MaintenanceViewModel(
                     _detailState.value = UiState.Success(it)
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
-    fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long) {
+    fun completeJob(
+        id: String,
+        laborCostPhp: Long,
+        partsCostPhp: Long,
+    ) {
         viewModelScope.launch {
             completeMaintenanceUseCase(id, laborCostPhp, partsCostPhp)
                 .onSuccess {
                     _detailState.value = UiState.Success(it)
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -170,8 +171,7 @@ class MaintenanceViewModel(
                     _detailState.value = UiState.Success(it)
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 
@@ -181,8 +181,7 @@ class MaintenanceViewModel(
                 .onSuccess {
                     _actionResult.value = Result.success(Unit)
                     loadList(forceRefresh = true)
-                }
-                .onFailure { _actionResult.value = Result.failure(it) }
+                }.onFailure { _actionResult.value = Result.failure(it) }
         }
     }
 

@@ -74,97 +74,98 @@ import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleStateUseCase
 import org.solodev.fleet.mngt.domain.usecase.vehicle.UpdateVehicleUseCase
 import org.solodev.fleet.mngt.domain.usecase.rental.GetPaymentMethodsUseCase as RentalGetPaymentMethodsUseCase
 
-val useCaseModule = module {
-    // Auth
-    factory { LoginUseCase(get()) }
-    factory { LogoutUseCase(get()) }
+val useCaseModule =
+    module {
+        // Auth
+        factory { LoginUseCase(get()) }
+        factory { LogoutUseCase(get()) }
 
-    // Vehicle
-    factory { GetVehiclesUseCase(get()) }
-    factory { GetVehicleUseCase(get()) }
-    factory { CreateVehicleUseCase(get()) }
-    factory { UpdateVehicleUseCase(get()) }
-    factory { UpdateVehicleStateUseCase(get(), get()) }
-    factory { UpdateOdometerUseCase(get()) }
-    factory { DeleteVehicleUseCase(get()) }
-    factory { GetVehicleMaintenanceUseCase(get()) }
-    factory { GetVehicleLocationHistoryUseCase(get()) }
+        // Vehicle
+        factory { GetVehiclesUseCase(get()) }
+        factory { GetVehicleUseCase(get()) }
+        factory { CreateVehicleUseCase(get()) }
+        factory { UpdateVehicleUseCase(get()) }
+        factory { UpdateVehicleStateUseCase(get(), get()) }
+        factory { UpdateOdometerUseCase(get()) }
+        factory { DeleteVehicleUseCase(get()) }
+        factory { GetVehicleMaintenanceUseCase(get()) }
+        factory { GetVehicleLocationHistoryUseCase(get()) }
 
-    // Customer
-    factory { GetCustomersUseCase(get()) }
-    factory { GetCustomerUseCase(get()) }
-    factory { CreateCustomerUseCase(get()) }
-    factory { UpdateCustomerUseCase(get()) }
-    factory { DeactivateCustomerUseCase(get()) }
-    factory { GetCustomerRentalsUseCase(get()) }
-    factory { GetCustomerPaymentsUseCase(get()) }
+        // Customer
+        factory { GetCustomersUseCase(get()) }
+        factory { GetCustomerUseCase(get()) }
+        factory { CreateCustomerUseCase(get()) }
+        factory { UpdateCustomerUseCase(get()) }
+        factory { DeactivateCustomerUseCase(get()) }
+        factory { GetCustomerRentalsUseCase(get()) }
+        factory { GetCustomerPaymentsUseCase(get()) }
 
-    // Driver
-    factory { GetDriversUseCase(get()) }
-    factory { GetDriverUseCase(get()) }
-    factory { CreateDriverUseCase(get()) }
-    factory { ActivateDriverUseCase(get()) }
-    factory { DeactivateDriverUseCase(get()) }
-    factory { AssignDriverUseCase(get()) }
-    factory { ReleaseDriverUseCase(get()) }
-    factory { GetDriverAssignmentsUseCase(get()) }
-    factory { GetVehicleActiveDriverUseCase(get()) }
-    factory { GetVehicleDriverHistoryUseCase(get()) }
-    factory { UpdateDriverUseCase(get()) }
+        // Driver
+        factory { GetDriversUseCase(get()) }
+        factory { GetDriverUseCase(get()) }
+        factory { CreateDriverUseCase(get()) }
+        factory { ActivateDriverUseCase(get()) }
+        factory { DeactivateDriverUseCase(get()) }
+        factory { AssignDriverUseCase(get()) }
+        factory { ReleaseDriverUseCase(get()) }
+        factory { GetDriverAssignmentsUseCase(get()) }
+        factory { GetVehicleActiveDriverUseCase(get()) }
+        factory { GetVehicleDriverHistoryUseCase(get()) }
+        factory { UpdateDriverUseCase(get()) }
 
-    // Rental
-    factory { GetRentalsUseCase(get()) }
-    factory { GetRentalUseCase(get()) }
-    factory { CreateRentalUseCase(get()) }
-    factory { UpdateRentalUseCase(get()) }
-    factory { ActivateRentalUseCase(get(), get()) }
-    factory { CancelRentalUseCase(get()) }
-    factory { CompleteRentalUseCase(get(), get()) }
-    factory { DeleteRentalUseCase(get()) }
-    factory(named("rentalPaymentMethods")) { RentalGetPaymentMethodsUseCase(get()) }
-    factory { PayInvoiceUseCase(get()) }
+        // Rental
+        factory { GetRentalsUseCase(get()) }
+        factory { GetRentalUseCase(get()) }
+        factory { CreateRentalUseCase(get()) }
+        factory { UpdateRentalUseCase(get()) }
+        factory { ActivateRentalUseCase(get(), get()) }
+        factory { CancelRentalUseCase(get()) }
+        factory { CompleteRentalUseCase(get(), get()) }
+        factory { DeleteRentalUseCase(get()) }
+        factory(named("rentalPaymentMethods")) { RentalGetPaymentMethodsUseCase(get()) }
+        factory { PayInvoiceUseCase(get()) }
 
-    // Accounting
-    factory { GetInvoicesUseCase(get()) }
-    factory { GetInvoiceUseCase(get()) }
-    factory { GetInvoicesByCustomerUseCase(get()) }
-    factory { CreateInvoiceUseCase(get()) }
-    factory { GetPaymentsUseCase(get()) }
-    factory { GetPaymentsByCustomerUseCase(get()) }
-    factory { GetAccountsUseCase(get()) }
-    factory { GetPaymentMethodsUseCase(get()) }
-    factory { RecordDriverCollectionUseCase(get()) }
-    factory { GetDriverPendingPaymentsUseCase(get()) }
-    factory { GetAllDriverPaymentsUseCase(get()) }
-    factory { SubmitRemittanceUseCase(get()) }
-    factory { GetRemittancesByDriverUseCase(get()) }
-    factory { GetRemittanceUseCase(get()) }
+        // Accounting
+        factory { GetInvoicesUseCase(get()) }
+        factory { GetInvoiceUseCase(get()) }
+        factory { GetInvoicesByCustomerUseCase(get()) }
+        factory { CreateInvoiceUseCase(get()) }
+        factory { GetPaymentsUseCase(get()) }
+        factory { GetPaymentsByCustomerUseCase(get()) }
+        factory { GetAccountsUseCase(get()) }
+        factory { GetPaymentMethodsUseCase(get()) }
+        factory { RecordDriverCollectionUseCase(get()) }
+        factory { GetDriverPendingPaymentsUseCase(get()) }
+        factory { GetAllDriverPaymentsUseCase(get()) }
+        factory { SubmitRemittanceUseCase(get()) }
+        factory { GetRemittancesByDriverUseCase(get()) }
+        factory { GetRemittanceUseCase(get()) }
 
-    // Maintenance
-    factory { GetMaintenanceJobsUseCase(get()) }
-    factory { GetMaintenanceJobUseCase(get()) }
-    factory { ScheduleMaintenanceUseCase(get()) }
-    factory { StartMaintenanceUseCase(get()) }
-    factory { CompleteMaintenanceUseCase(get()) }
-    factory { CancelMaintenanceUseCase(get()) }
+        // Maintenance
+        factory { GetMaintenanceJobsUseCase(get()) }
+        factory { GetMaintenanceJobUseCase(get()) }
+        factory { ScheduleMaintenanceUseCase(get()) }
+        factory { StartMaintenanceUseCase(get()) }
+        factory { CompleteMaintenanceUseCase(get()) }
+        factory { CancelMaintenanceUseCase(get()) }
 
-    // Users
-    factory { GetUsersUseCase(get()) }
-    factory { GetUserUseCase(get()) }
-    factory { RegisterUserUseCase(get()) }
-    factory { UpdateUserUseCase(get()) }
-    factory { AssignRoleUseCase(get()) }
-    factory { GetRolesUseCase(get()) }
-    factory { DeleteUserUseCase(get()) }
+        // Users
+        factory { GetUsersUseCase(get()) }
+        factory { GetUserUseCase(get()) }
+        factory { RegisterUserUseCase(get()) }
+        factory { UpdateUserUseCase(get()) }
+        factory { AssignRoleUseCase(get()) }
+        factory { GetRolesUseCase(get()) }
+        factory { DeleteUserUseCase(get()) }
 
-    // Dashboard
-    factory { GetDashboardUseCase(get(), get(), get(), get()) }
+        // Dashboard
+        factory { GetDashboardUseCase(get(), get(), get(), get()) }
 
-    // Tracking
-    factory { GetFleetStatusUseCase(get()) }
-    factory { GetActiveRoutesUseCase(get()) }
-    factory { GetVehicleStateUseCase(get()) }
+        // Tracking
+        factory { GetFleetStatusUseCase(get()) }
+        factory { GetActiveRoutesUseCase(get()) }
+        factory { GetVehicleStateUseCase(get()) }
 
-    // Incident
-    factory { GetVehicleIncidentsUseCase(get()) }
-}
+        // Incident
+        factory { GetVehicleIncidentsUseCase(get()) }
+    }

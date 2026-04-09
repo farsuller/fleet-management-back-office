@@ -11,7 +11,9 @@ import org.solodev.fleet.mngt.repository.VehicleRepository
 import org.solodev.fleet.mngt.validation.FieldValidator
 import kotlin.Result
 
-class GetVehiclesUseCase(private val repository: VehicleRepository) {
+class GetVehiclesUseCase(
+    private val repository: VehicleRepository,
+) {
     suspend operator fun invoke(
         page: Int = 1,
         limit: Int = 20,
@@ -20,23 +22,35 @@ class GetVehiclesUseCase(private val repository: VehicleRepository) {
     ) = repository.getVehicles(page, limit, state, forceRefresh)
 }
 
-class GetVehicleUseCase(private val repository: VehicleRepository) {
+class GetVehicleUseCase(
+    private val repository: VehicleRepository,
+) {
     suspend operator fun invoke(id: String) = repository.getVehicle(id)
 }
 
-class CreateVehicleUseCase(private val repository: VehicleRepository) {
+class CreateVehicleUseCase(
+    private val repository: VehicleRepository,
+) {
     suspend operator fun invoke(request: CreateVehicleRequest) = repository.createVehicle(request)
 }
 
-class UpdateVehicleUseCase(private val repository: VehicleRepository) {
-    suspend operator fun invoke(id: String, request: UpdateVehicleRequest) = repository.updateVehicle(id, request)
+class UpdateVehicleUseCase(
+    private val repository: VehicleRepository,
+) {
+    suspend operator fun invoke(
+        id: String,
+        request: UpdateVehicleRequest,
+    ) = repository.updateVehicle(id, request)
 }
 
 class UpdateVehicleStateUseCase(
     private val repository: VehicleRepository,
     private val rentalRepository: RentalRepository,
 ) {
-    suspend operator fun invoke(id: String, state: VehicleState): Result<VehicleDto> {
+    suspend operator fun invoke(
+        id: String,
+        state: VehicleState,
+    ): Result<VehicleDto> {
         // // Logic: Cannot set to MAINTENANCE if there is an active rental
         if (state == VehicleState.MAINTENANCE) {
             val rentalsResult =
@@ -56,7 +70,9 @@ class UpdateVehicleStateUseCase(
     }
 }
 
-class UpdateOdometerUseCase(private val repository: VehicleRepository) {
+class UpdateOdometerUseCase(
+    private val repository: VehicleRepository,
+) {
     suspend operator fun invoke(
         id: String,
         readingKm: Long,
@@ -78,18 +94,26 @@ class UpdateOdometerUseCase(private val repository: VehicleRepository) {
     }
 }
 
-class DeleteVehicleUseCase(private val repository: VehicleRepository) {
+class DeleteVehicleUseCase(
+    private val repository: VehicleRepository,
+) {
     suspend operator fun invoke(id: String) = repository.deleteVehicle(id)
 }
 
-class GetVehicleMaintenanceUseCase(private val repository: MaintenanceRepository) {
+class GetVehicleMaintenanceUseCase(
+    private val repository: MaintenanceRepository,
+) {
     suspend operator fun invoke(vehicleId: String) = repository.getJobsByVehicle(vehicleId)
 }
 
-class GetVehicleLocationHistoryUseCase(private val repository: TrackingRepository) {
+class GetVehicleLocationHistoryUseCase(
+    private val repository: TrackingRepository,
+) {
     suspend operator fun invoke(vehicleId: String) = repository.getLocationHistory(vehicleId)
 }
 
-class GetVehicleIncidentsUseCase(private val repository: MaintenanceRepository) {
+class GetVehicleIncidentsUseCase(
+    private val repository: MaintenanceRepository,
+) {
     suspend operator fun invoke(vehicleId: String) = repository.getIncidentsByVehicle(vehicleId)
 }

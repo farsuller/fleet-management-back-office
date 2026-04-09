@@ -1,7 +1,6 @@
 package org.solodev.fleet.mngt.auth
 
 actual class SecureStorage {
-
     actual fun saveToken(token: String) {
         // No-op for JVM/Tests
     }

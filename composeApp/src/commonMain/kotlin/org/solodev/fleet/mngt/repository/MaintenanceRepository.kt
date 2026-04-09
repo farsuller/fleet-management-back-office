@@ -16,18 +16,35 @@ interface MaintenanceRepository {
         status: MaintenanceStatus? = null,
         forceRefresh: Boolean = false,
     ): Result<PagedResponse<MaintenanceJobDto>>
+
     suspend fun getJob(id: String): Result<MaintenanceJobDto>
+
     suspend fun getJobsByVehicle(vehicleId: String): Result<List<MaintenanceJobDto>>
+
     suspend fun createJob(request: CreateMaintenanceRequest): Result<MaintenanceJobDto>
+
     suspend fun startJob(id: String): Result<MaintenanceJobDto>
-    suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long): Result<MaintenanceJobDto>
+
+    suspend fun completeJob(
+        id: String,
+        laborCostPhp: Long,
+        partsCostPhp: Long,
+    ): Result<MaintenanceJobDto>
+
     suspend fun cancelJob(id: String): Result<MaintenanceJobDto>
-    suspend fun getIncidents(cursor: String? = null, limit: Int = 20, status: String? = null): Result<PagedResponse<VehicleIncidentDto>>
+
+    suspend fun getIncidents(
+        cursor: String? = null,
+        limit: Int = 20,
+        status: String? = null,
+    ): Result<PagedResponse<VehicleIncidentDto>>
+
     suspend fun getIncidentsByVehicle(vehicleId: String): Result<List<VehicleIncidentDto>>
 }
 
-class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRepository {
-
+class MaintenanceRepositoryImpl(
+    private val api: FleetApiClient,
+) : MaintenanceRepository {
     // 2-minute TTL — maintenance schedules are relatively stable
     private val listCache = InMemoryCache<String, PagedResponse<MaintenanceJobDto>>(ttlMs = 120_000L)
 
@@ -50,12 +67,21 @@ class MaintenanceRepositoryImpl(private val api: FleetApiClient) : MaintenanceRe
 
     override suspend fun startJob(id: String) = api.startMaintenanceJob(id).onSuccess { listCache.clear() }
 
-    override suspend fun completeJob(id: String, laborCostPhp: Long, partsCostPhp: Long) = api.completeMaintenanceJob(id, CompleteMaintenanceRequest(laborCostPhp, partsCostPhp))
+    override suspend fun completeJob(
+        id: String,
+        laborCostPhp: Long,
+        partsCostPhp: Long,
+    ) = api
+        .completeMaintenanceJob(id, CompleteMaintenanceRequest(laborCostPhp, partsCostPhp))
         .onSuccess { listCache.clear() }
 
     override suspend fun cancelJob(id: String) = api.cancelMaintenanceJob(id).onSuccess { listCache.clear() }
 
-    override suspend fun getIncidents(cursor: String?, limit: Int, status: String?) = api.getIncidents(cursor, limit, status)
+    override suspend fun getIncidents(
+        cursor: String?,
+        limit: Int,
+        status: String?,
+    ) = api.getIncidents(cursor, limit, status)
 
     override suspend fun getIncidentsByVehicle(vehicleId: String) = api.getVehicleIncidents(vehicleId)
 }

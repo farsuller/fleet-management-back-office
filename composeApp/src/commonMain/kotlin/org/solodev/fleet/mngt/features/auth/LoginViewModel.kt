@@ -17,8 +17,9 @@ data class LoginForm(
     val passwordError: String? = null,
 )
 
-class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
-
+class LoginViewModel(
+    private val loginUseCase: LoginUseCase,
+) : ViewModel() {
     private val _form = MutableStateFlow(LoginForm())
     val form: StateFlow<LoginForm> = _form.asStateFlow()
 

@@ -21,28 +21,32 @@ import kotlin.time.Instant
  * Serializes back as a plain Long.
  */
 object FlexibleEpochMsSerializer : KSerializer<Long?> {
-
     override val descriptor: SerialDescriptor = Long.serializer().nullable.descriptor
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun serialize(encoder: Encoder, value: Long?) {
+    override fun serialize(
+        encoder: Encoder,
+        value: Long?,
+    ) {
         if (value == null) encoder.encodeNull() else encoder.encodeLong(value)
     }
 
     override fun deserialize(decoder: Decoder): Long? {
         // For non-JSON decoders fall back to a plain Long decode
-        val jsonDecoder = decoder as? JsonDecoder
-            ?: return runCatching { decoder.decodeLong() }.getOrNull()
+        val jsonDecoder =
+            decoder as? JsonDecoder
+                ?: return runCatching { decoder.decodeLong() }.getOrNull()
 
         return when (val element = jsonDecoder.decodeJsonElement()) {
             is JsonNull -> null
-            is JsonPrimitive -> when {
-                element.isString ->
-                    // Try numeric string first ("1739174400000"), then ISO-8601
-                    element.content.toLongOrNull()
-                        ?: runCatching { Instant.parse(element.content).toEpochMilliseconds() }.getOrNull()
-                else -> element.longOrNull
-            }
+            is JsonPrimitive ->
+                when {
+                    element.isString ->
+                        // Try numeric string first ("1739174400000"), then ISO-8601
+                        element.content.toLongOrNull()
+                            ?: runCatching { Instant.parse(element.content).toEpochMilliseconds() }.getOrNull()
+                    else -> element.longOrNull
+                }
             else -> null
         }
     }

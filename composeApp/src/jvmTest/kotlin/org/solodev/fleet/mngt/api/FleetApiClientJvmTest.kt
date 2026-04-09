@@ -2,7 +2,6 @@ package org.solodev.fleet.mngt.api
 
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
-import java.net.InetSocketAddress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
@@ -35,10 +34,11 @@ import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.auth.InMemoryTokenProvider
 import org.solodev.fleet.mngt.auth.UserSession
+import java.net.InetSocketAddress
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class FleetApiClientJvmTest {
     @Test
@@ -196,7 +196,7 @@ class FleetApiClientJvmTest {
             assertTrue(client.payInvoice("invoice-1", PayInvoiceRequest(500L, "CARD"), "idem-1").isSuccess)
             assertTrue(client.recordDriverCollection(DriverCollectionRequest("driver-1", "customer-1", "invoice-1", 500L, "CASH")).isSuccess)
             assertTrue(client.submitRemittance(DriverRemittanceRequest("driver-1", listOf("payment-1"))).isSuccess)
-            assertTrue(client.createRoute(org.solodev.fleet.mngt.api.dto.tracking.CreateRouteRequest("South", null, "{}" )).isSuccess)
+            assertTrue(client.createRoute(org.solodev.fleet.mngt.api.dto.tracking.CreateRouteRequest("South", null, "{}")).isSuccess)
             assertTrue(client.setCoordinateReceptionEnabled(false).isSuccess)
             assertTrue(client.createDriver(CreateDriverRequest("newdriver@example.com", "New", "Driver", "1234567890", "LIC-123", "2030-01-01")).isSuccess)
             assertTrue(client.updateDriver("driver-1", UpdateDriverRequest(phone = "999999")).isSuccess)

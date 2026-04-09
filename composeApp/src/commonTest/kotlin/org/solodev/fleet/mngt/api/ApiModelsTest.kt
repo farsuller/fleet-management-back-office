@@ -2,8 +2,8 @@ package org.solodev.fleet.mngt.api
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertSame
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 class ApiModelsTest {
     @Test

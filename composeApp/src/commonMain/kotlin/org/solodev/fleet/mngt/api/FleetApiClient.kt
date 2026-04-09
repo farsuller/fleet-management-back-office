@@ -28,7 +28,6 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlin.reflect.typeOf
 import org.solodev.fleet.mngt.api.dto.accounting.AccountDto
 import org.solodev.fleet.mngt.api.dto.accounting.CreateInvoiceRequest
 import org.solodev.fleet.mngt.api.dto.accounting.DriverCollectionRequest
@@ -78,6 +77,7 @@ import org.solodev.fleet.mngt.api.dto.vehicle.VehicleDto
 import org.solodev.fleet.mngt.api.dto.vehicle.VehicleStateRequest
 import org.solodev.fleet.mngt.auth.AuthState
 import org.solodev.fleet.mngt.auth.TokenProvider
+import kotlin.reflect.typeOf
 
 class ApiException(
     message: String,

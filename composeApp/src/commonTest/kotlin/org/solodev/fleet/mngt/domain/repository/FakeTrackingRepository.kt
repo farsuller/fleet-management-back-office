@@ -1,9 +1,9 @@
 package org.solodev.fleet.mngt.domain.repository
 
 import org.solodev.fleet.mngt.api.dto.tracking.CoordinateReceptionStatus
+import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.LocationHistoryEntry
 import org.solodev.fleet.mngt.api.dto.tracking.RouteDto
-import org.solodev.fleet.mngt.api.dto.tracking.FleetStatusDto
 import org.solodev.fleet.mngt.api.dto.tracking.VehicleStateDto
 import org.solodev.fleet.mngt.repository.TrackingRepository
 
@@ -58,8 +58,7 @@ class FakeTrackingRepository : TrackingRepository {
         return routeResult ?: Result.failure(Exception("Route creation not configured"))
     }
 
-    override suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus> =
-        coordinateReceptionStatusResult ?: Result.failure(Exception("Coordinate reception status not configured"))
+    override suspend fun getCoordinateReceptionStatus(): Result<CoordinateReceptionStatus> = coordinateReceptionStatusResult ?: Result.failure(Exception("Coordinate reception status not configured"))
 
     override suspend fun setCoordinateReceptionEnabled(enabled: Boolean): Result<CoordinateReceptionStatus> {
         lastCoordinateEnabled = enabled

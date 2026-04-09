@@ -14,8 +14,8 @@ import org.solodev.fleet.mngt.domain.repository.FakeMaintenanceRepository
 import org.solodev.fleet.mngt.domain.repository.FakeRentalRepository
 import org.solodev.fleet.mngt.domain.repository.FakeTrackingRepository
 import org.solodev.fleet.mngt.domain.repository.FakeVehicleRepository
-import kotlin.test.assertEquals
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class VehicleUseCaseTest {

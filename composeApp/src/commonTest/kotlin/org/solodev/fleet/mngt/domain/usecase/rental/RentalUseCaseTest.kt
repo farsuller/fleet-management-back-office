@@ -13,8 +13,8 @@ import org.solodev.fleet.mngt.api.dto.vehicle.VehicleState
 import org.solodev.fleet.mngt.domain.repository.FakeAccountingRepository
 import org.solodev.fleet.mngt.domain.repository.FakeRentalRepository
 import org.solodev.fleet.mngt.domain.repository.FakeVehicleRepository
-import kotlin.test.assertEquals
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class RentalUseCaseTest {

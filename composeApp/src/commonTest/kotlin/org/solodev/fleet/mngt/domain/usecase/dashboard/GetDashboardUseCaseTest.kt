@@ -46,61 +46,61 @@ class GetDashboardUseCaseTest {
             Result.success(
                 PagedResponse(
                     items =
-                        listOf(
-                            VehicleDto(id = "v1", state = VehicleState.AVAILABLE),
-                            VehicleDto(id = "v2", state = VehicleState.RENTED),
-                            VehicleDto(id = "v3", state = VehicleState.MAINTENANCE),
-                            VehicleDto(id = "v4", state = VehicleState.RETIRED),
-                            VehicleDto(id = "v5", state = VehicleState.RESERVED),
-                        ),
+                    listOf(
+                        VehicleDto(id = "v1", state = VehicleState.AVAILABLE),
+                        VehicleDto(id = "v2", state = VehicleState.RENTED),
+                        VehicleDto(id = "v3", state = VehicleState.MAINTENANCE),
+                        VehicleDto(id = "v4", state = VehicleState.RETIRED),
+                        VehicleDto(id = "v5", state = VehicleState.RESERVED),
+                    ),
                 ),
             )
         rentalRepository.pagedResponseResult =
             Result.success(
                 PagedResponse(
                     items =
-                        listOf(
-                            RentalDto(id = "r1", status = RentalStatus.ACTIVE),
-                            RentalDto(id = "r2", status = RentalStatus.ACTIVE),
-                        ),
+                    listOf(
+                        RentalDto(id = "r1", status = RentalStatus.ACTIVE),
+                        RentalDto(id = "r2", status = RentalStatus.ACTIVE),
+                    ),
                 ),
             )
         maintenanceRepository.pagedJobsResult =
             Result.success(
                 PagedResponse(
                     items =
-                        listOf(
-                            MaintenanceJobDto(id = "m1", priority = MaintenancePriority.URGENT, status = MaintenanceStatus.SCHEDULED),
-                            MaintenanceJobDto(id = "m2", priority = MaintenancePriority.NORMAL, status = MaintenanceStatus.SCHEDULED),
-                        ),
+                    listOf(
+                        MaintenanceJobDto(id = "m1", priority = MaintenancePriority.URGENT, status = MaintenanceStatus.SCHEDULED),
+                        MaintenanceJobDto(id = "m2", priority = MaintenancePriority.NORMAL, status = MaintenanceStatus.SCHEDULED),
+                    ),
                 ),
             )
         maintenanceRepository.pagedIncidentsResult =
             Result.success(
                 PagedResponse(
                     items =
-                        listOf(
-                            VehicleIncidentDto(
-                                id = "i1",
-                                vehicleId = "v1",
-                                title = "Scratch",
-                                description = "Minor scratch",
-                                severity = IncidentSeverity.LOW,
-                                status = IncidentStatus.REPORTED,
-                            ),
+                    listOf(
+                        VehicleIncidentDto(
+                            id = "i1",
+                            vehicleId = "v1",
+                            title = "Scratch",
+                            description = "Minor scratch",
+                            severity = IncidentSeverity.LOW,
+                            status = IncidentStatus.REPORTED,
                         ),
+                    ),
                 ),
             )
         accountingRepository.pagedInvoicesResult =
             Result.success(
                 PagedResponse(
                     items =
-                        listOf(
-                            InvoiceDto(id = "inv1", status = InvoiceStatus.PAID, total = 5000L),
-                            InvoiceDto(id = "inv2", status = InvoiceStatus.OVERDUE, total = 2000L),
-                            InvoiceDto(id = "inv3", status = InvoiceStatus.DRAFT, total = 1500L),
-                            InvoiceDto(id = "inv4", status = InvoiceStatus.CANCELLED, total = 500L),
-                        ),
+                    listOf(
+                        InvoiceDto(id = "inv1", status = InvoiceStatus.PAID, total = 5000L),
+                        InvoiceDto(id = "inv2", status = InvoiceStatus.OVERDUE, total = 2000L),
+                        InvoiceDto(id = "inv3", status = InvoiceStatus.DRAFT, total = 1500L),
+                        InvoiceDto(id = "inv4", status = InvoiceStatus.CANCELLED, total = 500L),
+                    ),
                 ),
             )
         accountingRepository.accountsResult =

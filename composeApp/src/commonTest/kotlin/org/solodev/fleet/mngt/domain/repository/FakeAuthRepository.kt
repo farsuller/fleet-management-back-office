@@ -31,6 +31,5 @@ class FakeAuthRepository : AuthRepository {
         return logoutResult
     }
 
-    override suspend fun rehydrate(): Result<LoginResponse> =
-        rehydrateResult ?: Result.failure(Exception("Rehydrate not configured"))
+    override suspend fun rehydrate(): Result<LoginResponse> = rehydrateResult ?: Result.failure(Exception("Rehydrate not configured"))
 }

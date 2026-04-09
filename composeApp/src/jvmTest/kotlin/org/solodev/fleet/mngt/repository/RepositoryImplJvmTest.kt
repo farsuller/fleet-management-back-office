@@ -2,7 +2,6 @@ package org.solodev.fleet.mngt.repository
 
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
-import java.net.InetSocketAddress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.solodev.fleet.mngt.api.FleetApiClient
@@ -12,6 +11,7 @@ import org.solodev.fleet.mngt.auth.AuthStatus
 import org.solodev.fleet.mngt.auth.InMemoryTokenProvider
 import org.solodev.fleet.mngt.auth.SecureStorage
 import org.solodev.fleet.mngt.auth.UserSession
+import java.net.InetSocketAddress
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -215,7 +215,7 @@ class RepositoryImplJvmTest {
             assertTrue(repository.getActiveRoutes().isSuccess)
             assertEquals(1, server.callCount("GET", "/v1/tracking/routes/active"))
 
-            assertTrue(repository.createRoute("South", null, "{}" ).isSuccess)
+            assertTrue(repository.createRoute("South", null, "{}").isSuccess)
             assertTrue(repository.getActiveRoutes().isSuccess)
             assertEquals(2, server.callCount("GET", "/v1/tracking/routes/active"))
 
